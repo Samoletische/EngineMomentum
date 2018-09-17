@@ -1,0 +1,17 @@
+@CHARSET "UTF-8";
+
+#header {
+	text-align: center; 
+}
+
+.paramCaption {
+	text-align: right;
+}
+
+.paramValue {
+	text-align: left;
+}
+
+td input, th input {
+	width: 60px;
+}
