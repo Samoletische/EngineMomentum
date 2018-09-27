@@ -11,8 +11,19 @@
 
 .paramValue {
 	text-align: left;
+	font-weight: normal;
 }
 
-td input, th input {
-	width: 60px;
+.paramValue input {
+	width: 100%;
+	text-align: right;
+}
+
+td input {
+	width: 100%;
+	text-align: right;
+}
+
+th {
+	text-align: center;
 }
