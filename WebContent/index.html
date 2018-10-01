@@ -52,10 +52,22 @@
 			<div class="paramValue col-md-3">Высота шины, %: <input id="wheelHeight" type="number" value="70"></div>
 			<div class="paramValue col-md-3">Диск, дюйм: <input id="wheelDisk" type="number" value="14"></div>
 		</div>
+		<hr>
 		<div class="row">
 			<div class="col-md-3">
-				<button id="bCalc">Начертить и рассчитать пересечение >></button>
+				<button id="bWOutInterpol">Начертить исходные данные >></button>
 			</div>
+			<div class="col-md-3">
+				<button id="bWInterpol">Начертить после интерполяции >></button>
+			</div>
+			<div class="col-md-3">
+				<button id="bLine">Рассчитать пересечения линейно >></button>
+			</div>
+			<div class="col-md-3">
+				<button id="bPoly">Рассчитать пересечения полиномом >></button>
+			</div>
+		</div>
+		<div class="row">
 			<div id="resTable" class="col-md-7"></div>
 		</div>
 		<div class="row">
