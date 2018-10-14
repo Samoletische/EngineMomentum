@@ -9,18 +9,20 @@ var moms = [];
 var gearNumbers = [];
 var engine;
 var engineDraw, gearsDraw;
+var svgExists = false;
+var drawWidth, drawHeight;
 
 $(function() {
 
 	initialize();
 	
 	$("#obFrom").change(function() {
-		obFrom = $(this).val();
+		obFrom = parseFloat($(this).val());
 		createObTable();
 	});
 	
 	$("#obTo").change(function() {
-		obTo = $(this).val();
+		obTo = parseFloat($(this).val());
 		createObTable();
 	});
 	
@@ -35,12 +37,12 @@ $(function() {
 	});
 	
 	$("#interpolStep").change(function() {
-		interpolStep = $(this).val();
+		interpolStep = parseFloat($(this).val());
 		createObTable();
 	});
 	
 	$("#gearCols").change(function() {
-		gearCols = $(this).val();
+		gearCols = parseInt($(this).val());
 		createGearTable();
 	});
 	
@@ -103,8 +105,15 @@ function initialize() {
 	createObTable();
 	createGearTable();
 	
-	engineDraw = SVG("engineDraw").size("100%", 600);
-	gearsDraw = SVG("gearsDraw").size("100%", 600);
+	drawWidth = $("#engineDraw").width();
+	drawHeight = 600;
+	if (SVG.supported) {
+		engineDraw = SVG("engineDraw").size("100%", drawHeight);
+		gearsDraw = SVG("gearsDraw").size("100%", drawHeight);
+		svgExists = true;
+	} else {
+	  alert('SVG не поддерживается. Графики рисоваться не будут.');
+	}
 	
 }
 //------------------------------------------------------
@@ -132,7 +141,7 @@ function createObTable() {
 	var header = "";
 	var body = "";
 	var obStep = parseFloat((obTo - obFrom) / (obCols - 1.0));
-	console.log(obStep);
+	//console.log(obStep);
 	var obCurr;
 	var c;
 
@@ -158,6 +167,11 @@ function createObTable() {
 } // createObTable
 //------------------------------------------------------
 
+function getMoms() {
+	for (var c = 0; c < obCols; c++)
+		moms[c] = parseFloat($("#mom" + c).val());
+}
+
 function createGearTable() {
 	
 	var html = "<table class='table table-bordered'>";
@@ -180,10 +194,98 @@ function createGearTable() {
 } // createGearTable
 //------------------------------------------------------
 
+function interpolSpline3(ob, mom, secondIndex) { // interpolation of 3 power spline
+	
+	var h = new Array(obCols);
+	var l = new Array(obCols);
+	var lambda = new Array(obCols);
+	var delta = new Array(obCols);
+	var b = new Array(obCols);
+	var c = new Array(obCols);
+	var d = new Array(obCols);
+		
+	// h & l
+	var k, cc, x, prevIndex;
+		
+	//console.log("second index=" + this.secondIndex);
+	
+	prevIndex = 0;
+	k = 1;
+	for (cc = secondIndex; cc <= rank; cc++) {
+		if (mom[cc] == 0.0)
+			continue;
+		h[k] = ob[cc] - ob[prevIndex];
+		//console.log(k + " - h=" + h[k] + "; ob[cc]=" + this.ob[cc] + "; ob[prevIndex]=" + this.ob[prevIndex]);
+		if (h[k] == 0) {
+			alert("Ошибка интерполяции: x[" + ob[cc] + "]=x[" + ob[prevIndex] + "] - продолжение невозможно!");
+			return;
+		}
+		l[k] = (mom[cc] - mom[prevIndex]) / h[k];
+		//console.log(k + " - l=" + l[k]);
+		prevIndex = cc;
+		k++;
+	}
+	
+	// delta & lambda
+	delta[1] = - h[2] / (2.0 * (h[1] + h[2]));
+	lambda[1] = 1.5 * (l[2] - l[1]) / (h[1] + h[2]);
+	//console.log("delta=" + this.delta[1]);
+	//console.log("lambda=" + this.lambda[1]);
+	for (k = 3; k < obCols; k++) {
+		delta[k - 1] = - h[k] / (2.0 * h[k - 1] + 2.0 * h[k] + h[k - 1] * delta[k - 2]);
+		lambda[k - 1] = (3.0 * l[k] - 3.0 * l[k - 1] - h[k - 1] * lambda[k - 2]) /
+			(2.0 * h[k - 1] + 2.0 * h[k] + h[k - 1] * delta[k - 2]);
+		//console.log("delta=" + delta[k-1]);
+		//console.log("lambda=" + lambda[k-1]);
+	}
+	
+	// c, b & d
+	c[0] = 0;
+	c[obCols - 1] = 0;
+	for (k = obCols - 1; k >= 2; k--) {
+		c[k - 1] = delta[k - 1] * c[k] + lambda[k - 1];
+		//console.log(k + " - c=" + this.c[k-1]);
+	}
+	for (k = 1; k < obCols; k++) {
+		d[k] = (c[k] - c[k - 1]) / (3.0 * h[k]);
+		b[k] = l[k] + (2.0 * c[k] * h[k] + h[k] * c[k-1]) / 3.0;
+		//console.log(k + " - b=" + this.b[k]);
+		//console.log(k + " - d=" + this.d[k]);
+	}
+	
+	// interpolation
+	prevIndex = rank;
+	k = obCols - 1;
+	for (cc = rank - 1; cc > 0; cc--) {
+		if (mom[cc] != 0.0) {
+			k--;
+			prevIndex = cc;
+			continue;
+		}
+		x = ob[cc] - ob[prevIndex];
+		mom[cc] = mom[prevIndex] + b[k] * x + c[k] * x * x + d[k] * x * x * x;
+		//console.log(cc + " - mom=" + this.mom[cc] + "; x=" + x + "; b=" + b[k] + "; c=" + c[k] + "; d=" + d[k]);
+	}
+	
+};
+//------------------------------------------------------
+
+function clearEngineDraw() {
+	engineDraw.rect(drawWidth, drawHeight).fill("#ddddff");
+}
+//------------------------------------------------------
+
+function clearGearsDraw() {
+	gearsDraw.rect(drawWidth, drawHeight).fill("#ddffdd");
+}
+//------------------------------------------------------
+
 function Engine() {
 	
 	//console.log("start create engine");
 	this.gears = [];
+	this.obGearsMin = -1, this.obGearsMax = -1;
+	this.momGearsMin = -1, this.momGearsMax = -1;
 	
 	this.getWheelDiametr = function() {
 		
@@ -212,11 +314,15 @@ function Engine() {
 		this.ob = new Array(rank);
 		this.mom = new Array(rank);
 		this.wheelDiametr = this.getWheelDiametr();
+		this.momMax = 0.0;
+		
+		getMoms();
 		
 		var c = 0;
 		obCurr = obs[0];
 		obC = obCurr;
 		for (k = 0; k <= rank; k++) {
+			//console.log("obC=" + obC + "; c=" + c + "; k=" + k + "; obCurr=" + obCurr + "; ob[k]=" + this.ob[k] + "; mom[k]=" + this.mom[k] + "; interpolStep=" + interpolStep);
 			this.ob[k] = obCurr; // x for draw
 			
 			if (obC != obCurr) {
@@ -226,7 +332,13 @@ function Engine() {
 			}
 			
 			this.mom[k] = moms[c]; // y for draw
-			//console.log("obC=" + obC + "; c=" + c + "; k=" + k + "; obCurr=" + obCurr + "; ob[k]=" + this.ob[k] + "; mom[k]=" + this.mom[k]);
+			
+			if (this.momMax < this.mom[k])
+				this.momMax = this.mom[k];
+			//console.log("obC=" + obC + "; c=" + c + "; k=" + k + "; obCurr=" + obCurr + "; ob[k]=" + this.ob[k] + "; mom[k]=" + this.mom[k] + "; interpolStep=" + interpolStep);
+			
+			if (c == 1)
+				this.secondIndex = k;
 			
 			obCurr += interpolStep;
 			c++;
@@ -241,17 +353,43 @@ function Engine() {
 	
 	this.interpol = function() {
 		
+		interpolSpline3(this.ob, this.mom, this.secondIndex);
 		for (var c = 0; c < this.gearCols; c++)
 			this.gears[c].interpol();
 		
 	}
 	
 	this.drawMomentum = function() {
+		var coords = "";
+		var x, y;
+		
+		if (!svgExists)
+			return;
+		
+		clearEngineDraw();
+		
+		for (var c = 0; c <= rank; c++) {
+			if (this.mom[c] == 0.0)
+				continue;
+			//console.log("engineDraw size - " + $("#engineDraw").width() + " : " + drawHeight);
+			//console.log("max of mom - " + this.momMax);
+			x = Math.round((drawWidth - 40) / (obTo - obFrom) * (this.ob[c] - obFrom) + 20);
+			y = Math.round(drawHeight - 40 - (drawHeight - 40) / this.momMax * this.mom[c] + 20);
+			coords += " " + x + " " + y;
+			//console.log(coords);
+		}
+		
+		engineDraw.polyline(coords).fill("none").stroke({width: 1});
 	};
 	
-	this.drawGears = function(draw) {
-		//for (var c = 0; c < this.gearCols; c++)
-		//	this.gears[c].draw(draw);
+	this.drawGears = function() {
+		
+		if (!svgExists)
+			return;
+		
+		clearGearsDraw();
+		for (var c = 0; c < this.gearCols; c++)
+			this.gears[c].drawGear();
 	};
 	
 	this.findCross = function() {
@@ -386,7 +524,7 @@ function Gear(num, parent) {
 	this.gearNumber = num;
 	this.parent = parent;
 	
-    console.log("start create gear #" + this.gearNumber + " rank=" + rank);
+    //console.log("start create gear #" + this.gearNumber + " rank=" + rank);
 		
     this.ob = new Array(rank);
     this.mom = new Array(rank);
@@ -399,12 +537,37 @@ function Gear(num, parent) {
 		for (k = 0; k <= rank; k++) {
 			this.ob[k] = this.parent.ob[k] / gearNumbers[this.gearNumber] / gearMain * 60.0 * 3.14 * this.parent.wheelDiametr / 1000.0; // x
 			
+			if (this.parent.obGearsMin == -1)
+				this.parent.obGearsMin = this.ob[k];
+			else
+				if (this.parent.obGearsMin > this.ob[k])
+					this.parent.obGearsMin = this.ob[k];
+			
+			if (this.parent.obGearsMax == -1)
+				this.parent.obGearsMax = this.ob[k];
+			else
+				if (this.parent.obGearsMax < this.ob[k])
+					this.parent.obGearsMax = this.ob[k];
+			
 			if (this.parent.mom[k] == 0.0) {
 				this.mom[k] = 0.0;
 				continue;
 			}
 			
 			this.mom[k] = this.parent.mom[k] * gearNumbers[this.gearNumber] * gearMain / 4.0 / this.parent.wheelDiametr; // y
+			
+			if (this.parent.momGearsMin == -1)
+				this.parent.momGearsMin = this.mom[k];
+			else
+				if (this.parent.momGearsMin > this.mom[k])
+					this.parent.momGearsMin = this.mom[k];
+			
+			if (this.parent.momGearsMax == -1)
+				this.parent.momGearsMax = this.mom[k];
+			else
+				if (this.parent.momGearsMax < this.mom[k])
+					this.parent.momGearsMax = this.mom[k];
+			
 			//console.log("gearNumbers=" + gearNumbers[this.gearNumber] + "; wheelDiametr=" + this.parent.wheelDiametr + "; k=" + k + "; parent.mom=" + this.parent.mom[k] + "; ob[k]=" + this.ob[k] + "; mom[k]=" + this.mom[k]);
 			//console.log(this.wheelDiametr + " - " + this.mom[k]);
 			if (c == 1)
@@ -418,83 +581,31 @@ function Gear(num, parent) {
 		
 	this.drawGear = function() {
 		
-		for (var c = 0; c <= rank; c++)
-			console.log(this.ob[c] + " - " + this.mom[c]);
+		var coords = "";
+		var x, y;
+		
+		if (!svgExists)
+			return;
+		
+		//console.log("start drawing gear #" + this.gearNumber);
+		for (var c = 0; c <= rank; c++) {
+			if (this.mom[c] == 0.0)
+				continue;
+			//console.log("min=" + this.parent.obGearsMin + "; max=" + this.parent.obGearsMax);
+			//console.log("max of mom - " + this.momMax);
+			x = Math.round((drawWidth - 40) / (this.parent.obGearsMax - this.parent.obGearsMin) * (this.ob[c] - this.parent.obGearsMin) + 20);
+			y = Math.round(drawHeight - 40 - (drawHeight - 40) / (this.parent.momGearsMax - this.parent.momGearsMin) * (this.mom[c] - this.parent.momGearsMin) + 20);
+			coords += " " + x + " " + y;
+			//console.log(coords);
+		}
+		
+		gearsDraw.polyline(coords).fill("none").stroke({width: 1});
 		
 	};
 		
 	this.interpol = function() { // interpolation of 3 power spline
 		
-		var h = new Array(obCols);
-		var l = new Array(obCols);
-		var lambda = new Array(obCols);
-		var delta = new Array(obCols);
-		var b = new Array(obCols);
-		var c = new Array(obCols);
-		var d = new Array(obCols);
-			
-		// h & l
-		var k, cc, x, prevIndex;
-			
-		//console.log("second index=" + this.secondIndex);
-		
-		prevIndex = 0;
-		k = 1;
-		for (cc = this.secondIndex; cc <= rank; cc++) {
-			if (this.mom[cc] == 0.0)
-				continue;
-			h[k] = this.ob[cc] - this.ob[prevIndex];
-			//console.log(k + " - h=" + h[k] + "; ob[cc]=" + this.ob[cc] + "; ob[prevIndex]=" + this.ob[prevIndex]);
-			if (h[k] == 0) {
-				alert("Ошибка интерполяции: x[" + this.ob[cc] + "]=x[" + this.ob[prevIndex] + "] - продолжение невозможно!");
-				return;
-			}
-			l[k] = (this.mom[cc] - this.mom[prevIndex]) / h[k];
-			//console.log(k + " - l=" + l[k]);
-			prevIndex = cc;
-			k++;
-		}
-		
-		// delta & lambda
-		delta[1] = - h[2] / (2.0 * (h[1] + h[2]));
-		lambda[1] = 1.5 * (l[2] - l[1]) / (h[1] + h[2]);
-		//console.log("delta=" + this.delta[1]);
-		//console.log("lambda=" + this.lambda[1]);
-		for (k = 3; k < obCols; k++) {
-			delta[k - 1] = - h[k] / (2.0 * h[k - 1] + 2.0 * h[k] + h[k - 1] * delta[k - 2]);
-			lambda[k - 1] = (3.0 * l[k] - 3.0 * l[k - 1] - h[k - 1] * lambda[k - 2]) /
-				(2.0 * h[k - 1] + 2.0 * h[k] + h[k - 1] * delta[k - 2]);
-			//console.log("delta=" + delta[k-1]);
-			//console.log("lambda=" + lambda[k-1]);
-		}
-		
-		// c, b & d
-		c[0] = 0;
-		c[obCols - 1] = 0;
-		for (k = obCols - 1; k >= 2; k--) {
-			c[k - 1] = delta[k - 1] * c[k] + lambda[k - 1];
-			//console.log(k + " - c=" + this.c[k-1]);
-		}
-		for (k = 1; k < obCols; k++) {
-			d[k] = (c[k] - c[k - 1]) / (3.0 * h[k]);
-			b[k] = l[k] + (2.0 * c[k] * h[k] + h[k] * c[k-1]) / 3.0;
-			//console.log(k + " - b=" + this.b[k]);
-			//console.log(k + " - d=" + this.d[k]);
-		}
-		
-		// interpolation
-		prevIndex = rank;
-		k = obCols - 1;
-		for (cc = rank - 1; cc > 0; cc--) {
-			if (this.mom[cc] != 0.0) {
-				k--;
-				prevIndex = cc;
-				continue;
-			}
-			x = this.ob[cc] - this.ob[prevIndex];
-			this.mom[cc] = this.mom[prevIndex] + b[k] * x + c[k] * x * x + d[k] * x * x * x;
-			//console.log(cc + " - mom=" + this.mom[cc] + "; x=" + x + "; b=" + b[k] + "; c=" + c[k] + "; d=" + d[k]);
-		}
+		interpolSpline3(this.ob, this.mom, this.secondIndex);
 		
 	};
 
