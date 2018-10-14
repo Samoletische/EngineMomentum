@@ -1,26 +1,26 @@
 /**
  * 
  */
-var obFrom = 2000, obTo = 9000, obCols = 15, interpolStep = 50, gearCols = 5;
-var moms = [92, 92, 101, 108, 120, 132, 134, 136, 133, 132, 125, 117, 107, 88, 56];
-var gearNumbers = [2.92, 2.05, 1.56, 1.31, 1.13];
+var obFrom, obTo, obCols, gearCols, gearMain, interpolStep, rank;
+var wheelWidth, wheelHeight, wheelDisk;
+var crossMethod = 0; // 0-linear, 1-polynomial
+var obs = [];
+var moms = [];
+var gearNumbers = [];
 var engine;
+var engineDraw, gearsDraw;
 
 $(function() {
-	engine = new Engine();
 
-	createObTable();
-	createGearTable();
+	initialize();
 	
 	$("#obFrom").change(function() {
 		obFrom = $(this).val();
-		engine.rank = engine.getRank();
 		createObTable();
 	});
 	
 	$("#obTo").change(function() {
 		obTo = $(this).val();
-		engine.rank = engine.getRank();
 		createObTable();
 	});
 	
@@ -36,183 +36,214 @@ $(function() {
 	
 	$("#interpolStep").change(function() {
 		interpolStep = $(this).val();
-		engine.rank = engine.getRank();
 		createObTable();
 	});
 	
 	$("#gearCols").change(function() {
-		engine.gearCols = $(this).val();
+		gearCols = $(this).val();
 		createGearTable();
+	});
+	
+	$("#gearMain").change(function() {
+		gearMain = parseFloat($(this).val());
+	});
+	
+	$("#wheelWidth").change(function() {
+		wheelWidth = parseFloat($(this).val());
+	});
+	
+	$("#wheelHeight").change(function() {
+		wheelHeight = parseFloat($(this).val());
+	});
+	
+	$("#wheelDisk").change(function() {
+		wheelDisk = parseFloat($(this).val());
 	});
 	
 	$("#bWOutInterpol").click(wOutInterpol);
 	$("#bWInterpol").click(wInterpol);
 	$("#bLine").click(crossLine);
 	$("#bPoly").click(crossPoly);
+	
 }); // start
 //------------------------------------------------------
 
-function Engine() {
-	//console.log("start create engine");
+function initialize() {
 	
-	this.gears = [];
-	this.gearCols = $("#gearCols").val();
-	this.wheelDiametr = 0;
-	this.crossMethod = 0; // 0-linear, 1-polynomial
+	obFrom = 2000;
+	$("#obFrom").val(obFrom);
 
-	this.getRank = function() {
-		//console.log("start get rank");
-		this.rank = Math.round((obTo - obFrom) / interpolStep);
-		//console.log("end get rank=" + this.rank);
-	};
+	obTo = 9000;
+	$("#obTo").val(obTo);
+
+	obCols = 15;
+	$("#obCols").val(obCols);
 	
-	this.rank = this.getRank();
+	gearCols = 5;
+	$("#gearCols").val(gearCols);
 	
-	this.calcWheelDiametr = function() {
+	gearMain = 4.9;
+	$("#gearMain").val(gearMain);
+	
+	interpolStep = 50;
+	$("#interpolStep").val(interpolStep);
+	
+	
+	wheelWidth = 185;
+	$("#wheelWidth").val(wheelWidth);
+	wheelHeight = 70;
+	$("#wheelHeight").val(wheelHeight);
+	wheelDisk = 14;
+	$("#wheelDisk").val(wheelDisk);
+	
+	obs = [2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000];
+	moms = [92, 92, 101, 108, 120, 132, 134, 136, 133, 132, 125, 117, 107, 88, 56];
+	gearNumbers = [2.92, 2.05, 1.56, 1.31, 1.13];
+	
+	createObTable();
+	createGearTable();
+	
+	engineDraw = SVG("engineDraw").size("100%", 600);
+	gearsDraw = SVG("gearsDraw").size("100%", 600);
+	
+}
+//------------------------------------------------------
+
+function getRank() {
+	
+	//console.log("start get rank");
+	rank = Math.round((obTo - obFrom) / interpolStep);
+	//console.log("end get rank=" + rank);
+	
+}
+//------------------------------------------------------
+
+function roundForInterpol(value) {
+	
+	var result = Math.round(value / interpolStep) * interpolStep;
+	return result > obTo ? obTo : result;
+	
+} // roundForInterpol
+//------------------------------------------------------
+
+function createObTable() {
+	
+	var html = "<table class='table table-bordered'>";
+	var header = "";
+	var body = "";
+	var obStep = parseFloat((obTo - obFrom) / (obCols - 1.0));
+	console.log(obStep);
+	var obCurr;
+	var c;
+
+	getRank();
+	obs.length = obCols;
+	moms.length = obCols;
+	
+	header = "<tr><th>Обороты</th>";
+	body = "</tr><tr><td>Момент</td>";
+	obCurr = obFrom;
+	for (c = 0; c < obCols; c++) {
+		obs[c] = roundForInterpol(obCurr);
+		header += "<th id='ob" + c + "'>" + obs[c] + "</th>";
+		body += "<td><input id='mom" + c + "' type='number' value='" + moms[c] + "'></td>";
+		obCurr += obStep;
+      //console.log(obCurr);
+	}
+	
+	html += header + "</tr>" + body + "</tr></table>";
+	
+	$("#obTable").html(html);
+	
+} // createObTable
+//------------------------------------------------------
+
+function createGearTable() {
+	
+	var html = "<table class='table table-bordered'>";
+	var header = "";
+	var body = "";
+	var gearCurr = 0;
+	
+	gearNumbers.length = gearCols;
+	
+	header = "<tr><th>Передача</th>";
+	body = "<tr><td>Передаточное число</td>";
+	for (gearCurr = 1; gearCurr <= gearCols; gearCurr++) {
+		header += "<th>" + gearCurr + "</th>";
+		body += "<td><input id='gearNumber" + (gearCurr - 1) + "' type='number' value='" + gearNumbers[gearCurr - 1] + "'></td>";
+	}
+	html += header + "</tr>" + body + "</tr></table>";
+	
+	$("#gearTable").html(html);
+	
+} // createGearTable
+//------------------------------------------------------
+
+function Engine() {
+	
+	//console.log("start create engine");
+	this.gears = [];
+	
+	this.getWheelDiametr = function() {
+		
 		//console.log("start calc calcWheelDiametr");
-		var wheelWidth = parseFloat($("#wheelWidth").val());
-		var wheelHeight = parseFloat($("#wheelHeight").val());
-		var wheelDisk = parseFloat($("#wheelDisk").val());
-	
-		this.wheelDiametr = (wheelWidth * wheelHeight * 2.0 / 100.0 + 25.4 * wheelDisk) / 1000.0;
-		//console.log("end calc calcWheelDiametr. wheelDiametr = " + this.wheelDiametr);
+		return (wheelWidth * wheelHeight * 2.0 / 100.0 + 25.4 * wheelDisk) / 1000.0;
+		console.log("end calc calcWheelDiametr. wheelDiametr = " + this.wheelDiametr);
+		
 	};
 	
-	this.Gear = function(num, rank, wheelDiametr) {
-      this.rank = rank;
-      this.wheelDiametr = wheelDiametr;
-		console.log("start create gear #" + num + " rank=" + this.rank);
+	this.createGears = function() {
 		
-		var c, k, obCurr;
+		this.gears = new Array(this.gearCols);
+		//console.log("start create gears");
+		//this.getRank();
+		//console.log("rank=" + rank);
+		//this.calcWheelDiametr();
+		//console.log(this.gearCols);
+		for (var c = 0; c < this.gearCols; c++)
+			this.gears[c] = new Gear(c, this);
 		
-		// initialization
-		this.ob = new Array(this.rank);
-		this.mom = new Array(this.rank);
+	};
+	
+	this.initialize = function() {
 		
-		this.h = new Array(obCols);
-		this.l = new Array(obCols);
-		this.lambda = new Array(obCols);
-		this.delta = new Array(obCols);
-		this.b = new Array(obCols);
-		this.c = new Array(obCols);
-		this.d = new Array(obCols);
-		this.secondIndex = 1;
+		this.gearCols = gearNumbers.length;
+		this.ob = new Array(rank);
+		this.mom = new Array(rank);
+		this.wheelDiametr = this.getWheelDiametr();
 		
-		// implementation
-		c = 0;
-		obCurr = obFrom;
-		obC = parseFloat($("#ob0").text());
-		for (k = 0; k <= this.rank; k++) {
-			this.ob[k] = obCurr / parseFloat($("#gearNumber"+num).val()) / parseFloat($("#gearMain").val()) * 60.0 * 3.14 * this.wheelDiametr / 1000.0; // x
+		var c = 0;
+		obCurr = obs[0];
+		obC = obCurr;
+		for (k = 0; k <= rank; k++) {
+			this.ob[k] = obCurr; // x for draw
 			
 			if (obC != obCurr) {
 				obCurr += interpolStep;
 				this.mom[k] = 0.0;
-				//this.mom[k] = "null";
 				continue;
 			}
 			
-			this.mom[k] = $("#mom"+c).val() * $("#gearNumber"+num).val() * $("#gearMain").val() / 4.0 / this.wheelDiametr; // y
+			this.mom[k] = moms[c]; // y for draw
 			//console.log("obC=" + obC + "; c=" + c + "; k=" + k + "; obCurr=" + obCurr + "; ob[k]=" + this.ob[k] + "; mom[k]=" + this.mom[k]);
-			//console.log(this.wheelDiametr + " - " + this.mom[k]);
-			if (c == 1)
-				this.secondIndex = k;
+			
 			obCurr += interpolStep;
 			c++;
-			obC = parseFloat($("#ob"+c).text());
+			obC = obs[c];
 		}
 		
-		// draw
-		this.draw = function() {
-			for (var c = 0; c <= this.rank; c++)
-				console.log(this.ob[c] + " - " + this.mom[c]);
-		};
+		this.createGears();
 		
-		// interpolation
-		this.interpol = function() {
-			// interpolation of 3 power spline
-			// h & l
-			var k, c, x, prevIndex;
-			
-			//console.log("second index=" + this.secondIndex);
-			prevIndex = 0;
-			k = 1;
-			for (c = this.secondIndex; c <= this.rank; c++) {
-				if (this.mom[c] == 0.0)
-				//if (this.mom[c] == "null")
-					continue;
-				this.h[k] = this.ob[c] - this.ob[prevIndex];
-				//console.log(k + " - h=" + this.h[k]);
-				if (this.h[k] == 0) {
-					alert("Ошибка интерполяции: x[" + this.ob[c] + "]=x[" + this.ob[prevIndex] + "] - продолжение невозможно!");
-					return;
-				}
-				this.l[k] = (this.mom[c] - this.mom[prevIndex]) / this.h[k];
-				//console.log(k + " - l=" + this.l[k]);
-				prevIndex = c;
-				k++;
-			}
-			
-			// delta & lambda
-			this.delta[1] = - this.h[2] / (2.0 * (this.h[1] + this.h[2]));
-			this.lambda[1] = 1.5 * (this.l[2] - this.l[1]) / (this.h[1] + this.h[2]);
-			//console.log("delta=" + this.delta[1]);
-			//console.log("lambda=" + this.lambda[1]);
-			for (k = 3; k < obCols; k++) {
-				this.delta[k - 1] = - this.h[k] / (2.0 * this.h[k - 1] + 2.0 * this.h[k] + this.h[k - 1] * this.delta[k - 2]);
-				this.lambda[k - 1] = (3.0 * this.l[k] - 3.0 * this.l[k - 1] - this.h[k - 1] * this.lambda[k - 2]) /
-					(2.0 * this.h[k - 1] + 2.0 * this.h[k] + this.h[k - 1] * this.delta[k - 2]);
-				//console.log("delta=" + this.delta[k-1]);
-				//console.log("lambda=" + this.lambda[k-1]);
-			}
-			
-			// c, b & d
-			this.c[0] = 0;
-			this.c[obCols - 1] = 0;
-			for (k = obCols - 1; k >= 2; k--) {
-				this.c[k - 1] = this.delta[k - 1] * this.c[k] + this.lambda[k - 1];
-				//console.log(k + " - c=" + this.c[k-1]);
-			}
-			for (k = 1; k < obCols; k++) {
-				this.d[k] = (this.c[k] - this.c[k - 1]) / (3.0 * this.h[k]);
-				this.b[k] = this.l[k] + (2.0 * this.c[k] * this.h[k] + this.h[k] * this.c[k-1]) / 3.0;
-				//console.log(k + " - b=" + this.b[k]);
-				//console.log(k + " - d=" + this.d[k]);
-			}
-			
-			// interpolation
-			prevIndex = this.rank;
-			k = obCols - 1;
-			for (c = this.rank - 1; c > 0; c--) {
-				if (this.mom[c] != 0.0) {
-				//if (this.mom[c] != "null") {
-					k--;
-					prevIndex = c;
-					continue;
-				}
-				x = this.ob[c] - this.ob[prevIndex];
-				this.mom[c] = this.mom[prevIndex] + this.b[k] * x + this.c[k] * x * x + this.d[k] * x * x * x;
-				//console.log(c + " - mom=" + this.mom[c]);
-			}
-			
-			//this.draw();
-		};
-	} // Gear
-	
-	this.createGears = function() {
-		//console.log("start create gears");
-      this.getRank();
-		//console.log("rank=" + this.rank);
-		this.calcWheelDiametr();
-		//console.log(this.gearCols);
-		for (var c = 0; c < this.gearCols; c++)
-			this.gears[c] = new this.Gear(c, this.rank, this.wheelDiametr);
 	};
 	
+	this.initialize();
+	
 	this.interpol = function() {
-		this.createGears();
+		
 		for (var c = 0; c < this.gearCols; c++)
 			this.gears[c].interpol();
+		
 	}
 	
 	this.drawMomentum = function() {
@@ -224,21 +255,23 @@ function Engine() {
 	};
 	
 	this.findCross = function() {
-		var gz = [];
+		
 		var lastC;
 		var sResult = "";
+		var oborot;
 		
 		// find point between which exists cross 
 		for (var k = 1; k < this.gearCols; k++) {
 			lastC = 0;
-			//console.log("interval #" + (k-1) + " rank=" + this.rank);
-			for (var c = 1; c <= this.rank; c++) {
+			oborot = -1;
+			//console.log("interval #" + (k-1) + " rank=" + rank);
+			for (var c = 1; c <= rank; c++) {
 				if (this.gears[k].mom[c] == 0.0)
 					continue;
 
 				// find crossing interval of ob previous Gears
 				lastCC = 0;
-				for (var cc = 1; cc <= this.rank; cc++) {
+				for (var cc = 1; cc <= rank; cc++) {
 					if (this.gears[k-1].mom[cc] == 0.0)
 						continue;
 					
@@ -254,7 +287,7 @@ function Engine() {
 				
 					// found this interval
 					crossExists = (this.gears[k-1].mom[lastCC] > this.gears[k].mom[lastC]) != (this.gears[k-1].mom[cc] > this.gears[k].mom[c]);
-					console.log("cross result = " + crossExists);
+					//console.log("cross result = " + crossExists);
 					if (crossExists) {
 						res = this.findCrossPoint(
 								this.gears[k-1].ob[lastCC],
@@ -266,10 +299,9 @@ function Engine() {
 								this.gears[k].ob[c],
 								this.gears[k].mom[c],
 								0);
-						console.log(res.x + " -===- " + res.y);
+						//console.log(res.x + " -===- " + res.y);
 						if (res.x != 0.0) {
-							sResult += sResult == "" ? "" : "<br />";
-							sResult += "Точка пересечения между " + k + " и " + (k + 1) + " передачами, (об; момент) = (" + res.x + ";" + res.	y + ")";
+							oborot = Math.round(res.x / 60.0 / 3.14 / this.wheelDiametr * gearMain * gearNumbers[k-1] * 1000.0);
 							break;
 						}
 					}
@@ -279,9 +311,34 @@ function Engine() {
 					break;
 				lastC = c;
 			}
+			
+			// if gears not crossing, find value (y) of greater gear from last oborot (x) of lesser gear  
+			if (!crossExists) {
+				lastC = 0;
+				for (var c = 1; c <= rank; c++) {
+					if (this.gears[k].mom[cc] == 0.0)
+						continue;
+					
+					if ((this.gears[k].ob[lastC] <= this.gears[k-1].ob[rank]) && (this.gears[k-1].ob[rank] <= this.gears[k].ob[c])) {
+						oborot = Math.round(this.gears[k-1].ob[rank] / 60.0 / 3.14 / this.wheelDiametr * gearMain * gearNumbers[k-1] * 1000.0);
+						break;
+					}
+				}
+			}
+			
+			if (oborot != -1) {
+				sResult += sResult == "" ? "" : "<br />";
+				sResult += "С " + k + " передачи на " + (k + 1) + " передачу следует переключаться при " + oborot + " оборотах двигателя";
+			}
+			else {
+				sResult += sResult == "" ? "" : "<br />";
+				sResult += "Между " + k + " передачей и " + (k + 1) + " передачей нет ни пересечений, ни вообще общих интервалов оборотов двигателя";
+			}
+				
 		}
 		
-		$("#resTable").html(sResult);
+		return sResult;
+		
 	};
 		
 	this.findCrossPoint = function(x11, y11, x12, y12, x21, y21, x22, y22, method) {
@@ -313,91 +370,170 @@ function Engine() {
 				if ((Math.min(x11, x21) > x) || (x > Math.max(x12, x22)))
 					x = 0.0;
 				
-				console.log(x11 + ", " + x21 + " <= " + x + " <= " + x12 + ", " + x22);
+				//console.log(x11 + ", " + x21 + " <= " + x + " <= " + x12 + ", " + x22);
 				
 				break;
 		};
 		
 		return {"x": x, "y": y};
 	};
+	
  } // Engine
 //------------------------------------------------------
 
-function createObTable() {
-	var html = "<table class='table table-bordered'>";
-	var header = "";
-	var body = "";
-	var obStep = parseFloat((obTo - obFrom) / (obCols - 1.0));
-	var obCurr = 0;
-	var c = 0;
+function Gear(num, parent) {
 	
-	header = "<tr><th>Обороты</th>";
-	body = "</tr><tr><td>Момент</td>";
-	obCurr = obFrom;
-	for (c = 0; c < obCols; c++) {
-		header += "<th id='ob" + c + "'>" + roundForInterpol(obCurr) + "</th>";
-		body += "<td><input id='mom" + c + "' type='number' value='" + moms[c] + "'></td>";
-		obCurr += obStep; 
-	}
+	this.gearNumber = num;
+	this.parent = parent;
 	
-	html += header + "</tr>" + body + "</tr></table>";
+    console.log("start create gear #" + this.gearNumber + " rank=" + rank);
+		
+    this.ob = new Array(rank);
+    this.mom = new Array(rank);
+    
+	var c, k, obCurr;
 	
-	$("#obTable").html(html);
-} // createObTable
-//------------------------------------------------------
+	this.initialize = function() {
+		
+		var c = 0;
+		for (k = 0; k <= rank; k++) {
+			this.ob[k] = this.parent.ob[k] / gearNumbers[this.gearNumber] / gearMain * 60.0 * 3.14 * this.parent.wheelDiametr / 1000.0; // x
+			
+			if (this.parent.mom[k] == 0.0) {
+				this.mom[k] = 0.0;
+				continue;
+			}
+			
+			this.mom[k] = this.parent.mom[k] * gearNumbers[this.gearNumber] * gearMain / 4.0 / this.parent.wheelDiametr; // y
+			//console.log("gearNumbers=" + gearNumbers[this.gearNumber] + "; wheelDiametr=" + this.parent.wheelDiametr + "; k=" + k + "; parent.mom=" + this.parent.mom[k] + "; ob[k]=" + this.ob[k] + "; mom[k]=" + this.mom[k]);
+			//console.log(this.wheelDiametr + " - " + this.mom[k]);
+			if (c == 1)
+				this.secondIndex = k;
+			c++;
+		}
+		
+	};
+	
+	this.initialize();
+		
+	this.drawGear = function() {
+		
+		for (var c = 0; c <= rank; c++)
+			console.log(this.ob[c] + " - " + this.mom[c]);
+		
+	};
+		
+	this.interpol = function() { // interpolation of 3 power spline
+		
+		var h = new Array(obCols);
+		var l = new Array(obCols);
+		var lambda = new Array(obCols);
+		var delta = new Array(obCols);
+		var b = new Array(obCols);
+		var c = new Array(obCols);
+		var d = new Array(obCols);
+			
+		// h & l
+		var k, cc, x, prevIndex;
+			
+		//console.log("second index=" + this.secondIndex);
+		
+		prevIndex = 0;
+		k = 1;
+		for (cc = this.secondIndex; cc <= rank; cc++) {
+			if (this.mom[cc] == 0.0)
+				continue;
+			h[k] = this.ob[cc] - this.ob[prevIndex];
+			//console.log(k + " - h=" + h[k] + "; ob[cc]=" + this.ob[cc] + "; ob[prevIndex]=" + this.ob[prevIndex]);
+			if (h[k] == 0) {
+				alert("Ошибка интерполяции: x[" + this.ob[cc] + "]=x[" + this.ob[prevIndex] + "] - продолжение невозможно!");
+				return;
+			}
+			l[k] = (this.mom[cc] - this.mom[prevIndex]) / h[k];
+			//console.log(k + " - l=" + l[k]);
+			prevIndex = cc;
+			k++;
+		}
+		
+		// delta & lambda
+		delta[1] = - h[2] / (2.0 * (h[1] + h[2]));
+		lambda[1] = 1.5 * (l[2] - l[1]) / (h[1] + h[2]);
+		//console.log("delta=" + this.delta[1]);
+		//console.log("lambda=" + this.lambda[1]);
+		for (k = 3; k < obCols; k++) {
+			delta[k - 1] = - h[k] / (2.0 * h[k - 1] + 2.0 * h[k] + h[k - 1] * delta[k - 2]);
+			lambda[k - 1] = (3.0 * l[k] - 3.0 * l[k - 1] - h[k - 1] * lambda[k - 2]) /
+				(2.0 * h[k - 1] + 2.0 * h[k] + h[k - 1] * delta[k - 2]);
+			//console.log("delta=" + delta[k-1]);
+			//console.log("lambda=" + lambda[k-1]);
+		}
+		
+		// c, b & d
+		c[0] = 0;
+		c[obCols - 1] = 0;
+		for (k = obCols - 1; k >= 2; k--) {
+			c[k - 1] = delta[k - 1] * c[k] + lambda[k - 1];
+			//console.log(k + " - c=" + this.c[k-1]);
+		}
+		for (k = 1; k < obCols; k++) {
+			d[k] = (c[k] - c[k - 1]) / (3.0 * h[k]);
+			b[k] = l[k] + (2.0 * c[k] * h[k] + h[k] * c[k-1]) / 3.0;
+			//console.log(k + " - b=" + this.b[k]);
+			//console.log(k + " - d=" + this.d[k]);
+		}
+		
+		// interpolation
+		prevIndex = rank;
+		k = obCols - 1;
+		for (cc = rank - 1; cc > 0; cc--) {
+			if (this.mom[cc] != 0.0) {
+				k--;
+				prevIndex = cc;
+				continue;
+			}
+			x = this.ob[cc] - this.ob[prevIndex];
+			this.mom[cc] = this.mom[prevIndex] + b[k] * x + c[k] * x * x + d[k] * x * x * x;
+			//console.log(cc + " - mom=" + this.mom[cc] + "; x=" + x + "; b=" + b[k] + "; c=" + c[k] + "; d=" + d[k]);
+		}
+		
+	};
 
-function roundForInterpol(value) {
-	var result = Math.round(value / interpolStep) * interpolStep;
-	return result > obTo ? obTo : result; 
-} // roundForInterpol
-//------------------------------------------------------
-
-function createGearTable() {
-	var html = "<table class='table table-bordered'>";
-	var header = "";
-	var body = "";
-	var gearCurr = 0;
-	
-	header = "<tr><th>Передача</th>";
-	body = "<tr><td>Передаточное число</td>";
-	for (gearCurr = 1; gearCurr <= gearCols; gearCurr++) {
-		header += "<th>" + gearCurr + "</th>";
-		body += "<td><input id='gearNumber" + (gearCurr - 1) + "' type='number' value='" + gearNumbers[gearCurr - 1] + "'></td>";
-	}
-	html += header + "</tr>" + body + "</tr></table>";
-	
-	$("#gearTable").html(html);
-} // createGearTable
+} // Gear
 //------------------------------------------------------
 
 function wOutInterpol() {
-   engine.createGears();
-   engine.drawMomentum();
-   engine.drawGears();
+	
+	engine = new Engine();
+	engine.drawMomentum();
+	engine.drawGears();
+	
 } // wOutInterpol
 //------------------------------------------------------
 
 function wInterpol() {
-   engine.interpol();
-   engine.drawMomentum();
-   engine.drawGears();
+	
+	engine = new Engine();
+	engine.interpol();
+	engine.drawMomentum();
+	engine.drawGears();
+	
 } // wInterpol
 //------------------------------------------------------
 
 function crossLine() {
-   engine.crossMethod = 0;
-   engine.findCross();
+	
+	engine.crossMethod = 0;
+	sResult = engine.findCross();
+	$("#resTable").html(sResult);
+	
 } // crossLine
 //------------------------------------------------------
 
 function crossPoly() {
-   engine.crossMethod = 1;
-   engine.findCross();
+	
+	engine.crossMethod = 1;
+	sResult = engine.findCross();
+	$("#resTable").html(sResult);
+	
 } // crossPoly
-//------------------------------------------------------
-
-function drawFunctions() {
-	var draw = SVG("drawing").size("100%", 600);
-	var rect = draw.rect(100, 100).move(100, 50).attr({ fill: '#004411'});
-} // drawFunctions
 //------------------------------------------------------
