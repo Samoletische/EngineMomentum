@@ -5,7 +5,7 @@
 }
 
 .paramCaption {
-	text-align: right;
+	text-align: left;
 	font-weight: bold;
 }
 
@@ -15,8 +15,8 @@
 }
 
 .paramValue input {
-	width: 100%;
-	text-align: right;
+	width: 60px;
+	text-align: left;
 }
 
 td input {

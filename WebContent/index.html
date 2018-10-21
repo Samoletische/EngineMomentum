@@ -8,79 +8,81 @@
 		<title>Двигатель</title>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-		<link rel="stylesheet" href="em.css">
+		<link rel="stylesheet" href="style.css">
 	</head>
 	<body>
-		<div class="row">
-			<div id="header" class="col-md-12 bg-success"><h1>Параметры двигателя</h1></div>
-		</div>
-		<div class="row">
-			<div class="paramCaption col-md-8 col-md-offset-2">
-				<div class="row">
-					<div class="paramCaption col-md-3">Диапазон оборотов двигателя</div>
-					<div class="paramValue col-md-4">от<br/><input id="obFrom" type="number" value=""></div>
-					<div class="paramValue col-md-4">до<br /><input id="obTo" type="number" value=""></div>
-				</div>
-				<div class="row">
-					<div class="paramCaption col-md-3">Параметры диапазона</div>
-					<div class="paramValue col-md-4">Количество значений, шт.<br /><input id="obCols" type="number" value=""></div>
-					<div class="paramValue col-md-4">Шаг интерполяции, об.<br /><input id="interpolStep" type="number" value=""></div>
-				</div>
+		<div class="container-fluid">
+			<div class="row">
+				<div id="header" class="col-xs-12 bg-success"><h1>Параметры двигателя</h1></div>
 			</div>
-		</div>
-		<div class="row">
-			<div id="obTable" class="col-md-12"></div>
-		</div>
-		<div class="row">
-			<div class="paramCaption col-md-8 col-md-offset-2">
-				<div class="row">
-					<div class="paramCaption col-md-3">Количество передач</div>
-					<div class="paramValue col-md-4"><input id="gearCols" type="number" value=""></div>
-				</div>
-				<div class="row">
-					<div class="paramCaption col-md-3">Главное передаточное число</div>
-					<div class="paramValue col-md-4"><input id="gearMain" type="number" value=""></div>
+			<div class="row">
+				<div class="paramCaption col-xs-12">
+					<div class="row">
+						<div class="paramCaption col-xs-2">Диапазон оборотов, об.</div>
+						<div class="paramValue col-xs-3">
+							от <input id="obFrom" type="number" value="">
+							до <input id="obTo" type="number" value="">
+						</div>
+						<div class="paramCaption col-xs-3">Количество значений, шт.</div>
+						<div class="paramValue col-xs-4"><input id="obCols" type="number" value=""></div>
+						<!-- div class="paramValue col-md-4">Шаг интерполяции, об.<br /><input id="interpolStep" type="number" value=""></div-->
+					</div>
 				</div>
 			</div>
-		</div>
-		<div class="row">
-			<div id="gearTable" class="col-md-12"></div>
-		</div>
-		<div class="row">
-			<div class="paramCaption col-md-3">Параметры колеса</div>
-			<div class="paramValue col-md-3">Ширина шины, мм: <input id="wheelWidth" type="number" value=""></div>
-			<div class="paramValue col-md-3">Высота шины, %: <input id="wheelHeight" type="number" value=""></div>
-			<div class="paramValue col-md-3">Диск, дюйм: <input id="wheelDisk" type="number" value=""></div>
-		</div>
-		<hr>
-		<div class="row">
-			<div class="col-md-3">
-				<button id="bWOutInterpol">Начертить исходные данные >></button>
+			<div class="row">
+				<div id="obTable" class="col-md-12"></div>
 			</div>
-			<div class="col-md-3">
-				<button id="bWInterpol">Начертить после интерполяции >></button>
+			<div class="row">
+				<div class="paramCaption col-md-8 col-md-offset-2">
+					<div class="row">
+						<div class="paramCaption col-md-3">Количество передач</div>
+						<div class="paramValue col-md-4"><input id="gearCols" type="number" value=""></div>
+					</div>
+					<div class="row">
+						<div class="paramCaption col-md-3">Главное передаточное число</div>
+						<div class="paramValue col-md-4"><input id="gearMain" type="number" value=""></div>
+					</div>
+				</div>
 			</div>
-			<div class="col-md-3">
-				<button id="bLine">Рассчитать пересечения линейно >></button>
+			<div class="row">
+				<div id="gearTable" class="col-md-12"></div>
 			</div>
-			<!--div class="col-md-3">
-				<button id="bPoly">Рассчитать пересечения полиномом >></button>
-			</div-->
-		</div>
-		<div class="row">
-			<div id="resTable" class="col-md-7"></div>
-		</div>
-		<div class="row">
-			<div class="col-md-6">
-				<div id="engineDraw"></div>
+			<div class="row">
+				<div class="paramCaption col-md-3">Параметры колеса</div>
+				<div class="paramValue col-md-3">Ширина шины, мм: <input id="wheelWidth" type="number" value=""></div>
+				<div class="paramValue col-md-3">Высота шины, %: <input id="wheelHeight" type="number" value=""></div>
+				<div class="paramValue col-md-3">Диск, дюйм: <input id="wheelDisk" type="number" value=""></div>
 			</div>
-			<div class="col-md-6">
-				<div id="gearsDraw"></div>
+			<hr>
+			<div class="row">
+				<div class="col-md-3">
+					<button id="bWOutInterpol">Начертить исходные данные >></button>
+				</div>
+				<div class="col-md-3">
+					<button id="bWInterpol">Начертить после интерполяции >></button>
+				</div>
+				<div class="col-md-3">
+					<button id="bLine">Рассчитать пересечения линейно >></button>
+				</div>
+				<!--div class="col-md-3">
+					<button id="bPoly">Рассчитать пересечения полиномом >></button>
+				</div-->
+			</div>
+			<div class="row">
+				<div id="resTable" class="col-md-7"></div>
+			</div>
+			<div class="row">
+				<div class="col-md-6">
+					<div id="engineDraw"></div>
+				</div>
+				<div class="col-md-6">
+					<div id="gearsDraw"></div>
+				</div>
 			</div>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.6.6/svg.min.js"></script>
-		<script type="text/javascript" src="em.js"></script>
+		<script type="text/javascript" src="script.js"></script>
 	</body>
 </html>
