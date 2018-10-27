@@ -1,5 +1,9 @@
 @CHARSET "UTF-8";
 
+.body {
+	font-family: sans;
+}
+
 .header {
 	text-align: center;
 	font-weight: bold; 
@@ -8,6 +12,7 @@
 .paramCaption {
 	text-align: left;
 	font-weight: bold;
+	font-size: 9pt;
 }
 
 .paramValue {
@@ -43,6 +48,6 @@ td input {
 	padding: 3px;
 }
 
-.gearBox {
+.gearBox, .wheelParams {
 	border: 1px solid #ddd;
 }

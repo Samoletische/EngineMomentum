@@ -2,7 +2,9 @@
  * 
  */
 var obFrom, obTo, obCols, gearCols, gearMain, gearCols2, gearMain2, interpolStep, rank;
+var obFinish, obFinish2;
 var wheelWidth, wheelHeight, wheelDisk;
+var wheelWidth2, wheelHeight2, wheelDisk2;
 var crossMethod = 0; // 0-linear, 1-polynomial
 var obs = [];
 var moms = [];
@@ -24,13 +26,11 @@ $(function() {
 		createObTable();
 		refreshResult();
 	});
-	
 	$("#obTo").change(function() {
 		obTo = parseFloat($(this).val());
 		createObTable();
 		refreshResult();
 	});
-	
 	$("#obCols").change(function() {
 		obCols = $(this).val();
 		if (obCols < 4) {
@@ -47,9 +47,12 @@ $(function() {
 		createGearTable(1);
 		refreshResult();
 	});
-	
 	$("#gearMain").change(function() {
 		gearMain = parseFloat($(this).val());
+		refreshResult();
+	});
+	$("#obFinish").change(function() {
+		obFinish = parseFloat($(this).val());
 		refreshResult();
 	});
 	
@@ -58,9 +61,12 @@ $(function() {
 		createGearTable(2);
 		refreshResult();
 	});
-	
 	$("#gearMain2").change(function() {
 		gearMain2 = parseFloat($(this).val());
+		refreshResult();
+	});
+	$("#obFinish2").change(function() {
+		obFinish2 = parseFloat($(this).val());
 		refreshResult();
 	});
 	
@@ -68,14 +74,26 @@ $(function() {
 		wheelWidth = parseFloat($(this).val());
 		refreshResult();
 	});
-	
 	$("#wheelHeight").change(function() {
 		wheelHeight = parseFloat($(this).val());
 		refreshResult();
 	});
-	
 	$("#wheelDisk").change(function() {
 		wheelDisk = parseFloat($(this).val());
+		//console.log("change wheelDisk");
+		refreshResult();
+	});
+	
+	$("#wheelWidth2").change(function() {
+		wheelWidth2 = parseFloat($(this).val());
+		refreshResult();
+	});
+	$("#wheelHeight2").change(function() {
+		wheelHeight2 = parseFloat($(this).val());
+		refreshResult();
+	});
+	$("#wheelDisk2").change(function() {
+		wheelDisk2 = parseFloat($(this).val());
 		//console.log("change wheelDisk");
 		refreshResult();
 	});
@@ -98,11 +116,15 @@ function initialize() {
 	$("#gearCols").val(gearCols);
 	gearMain = 4.9;
 	$("#gearMain").val(gearMain);
+	obFinish = 8000;
+	$("#obFinish").val(obFinish);
 	
 	gearCols2 = 5;
 	$("#gearCols2").val(gearCols2);
 	gearMain2 = 3.9;
 	$("#gearMain2").val(gearMain2);
+	obFinish2 = 7000;
+	$("#obFinish2").val(obFinish2);
 	
 	interpolStep = 50;
 	
@@ -112,6 +134,13 @@ function initialize() {
 	$("#wheelHeight").val(wheelHeight);
 	wheelDisk = 14;
 	$("#wheelDisk").val(wheelDisk);
+	
+	wheelWidth2 = 185;
+	$("#wheelWidth2").val(wheelWidth2);
+	wheelHeight2 = 75;
+	$("#wheelHeight2").val(wheelHeight2);
+	wheelDisk2 = 14;
+	$("#wheelDisk2").val(wheelDisk2);
 	
 	obs = [2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000];
 	moms = [92, 92, 101, 108, 120, 132, 134, 136, 133, 132, 125, 117, 107, 88, 56];
@@ -320,25 +349,25 @@ function interpolSpline3(ob, mom, secondIndex) { // interpolation of 3 power spl
 } // interpolSpline3
 //------------------------------------------------------
 
-function findCrossingGears(gearCols, gears, wheelDiametr, gM, numBox) {
+function findCrossingGears(gearCols, gears, wheelDiametr, gM, numBox, finishRank) {
 	
 	var lastC;
 	var sResult = "";
 	var oborot;
-	var gN = numBox == 1 ? gearNumbers : gearNumbers2;
+	var gN = numBox == 1 ? gearNumbers : gearNumbers2; 
 	
 	// find point between which exists cross 
 	for (var k = 1; k < gearCols; k++) {
 		lastC = 0;
 		oborot = -1;
 		//console.log("interval #" + (k-1) + " rank=" + rank);
-		for (var c = 1; c <= rank; c++) {
+		for (var c = 1; c <= finishRank; c++) {
 			if (gears[k].mom[c] == 0.0)
 				continue;
 
 			// find crossing interval of ob previous Gears
 			lastCC = 0;
-			for (var cc = 1; cc <= rank; cc++) {
+			for (var cc = 1; cc <= finishRank; cc++) {
 				if (gears[k-1].mom[cc] == 0.0)
 					continue;
 				
@@ -398,12 +427,12 @@ function findCrossingGears(gearCols, gears, wheelDiametr, gM, numBox) {
 		// if gears not crossing, find value (y) of greater gear from last oborot (x) of lesser gear  
 		if (oborot == -1) {
 			lastC = 0;
-			for (var c = 1; c <= rank; c++) {
+			for (var c = 1; c <= finishRank; c++) {
 				if (gears[k].mom[cc] == 0.0)
 					continue;
 				
-				if ((gears[k].ob[lastC] <= gears[k-1].ob[rank]) && (gears[k-1].ob[rank] <= gears[k].ob[c])) {
-					oborot = Math.round(gears[k-1].ob[rank] / 60.0 / 3.14 / wheelDiametr * gM * gN[k-1] * 1000.0);
+				if ((gears[k].ob[lastC] <= gears[k-1].ob[finishRank]) && (gears[k-1].ob[finishRank] <= gears[k].ob[c])) {
+					oborot = Math.round(gears[k-1].ob[finishRank] / 60.0 / 3.14 / wheelDiametr * gM * gN[k-1] * 1000.0);
 					break;
 				}
 				
@@ -469,6 +498,15 @@ function findCrossPoint(x11, y11, x12, y12, x21, y21, x22, y22, method) {
 } // findCrossPoint
 //------------------------------------------------------
 
+function fn(x, mx, my) {
+	
+	for (var c = 0; c <= rank; c++)
+		if (mx[c] == x)
+			return my[c];
+	
+}
+//------------------------------------------------------
+
 function clearEngineDraw() {
 	
 	engineDraw.rect(drawWidth, drawHeight).fill("#ddddff");
@@ -490,10 +528,10 @@ function Engine() {
 	this.gears2 = [];
 	this.crossMethod = 0;
 	
-	this.getWheelDiametr = function() {
+	this.getWheelDiametr = function(width, height, disk) {
 		
 		//console.log("start calc calcWheelDiametr");
-		return (wheelWidth * wheelHeight * 2.0 / 100.0 + 25.4 * wheelDisk) / 1000.0;
+		return (width * height * 2.0 / 100.0 + 25.4 * disk) / 1000.0;
 		
 	} // getWheelDiametr
 	
@@ -518,13 +556,20 @@ function Engine() {
 		this.gearCols2 = gearNumbers2.length;
 		this.ob = new Array(rank);
 		this.mom = new Array(rank);
-		this.wheelDiametr = this.getWheelDiametr();
+		this.wheelDiametr = this.getWheelDiametr(wheelWidth, wheelHeight, wheelDisk);
+		this.wheelDiametr2 = this.getWheelDiametr(wheelWidth2, wheelHeight2, wheelDisk2);
 		//console.log("Calc. wheelDiametr = " + this.wheelDiametr);
 		this.momMax = 0.0;
 		this.obGearsMin = -1, this.obGearsMax = -1;
 		this.obGearsMin2 = -1, this.obGearsMax2 = -1;
 		this.momGearsMin = -1, this.momGearsMax = -1;
 		this.momGearsMin2 = -1, this.momGearsMax2 = -1;
+		this.finishRank = rank;
+		this.finishRank2 = rank;
+		var oF = Math.min(obFinish, obTo);
+		var oF2 = Math.min(obFinish2, obTo);
+		var rankExists = false;
+		var rank2Exists = false;
 		
 		getMoms();
 		getGearNumbers();
@@ -533,6 +578,18 @@ function Engine() {
 		obCurr = obs[0];
 		obC = obCurr;
 		for (k = 0; k <= rank; k++) {
+			
+			if ((obCurr > oF) && (!rankExists)) {
+				this.finishRank = k - 1;
+				rankExists = true;
+				//console.log("finishRank=" + this.ob[this.finishRank]);
+			}
+			if ((obCurr > oF2) && (!rank2Exists)) {
+				this.finishRank2 = k - 1;
+				rank2Exists = true;
+				//console.log("finishRank2=" + this.ob[this.finishRank2]);
+			}
+
 			//console.log("obC=" + obC + "; c=" + c + "; k=" + k + "; obCurr=" + obCurr + "; ob[k]=" + this.ob[k] + "; mom[k]=" + this.mom[k] + "; interpolStep=" + interpolStep);
 			this.ob[k] = obCurr; // x for draw
 			
@@ -554,6 +611,7 @@ function Engine() {
 			obCurr += interpolStep;
 			c++;
 			obC = obs[c];
+			
 		}
 		
 		this.createGears();
@@ -579,24 +637,66 @@ function Engine() {
 	this.drawMomentum = function() {
 		var coords = "";
 		var x, y;
+		var obCurr, momCurr;
+		var obStep = parseFloat((obTo - obFrom) / (obCols - 1.0));
+		var momStep = parseFloat(this.momMax / (obCols - 1.0));
 		
 		if (!svgExists)
 			return;
 		
 		clearEngineDraw();
 		
+		// axes
+		obCurr = obFrom;
+		for (var c = 0; c < obCols; c++) {
+			
+			x = roundForInterpol(obCurr);
+			x = Math.round((drawWidth - 80) / (obTo - obFrom) * (x - obFrom) + 50);
+			engineDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 90).font({fill: "#999", family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
+			engineDraw.line(x, 50, x, drawHeight - 90).fill("none").stroke({color: "#999", width: 2});
+			
+			//console.log(x);
+			obCurr += obStep;
+			
+		}
+		momCurr = 0;
+		for (var c = 0; c <= obCols; c++) {
+			
+			y = Math.round(drawHeight - 200 - (drawHeight - 200) / this.momMax * momCurr + 100);
+			if (y < 50)
+				break;
+			engineDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: "#999", family: "Helvetica", anchor: "middle"});
+			engineDraw.line(50, y, drawWidth - 20, y).fill("none").stroke({color: "#999", width: 2});
+			
+			momCurr += momStep;
+			
+		}
+		
+		// data
 		for (var c = 0; c <= rank; c++) {
 			if (this.mom[c] == 0.0)
 				continue;
 			//console.log("engineDraw size - " + $("#engineDraw").width() + " : " + drawHeight);
 			//console.log("max of mom - " + this.momMax);
-			x = Math.round((drawWidth - 40) / (obTo - obFrom) * (this.ob[c] - obFrom) + 20);
-			y = Math.round(drawHeight - 40 - (drawHeight - 40) / this.momMax * this.mom[c] + 20);
+			x = Math.round((drawWidth - 80) / (obTo - obFrom) * (this.ob[c] - obFrom) + 50);
+			y = Math.round(drawHeight - 200 - (drawHeight - 200) / this.momMax * this.mom[c] + 100);
 			coords += " " + x + " " + y;
 			//console.log(coords);
 		}
 		
 		engineDraw.polyline(coords).fill("none").stroke({color: colors[0], width: 1});
+		
+		// finish
+		x = this.ob[this.finishRank];
+		y = fn(x, this.ob, this.mom);
+		x = Math.round((drawWidth - 80) / (obTo - obFrom) * (x - obFrom) + 50);
+		y = Math.round(drawHeight - 200 - (drawHeight - 200) / this.momMax * y + 100);
+		engineDraw.line(x, y - 10, x, y + 10).fill("none").stroke({color: colors[1], width: 2});
+		x = this.ob[this.finishRank2];
+		y = fn(x, this.ob, this.mom);
+		x = Math.round((drawWidth - 80) / (obTo - obFrom) * (x - obFrom) + 50);
+		y = Math.round(drawHeight - 200 - (drawHeight - 200) / this.momMax * y + 100);
+		engineDraw.line(x, y - 10, x, y + 10).fill("none").stroke({color: colors2[1], width: 2});
 		
 	} // drawMomentum
 	
@@ -605,7 +705,43 @@ function Engine() {
 		if (!svgExists)
 			return;
 		
+		var obGearsMin = Math.min(this.obGearsMin, this.obGearsMin2);
+	    var obGearsMax = Math.max(this.obGearsMax, this.obGearsMax2);
+	    var momGearsMin = Math.min(this.momGearsMin, this.momGearsMin2);
+	    var momGearsMax = Math.max(this.momGearsMax, this.momGearsMax2);
+	    var obCurr, momCurr;
+		var obStep = parseFloat((obGearsMax - obGearsMin) / (obCols - 1));
+		var momStep = parseFloat((momGearsMax - momGearsMin) / (obCols - 1));
+		
 		clearGearsDraw();
+		
+		//x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (this.ob[c] - obGearsMin) + 50);
+		//y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (this.mom[c] - momGearsMin) + 50);
+		
+		// axes
+		obCurr = obGearsMin;
+		for (var c = 0; c < obCols; c++) {
+			
+			x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (obCurr - obGearsMin) + 50);
+			gearsDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 25).font({fill: "#999", family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
+			gearsDraw.line(x, 20, x, drawHeight - 25).fill("none").stroke({color: "#999", width: 2});
+			
+			//console.log(x);
+			obCurr += obStep;
+			
+		}
+		momCurr = momGearsMin;
+		for (var c = 0; c < obCols; c++) {
+			
+			y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (momCurr - momGearsMin) + 50);
+			if (y < 20)
+				break;
+			gearsDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: "#999", family: "Helvetica", anchor: "middle"});
+			gearsDraw.line(50, y, drawWidth - 15, y).fill("none").stroke({color: "#999", width: 2});
+			
+			momCurr += momStep;
+			
+		}
 		
 		for (var c = 0; c < this.gearCols; c++)
 			this.gears[c].drawGear(1);
@@ -617,13 +753,13 @@ function Engine() {
 	
 	this.findCross = function() {
 		
-		return findCrossingGears(this.gearCols, this.gears, this.wheelDiametr, gearMain);
+		return findCrossingGears(this.gearCols, this.gears, this.wheelDiametr, gearMain, 1, this.finishRank);
 		
 	} // findCross
 	
 	this.findCross2 = function() {
 		
-		return findCrossingGears(this.gearCols2, this.gears2, this.wheelDiametr, gearMain2);
+		return findCrossingGears(this.gearCols2, this.gears2, this.wheelDiametr2, gearMain2, 2, this.finishRank2);
 		
 	} // findCross2
 	
@@ -649,10 +785,12 @@ function Gear(num, parent, numBox) {
 	    var obGearsMax = numBox == 1 ? this.parent.obGearsMax : this.parent.obGearsMax2;
 	    var momGearsMin = numBox == 1 ? this.parent.momGearsMin : this.parent.momGearsMin2;
 	    var momGearsMax = numBox == 1 ? this.parent.momGearsMax : this.parent.momGearsMax2;
+	    var wD = numBox == 1 ? this.parent.wheelDiametr : this.parent.wheelDiametr2;
 		
 		c = 0;
 		for (k = 0; k <= rank; k++) {
-			this.ob[k] = this.parent.ob[k] / gN[this.gearNumber] / gM * 60.0 * 3.14 * this.parent.wheelDiametr / 1000.0; // x
+			
+			this.ob[k] = this.parent.ob[k] / gN[this.gearNumber] / gM * 60.0 * 3.14 * wD / 1000.0; // x
 			
 			if (obGearsMin == -1)
 				obGearsMin = this.ob[k];
@@ -671,7 +809,7 @@ function Gear(num, parent, numBox) {
 				continue;
 			}
 			
-			this.mom[k] = this.parent.mom[k] * gN[this.gearNumber] * gM / 4.0 / this.parent.wheelDiametr; // y
+			this.mom[k] = this.parent.mom[k] * gN[this.gearNumber] * gM / 4.0 / wD; // y
 			
 			if (momGearsMin == -1)
 				momGearsMin = this.mom[k];
@@ -705,22 +843,24 @@ function Gear(num, parent, numBox) {
 		var x, y;
 		
 		var col = numBox == 1 ? colors : colors2;
-		var obGearsMin = numBox == 1 ? this.parent.obGearsMin : this.parent.obGearsMin2;
-	    var obGearsMax = numBox == 1 ? this.parent.obGearsMax : this.parent.obGearsMax2;
-	    var momGearsMin = numBox == 1 ? this.parent.momGearsMin : this.parent.momGearsMin2;
-	    var momGearsMax = numBox == 1 ? this.parent.momGearsMax : this.parent.momGearsMax2;
+		var obGearsMin = Math.min(this.parent.obGearsMin, this.parent.obGearsMin2);
+	    var obGearsMax = Math.max(this.parent.obGearsMax, this.parent.obGearsMax2);
+	    var momGearsMin = Math.min(this.parent.momGearsMin, this.parent.momGearsMin2);
+	    var momGearsMax = Math.max(this.parent.momGearsMax, this.parent.momGearsMax2);
+	    var finishRank = numBox == 1 ? this.parent.finishRank : this.parent.finishRank2; 
 		
 		if (!svgExists)
 			return;
 		
+		// data
 		//console.log("start drawing gear #" + this.gearNumber);
-		for (var c = 0; c <= rank; c++) {
+		for (var c = 0; c <= finishRank; c++) {
 			if (this.mom[c] == 0.0)
 				continue;
 			//console.log("min=" + this.parent.obGearsMin + "; max=" + this.parent.obGearsMax);
 			//console.log("max of mom - " + this.momMax);
-			x = Math.round((drawWidth - 40) / (obGearsMax - obGearsMin) * (this.ob[c] - obGearsMin) + 20);
-			y = Math.round(drawHeight - 40 - (drawHeight - 40) / (momGearsMax - momGearsMin) * (this.mom[c] - momGearsMin) + 20);
+			x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (this.ob[c] - obGearsMin) + 50);
+			y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (this.mom[c] - momGearsMin) + 50);
 			coords += " " + x + " " + y;
 			//console.log(coords);
 		}

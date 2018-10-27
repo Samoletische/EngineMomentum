@@ -13,70 +13,96 @@
 	<body>
 		<div class="container-fluid">
 			<div class="row">
-				<div class="col-xs-12 bg-success header"><h4>Параметры двигателя</h4></div>
+				<div class="col-sm-12 bg-success header"><h4>Параметры двигателя</h4></div>
 			</div>
 			<div class="row">
-				<div class="paramCaption col-xs-12">
+				<div class="paramCaption col-sm-12">
 					<div class="row">
-						<div class="paramCaption col-xs-3">Диапазон оборотов, об.</div>
-						<div class="paramValue col-xs-2">
+						<div class="paramCaption col-sm-3">Диапазон оборотов, об.</div>
+						<div class="paramValue col-sm-2">
 							от <input id="obFrom" type="number" value="">
 							до <input id="obTo" type="number" value="">
 						</div>
-						<div class="paramCaption col-xs-2">Количество значений</div>
-						<div class="paramValue col-xs-2"><input id="obCols" type="number" value=""></div>
+						<div class="paramCaption col-sm-2">Количество значений</div>
+						<div class="paramValue col-sm-2"><input id="obCols" type="number" value=""></div>
 					</div>
 				</div>
 			</div>
 			<div class="row">
-				<div id="obTable" class="col-xs-12"></div>
+				<div id="obTable" class="col-sm-12"></div>
 			</div>
 			<div class="row">
-				<div class="col-xs-12 bg-success header"><h4>Параметры коробок передач</h4></div>
+				<div class="col-sm-12 bg-success header"><h4>Параметры коробок передач</h4></div>
 			</div>
 			<div class="row">
-				<div class="gearBox col-xs-6">
+				<div class="gearBox col-sm-6">
 					<div class="row">
-						<div class="col-xs-12 bg-warning header"><h5>Коробка № 1</h5></div>
+						<div class="col-sm-12 bg-warning header"><h5>Коробка № 1</h5></div>
 					</div>
 					<div class="row">
-						<div class="paramCaption col-xs-3">Главная пара</div>
-						<div class="paramValue col-xs-2"><input id="gearMain" type="number" value=""></div>
-						<div class="paramCaption col-md-4">Количество передач</div>
-						<div class="paramValue col-md-2"><input id="gearCols" type="number" value=""></div>
+						<div class="paramCaption col-sm-2">Главная пара</div>
+						<div class="paramValue col-sm-2"><input id="gearMain" type="number" value=""></div>
+						<div class="paramCaption col-sm-2">Количество передач</div>
+						<div class="paramValue col-sm-2"><input id="gearCols" type="number" value=""></div>
+						<div class="paramCaption col-sm-2">Отсечка, об.</div>
+						<div class="paramValue col-sm-2"><input id="obFinish" type="number" value=""></div>
 					</div>
 					<div class="row">
-						<div id="gearTable" class="col-xs-12 gearTable"></div>
+						<div id="gearTable" class="col-sm-12 gearTable"></div>
 					</div>
 				</div>
-				<div class="gearBox col-xs-6">
+				<div class="gearBox col-sm-6">
 					<div class="row">
-						<div class="col-xs-12 bg-warning header"><h5>Коробка № 2</h5></div>
+						<div class="col-sm-12 bg-warning header"><h5>Коробка № 2</h5></div>
 					</div>
 					<div class="row">
-						<div class="paramCaption col-xs-3">Главная пара</div>
-						<div class="paramValue col-xs-2"><input id="gearMain2" type="number" value=""></div>
-						<div class="paramCaption col-md-4">Количество передач</div>
-						<div class="paramValue col-md-2"><input id="gearCols2" type="number" value=""></div>
+						<div class="paramCaption col-sm-2">Главная пара</div>
+						<div class="paramValue col-sm-2"><input id="gearMain2" type="number" value=""></div>
+						<div class="paramCaption col-sm-2">Количество передач</div>
+						<div class="paramValue col-sm-2"><input id="gearCols2" type="number" value=""></div>
+						<div class="paramCaption col-sm-2">Отсечка, об.</div>
+						<div class="paramValue col-sm-2"><input id="obFinish2" type="number" value=""></div>
 					</div>
 					<div class="row">
-						<div id="gearTable2" class="col-xs-12 gearTable"></div>
+						<div id="gearTable2" class="col-sm-12 gearTable"></div>
 					</div>
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-xs-12 bg-success header"><h4>Параметры колеса</h4></div>
+				<div class="col-xs-12 bg-success header"><h4>Параметры колес</h4></div>
 			</div>
 			<div class="row">
-				<div class="paramCaption col-md-3">Параметры колеса</div>
-				<div class="paramValue col-md-3">Ширина шины, мм: <input id="wheelWidth" type="number" value=""></div>
-				<div class="paramValue col-md-3">Высота шины, %: <input id="wheelHeight" type="number" value=""></div>
-				<div class="paramValue col-md-3">Диск, дюйм: <input id="wheelDisk" type="number" value=""></div>
+				<div class="wheelParams col-sm-6">
+					<div class="row">
+						<div class="col-sm-12 bg-warning header"><h5>Колесо № 1</h5></div>
+					</div>
+					<div class="row">
+						<div class="paramCaption col-md-2">Ширина шины, мм</div>
+						<div class="paramValue col-md-2"><input id="wheelWidth" type="number" value=""></div>
+						<div class="paramCaption col-md-2">Высота шины, %</div>
+						<div class="paramValue col-md-2"><input id="wheelHeight" type="number" value=""></div>
+						<div class="paramCaption col-md-2">Диск, дюйм</div>
+						<div class="paramValue col-md-2"><input id="wheelDisk" type="number" value=""></div>
+					</div>
+				</div>
+				<div class="wheelParams col-sm-6">
+					<div class="row">
+						<div class="col-sm-12 bg-warning header"><h5>Колесо № 2</h5></div>
+					</div>
+					<div class="row">
+						<div class="paramCaption col-md-2">Ширина шины, мм</div>
+						<div class="paramValue col-md-2"><input id="wheelWidth2" type="number" value=""></div>
+						<div class="paramCaption col-md-2">Высота шины, %</div>
+						<div class="paramValue col-md-2"><input id="wheelHeight2" type="number" value=""></div>
+						<div class="paramCaption col-md-2">Диск, дюйм</div>
+						<div class="paramValue col-md-2"><input id="wheelDisk2" type="number" value=""></div>
+					</div>
+				</div>
 			</div>
 			<hr>
 			<div class="row">
-				<div class="col-md-6 paramCaption">Результаты по коробке № 1</div>
-				<div class="col-md-6 paramCaption">Результаты по коробке № 2</div>
+				<div class="col-md-6 paramCaption">Результаты по коробке и колесу № 1</div>
+				<div class="col-md-6 paramCaption">Результаты по коробке и колесу № 2</div>
 			</div>
 			<div class="row">
 				<div id="resTable1" class="col-md-6"></div>
