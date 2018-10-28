@@ -20,6 +20,13 @@ var colors2 = ["#E040FB", "#0018A9", "#1029BA", "#203ACB", "#314BDC", "#425CED",
 $(function() {
 
 	initialize();
+
+	$("#engineOpen").click(function() {
+	    $("#engineInput").val("");
+	    $("#engineLoad").modal();
+	});
+	$("#engineLoadApply").click(engineLoadApply);
+	$("#engineSave").click(engineSave);
 	
 	$("#obFrom").change(function() {
 		obFrom = parseFloat($(this).val());
@@ -168,6 +175,53 @@ function initialize() {
 } // initialize
 //------------------------------------------------------
 
+function engineLoadApply() {
+
+    var data = $("#engineInput").val().split("\n");
+    var subData;
+
+    if (data.length == 2) {
+
+        subData = data[0].split("\t");
+        obs = new Array(subData.length);
+        for (var c = 0; c < obs.length; c++)
+            obs[c] = parseInt(subData[c]);
+
+        subData = data[1].split("\t");
+        moms = new Array(subData.length);
+        for (var c = 0; c < moms.length; c++)
+            moms[c] = parseFloat(subData[c]);
+
+        obCols = obs.length;
+        $("#obCols").val(obCols);
+        obFrom = obs[0];
+        $("#obFrom").val(obFrom);
+        obTo = obs[obCols - 1];
+        $("#obTo").val(obTo);
+
+        createObTable();
+        refreshResult();
+        $("#engineLoad").modal("hide");
+
+    }
+    else {
+        alert("Введены некорректные данные зависимости момента двигателя от оборотов.");
+    }
+
+}
+//------------------------------------------------------
+
+function engineSave() {
+
+    var command = "command=saveEngine&title=" + $("#engineName").val() + "&data=" + obs.join(",") + ";" + moms.join(",");
+    //alert("save - " + command);
+    $.post("engine.php", command, function(data) {
+        alert(data);
+    });
+
+}
+//------------------------------------------------------
+
 function refreshResult() {
 	
 	engine.initialize();
@@ -205,7 +259,7 @@ function createObTable() {
 	var header = "";
 	var body = "";
 	var obStep = parseFloat((obTo - obFrom) / (obCols - 1.0));
-	//console.log(obStep);
+	console.log(obStep);
 	var obCurr;
 	var c;
 
@@ -220,8 +274,8 @@ function createObTable() {
 		obs[c] = roundForInterpol(obCurr);
 		header += "<th id='ob" + c + "'>" + obs[c] + "</th>";
 		body += "<td><input id='mom" + c + "' class='mom' type='number' value='" + moms[c] + "'></td>";
+		console.log(obCurr + " - " + obs[c] + " - " + moms[c]);
 		obCurr += obStep;
-      //console.log(obCurr);
 	}
 	
 	html += header + "</tr>" + body + "</tr></table>";
