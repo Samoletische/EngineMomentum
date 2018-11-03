@@ -6,19 +6,20 @@
 	    <meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta charset="UTF-8">
 		<title>Двигатель</title>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-		<link rel="stylesheet" href="style.css">
+		<link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<link rel="stylesheet" href="css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+		<link rel="stylesheet" href="css/style.css">
 	</head>
 	<body>
 		<div class="container-fluid">
 			<div class="row">
 				<div class="col-sm-12 bg-success">
 					<span class="header">Параметры двигателя</span>
-					<input id="engineName" type="text" value="ВАЗ-2108" />
+					<input id="engineName" type="text" engineID="" value="" />
+					<span id="engineNew" class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
 					<span id="engineOpen" class="glyphicon glyphicon-open"></span>
 					<span id="engineSave" class="glyphicon glyphicon-save" aria-hidden="true"></span>
-					<span id="engineRemove" class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+					<span id="engineRemove" class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
 				</div>
 			</div>
 			<div class="row">
@@ -126,7 +127,7 @@
 			</div>
 		</div>
 		<!-- modals -->
-		<div id="engineLoad" class="modal fade" tabindex="-1" role="dialog">
+		<div id="enginesLoad" class="modal fade" tabindex="-1" role="dialog">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
@@ -134,19 +135,47 @@
 						<h4 class="modal-title">Загрузка данных двигателя</h4>
 					</div>
 					<div class="modal-body">
+						<div class="dropdown">
+							<button id="dropdownMenuEngine" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+								Сохранённые параметры двигателей
+								<span class="caret"></span>
+							</button>
+							<ul id="enginesDropDown" class="dropdown-menu" aria-labelledby="dropdownMenuEngine">
+								<li><a class="enginesLoad" enginesID="1" href="#">ВАЗ</a></li>
+								<li><a class="enginesLoad" enginesID="1" href="#">ГАЗ</a></li>
+							</ul>
+						</div>
 						Вставьте сюда данные из Excel (две строки: верхняя - обороты; нижняя - момент):
 						<textarea id="engineInput" rows="6"></textarea>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
-						<button id="engineLoadApply" type="button" class="btn btn-primary">Сохранить</button>
+						<button id="engineLoadApply" type="button" class="btn btn-primary">Загрузить</button>
 					</div>
 				</div><!-- /.modal-content -->
 			</div><!-- /.modal-dialog -->
 		</div><!-- /.modal -->
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.6.6/svg.min.js"></script>
-		<script type="text/javascript" src="script.js"></script>
+
+		<div id="removingConfirm" class="modal fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">Вы действительно хотите удалить следующую запись из базы?</h4>
+					</div>
+					<div class="modal-body">
+						<div id="removingThing" table="" recordID=""></div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal">Нет</button>
+						<button id="Confirm" type="button" class="btn btn-default">Да</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		<script src="js/jquery.min.js"></script>
+		<script src="js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+		<script src="js/svg.min.js"></script>
+		<script src="js/script.js"></script>
 	</body>
 </html>

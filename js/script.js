@@ -21,12 +21,27 @@ $(function() {
 
 	initialize();
 
+	$("#engineNew").click(engineNew);
 	$("#engineOpen").click(function() {
+		fillDropDown("engines");
 	    $("#engineInput").val("");
-	    $("#engineLoad").modal();
+	    $("#enginesLoad").modal();
 	});
-	$("#engineLoadApply").click(engineLoadApply);
 	$("#engineSave").click(engineSave);
+	$("#engineRemove").click(function() {
+		if ($("#engineName").attr("engineID") != "") {
+			$("#removingThing").text($("#engineName").val()).attr("table", "engines").attr("recordID", $("#engineName").attr("engineID"));
+			$("#removingConfirm").modal();
+		}
+	});
+	$("#engineLoadApply").click(function() {
+	    if (engineLoadApply($("#engineInput").val().split("\n")))
+	        $("#enginesLoad").modal("hide");
+        else
+            alert("Введены некорректные данные зависимости момента двигателя от оборотов.");
+	});
+	$(".dropdown-toggle").dropdown();
+	$("#Confirm").click(removeRecord);
 	
 	$("#obFrom").change(function() {
 		obFrom = parseFloat($(this).val());
@@ -105,19 +120,10 @@ $(function() {
 		refreshResult();
 	});
 	
-	$("input.mom, input.gearNumber").change(refreshResult);
-	
 }); // start
 //------------------------------------------------------
 
 function initialize() {
-	
-	obFrom = 2000;
-	$("#obFrom").val(obFrom);
-	obTo = 9000;
-	$("#obTo").val(obTo);
-	obCols = 15;
-	$("#obCols").val(obCols);
 	
 	gearCols = 5;
 	$("#gearCols").val(gearCols);
@@ -148,15 +154,13 @@ function initialize() {
 	$("#wheelHeight2").val(wheelHeight2);
 	wheelDisk2 = 14;
 	$("#wheelDisk2").val(wheelDisk2);
-	
-	obs = [2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000];
-	moms = [92, 92, 101, 108, 120, 132, 134, 136, 133, 132, 125, 117, 107, 88, 56];
+
+	getLastEngine();
 	gearNumbers = [2.92, 2.05, 1.56, 1.31, 1.13];
 	gearNumbers2 = [2.92, 1.81, 1.28, 0.97, 0.78];
 	
 	engine = new Engine();
 	
-	createObTable();
 	createGearTable(1);
 	createGearTable(2);
 	
@@ -175,56 +179,175 @@ function initialize() {
 } // initialize
 //------------------------------------------------------
 
-function engineLoadApply() {
+function fillDropDown(table) {
 
-    var data = $("#engineInput").val().split("\n");
+	$.post("engine.php", "command=getDropDown&table=" + table, function(data) {
+		//alert(data);
+		var dat = data.split("-=-");
+
+        if (dat[0] == "ok") {
+			$("#" + table + "DropDown").html(dat[1]);
+			$("." + table + "Load").click(function() {
+				$("#" + table + "Load").modal("hide");
+				eval("get" + table + "(" + $(this).attr(table + "ID") + ");");
+			});
+		}
+		else
+			alert(dat[1]);
+	});
+
+}
+//------------------------------------------------------
+
+function getLastEngine() {
+
+    $.post("engine.php", "command=getLastEngine", function(data) {
+        //alert(data);
+        var dat = data.split("-=-");
+
+        if (dat[0] == "ok") {
+            if (dat[3] != "") {
+
+                $("#engineName").attr("engineID", dat[1]);
+                $("#engineName").val(dat[2]);
+
+                var d = new Array(2);
+                d[0] = dat[3];
+                d[1] = dat[4];
+                engineLoadApply(d);
+
+            }
+            else {
+
+				alert(dat[1]);
+                engineNew();
+
+            }
+        }
+        else
+            alert(dat[1]);
+    });
+
+}
+//------------------------------------------------------
+
+function engineNew() {
+
+	$("#engineName").val("").attr("engineID", "");
+	obFrom = 0;
+	$("#obFrom").val(obFrom);
+	obTo = 0;
+	$("#obTo").val(obTo);
+	obCols = 0;
+	$("#obCols").val(obCols);
+
+	createObTable();
+	refreshResult();
+
+}
+//------------------------------------------------------
+
+function getengines(id) {
+
+    $.post("engine.php", "command=getEngine&id=" + id, function(data) {
+        //alert(data);
+        var dat = data.split("-=-");
+
+        if (dat[0] == "ok") {
+            if (dat[3] != "") {
+
+                $("#engineName").attr("engineID", dat[1]);
+                $("#engineName").val(dat[2]);
+
+                var d = new Array(2);
+                d[0] = dat[3];
+                d[1] = dat[4];
+                engineLoadApply(d);
+
+            }
+            else
+				alert(dat[1]);
+        }
+        else
+            alert(dat[1]);
+    });
+
+}
+//------------------------------------------------------
+
+function removeRecord() {
+
+	$("#removingConfirm").modal("hide");
+	$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
+		var dat = data.split("-=-");
+
+		if (dat[0] == "ok") {
+			engineNew();
+			alert("Запись успешно удалена из базы");
+		}
+		else
+			alert(dat[1]);
+	});
+
+}
+//------------------------------------------------------
+
+function engineLoadApply(data) {
+
     var subData;
 
-    if (data.length == 2) {
+    if (data.length != 2)
+        return false;
 
-        subData = data[0].split("\t");
-        obs = new Array(subData.length);
-        for (var c = 0; c < obs.length; c++)
-            obs[c] = parseInt(subData[c]);
+    subData = data[0].split("\t");
+    obs = new Array(subData.length);
+    for (var c = 0; c < obs.length; c++)
+        obs[c] = parseInt(subData[c]);
 
-        subData = data[1].split("\t");
-        moms = new Array(subData.length);
-        for (var c = 0; c < moms.length; c++)
-            moms[c] = parseFloat(subData[c]);
+    subData = data[1].split("\t");
+    moms = new Array(subData.length);
+    for (var c = 0; c < moms.length; c++)
+        moms[c] = parseFloat(subData[c]);
 
-        obCols = obs.length;
-        $("#obCols").val(obCols);
-        obFrom = obs[0];
-        $("#obFrom").val(obFrom);
-        obTo = obs[obCols - 1];
-        $("#obTo").val(obTo);
+    obCols = obs.length;
+    $("#obCols").val(obCols);
+    obFrom = obs[0];
+    $("#obFrom").val(obFrom);
+    obTo = obs[obCols - 1];
+    $("#obTo").val(obTo);
 
-        createObTable();
-        refreshResult();
-        $("#engineLoad").modal("hide");
+    createObTable();
+    refreshResult();
 
-    }
-    else {
-        alert("Введены некорректные данные зависимости момента двигателя от оборотов.");
-    }
+    return true;
 
 }
 //------------------------------------------------------
 
 function engineSave() {
 
-    var command = "command=saveEngine&title=" + $("#engineName").val() + "&data=" + obs.join(",") + ";" + moms.join(",");
+    var command = "command=saveEngine&id=" + $("#engineName").attr("engineID") + "&title=" + $("#engineName").val() + "&data=" + obs.join(",") + ";" + moms.join(",");
     //alert("save - " + command);
     $.post("engine.php", command, function(data) {
-        alert(data);
+        //alert(data);
+        //console.log(data);
+        var dat = data.split("-=-");
+        if (dat[0] == "ok") {
+            $("#engineName").attr("engineID", dat[1]);
+            alert("Параметры двигателя успешно сохранены");
+        }
+        else
+            alert(dat[1]);
     });
 
 }
 //------------------------------------------------------
 
 function refreshResult() {
-	
+
+    //console.log("start refresh");
 	engine.initialize();
+	//console.log("must start moms");
 	engine.interpol();
 	engine.gearInitialize();
 	engine.drawMomentum();
@@ -254,12 +377,20 @@ function roundForInterpol(value) {
 //------------------------------------------------------
 
 function createObTable() {
-	
+
+	if ((obCols < 5) || (obTo <= obFrom)) {
+		$("#obTable").html("");
+		getRank();
+		obs.length = 0;
+        moms.length = 0;
+		return;
+	}
+
 	var html = "<table class='table table-bordered'>";
 	var header = "";
 	var body = "";
 	var obStep = parseFloat((obTo - obFrom) / (obCols - 1.0));
-	console.log(obStep);
+	//console.log(obStep);
 	var obCurr;
 	var c;
 
@@ -274,13 +405,15 @@ function createObTable() {
 		obs[c] = roundForInterpol(obCurr);
 		header += "<th id='ob" + c + "'>" + obs[c] + "</th>";
 		body += "<td><input id='mom" + c + "' class='mom' type='number' value='" + moms[c] + "'></td>";
-		console.log(obCurr + " - " + obs[c] + " - " + moms[c]);
+		//console.log(obCurr + " - " + obs[c] + " - " + moms[c]);
 		obCurr += obStep;
 	}
 	
 	html += header + "</tr>" + body + "</tr></table>";
 	
 	$("#obTable").html(html);
+
+	$("input.mom, input.gearNumber").change(refreshResult);
 	
 } // createObTable
 //------------------------------------------------------
@@ -313,8 +446,10 @@ function createGearTable(num) {
 //------------------------------------------------------
 
 function getMoms() {
-	for (var c = 0; c < obCols; c++)
+	for (var c = 0; c < obCols; c++) {
 		moms[c] = parseFloat($("#mom" + c).val());
+		//console.log(moms[c]);
+    }
 } // getMoms
 //------------------------------------------------------
 
@@ -605,7 +740,10 @@ function Engine() {
 	} // createGears
 	
 	this.initialize = function() {
-		
+
+		getMoms();
+        getGearNumbers();
+
 		this.gearCols = gearNumbers.length;
 		this.gearCols2 = gearNumbers2.length;
 		this.ob = new Array(rank);
@@ -624,9 +762,6 @@ function Engine() {
 		var oF2 = Math.min(obFinish2, obTo);
 		var rankExists = false;
 		var rank2Exists = false;
-		
-		getMoms();
-		getGearNumbers();
 		
 		var c = 0;
 		obCurr = obs[0];
@@ -694,38 +829,62 @@ function Engine() {
 		var obCurr, momCurr;
 		var obStep = parseFloat((obTo - obFrom) / (obCols - 1.0));
 		var momStep = parseFloat(this.momMax / (obCols - 1.0));
+
+		var first = true;
+		var colorAxe = "#909";
+		var colorOther = "#999";
+		var color = colorAxe;
 		
 		if (!svgExists)
 			return;
 		
 		clearEngineDraw();
-		
+
+		if (this.momMax == 0.0)
+			return;
+
 		// axes
 		obCurr = obFrom;
+		first = true;
 		for (var c = 0; c < obCols; c++) {
 			
 			x = roundForInterpol(obCurr);
 			x = Math.round((drawWidth - 80) / (obTo - obFrom) * (x - obFrom) + 50);
-			engineDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 90).font({fill: "#999", family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
-			engineDraw.line(x, 50, x, drawHeight - 90).fill("none").stroke({color: "#999", width: 2});
+			engineDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 90).font({fill: colorAxe, family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
+			if (first) {
+				first = false;
+				color = colorAxe;
+			}
+			else
+				color = colorOther;
+			engineDraw.line(x, 50, x, drawHeight - 90).fill("none").stroke({color: color, width: 2});
 			
 			//console.log(x);
 			obCurr += obStep;
 			
 		}
 		momCurr = 0;
+		first = true;
 		for (var c = 0; c <= obCols; c++) {
 			
 			y = Math.round(drawHeight - 200 - (drawHeight - 200) / this.momMax * momCurr + 100);
 			if (y < 50)
 				break;
-			engineDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: "#999", family: "Helvetica", anchor: "middle"});
-			engineDraw.line(50, y, drawWidth - 20, y).fill("none").stroke({color: "#999", width: 2});
+			engineDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: colorAxe, family: "Helvetica", anchor: "middle"});
+			if (first) {
+				first = false;
+				color = colorAxe;
+			}
+			else
+				color = colorOther;
+			engineDraw.line(40, y, drawWidth - 20, y).fill("none").stroke({color: color, width: 2});
 			
 			momCurr += momStep;
 			
 		}
-		
+		engineDraw.text("Момент, Н*м").move(55, 50).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
+		engineDraw.text("Обороты, об./мин.").move(drawWidth - 150, drawHeight - 120).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
+
 		// data
 		for (var c = 0; c <= rank; c++) {
 			if (this.mom[c] == 0.0)
@@ -766,36 +925,60 @@ function Engine() {
 	    var obCurr, momCurr;
 		var obStep = parseFloat((obGearsMax - obGearsMin) / (obCols - 1));
 		var momStep = parseFloat((momGearsMax - momGearsMin) / (obCols - 1));
+
+		var first = true;
+		var colorAxe = "#909";
+		var colorOther = "#999";
+		var color = colorAxe;
 		
 		clearGearsDraw();
+
+		if (this.momMax == 0.0)
+			return;
 		
 		//x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (this.ob[c] - obGearsMin) + 50);
 		//y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (this.mom[c] - momGearsMin) + 50);
 		
 		// axes
 		obCurr = obGearsMin;
+		first = true;
 		for (var c = 0; c < obCols; c++) {
 			
 			x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (obCurr - obGearsMin) + 50);
-			gearsDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 25).font({fill: "#999", family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
-			gearsDraw.line(x, 20, x, drawHeight - 25).fill("none").stroke({color: "#999", width: 2});
+			gearsDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 25).font({fill: colorAxe, family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
+			if (first) {
+				first = false;
+				color = colorAxe;
+			}
+			else
+				color = colorOther;
+			gearsDraw.line(x, 20, x, drawHeight - 25).fill("none").stroke({color: color, width: 2});
 			
 			//console.log(x);
 			obCurr += obStep;
 			
 		}
 		momCurr = momGearsMin;
+		first = true;
 		for (var c = 0; c < obCols; c++) {
 			
 			y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (momCurr - momGearsMin) + 50);
 			if (y < 20)
 				break;
-			gearsDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: "#999", family: "Helvetica", anchor: "middle"});
-			gearsDraw.line(50, y, drawWidth - 15, y).fill("none").stroke({color: "#999", width: 2});
+			gearsDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: colorAxe, family: "Helvetica", anchor: "middle"});
+			if (first) {
+				first = false;
+				color = colorAxe;
+			}
+			else
+				color = colorOther;
+			gearsDraw.line(44, y, drawWidth - 15, y).fill("none").stroke({color: color, width: 2});
 			
 			momCurr += momStep;
 			
 		}
+		gearsDraw.text("Момент, Н*м").move(55, 20).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
+		gearsDraw.text("Скорость, км/ч").move(drawWidth - 130, drawHeight - 50).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
 		
 		for (var c = 0; c < this.gearCols; c++)
 			this.gears[c].drawGear(1);
@@ -901,7 +1084,7 @@ function Gear(num, parent, numBox) {
 	    var obGearsMax = Math.max(this.parent.obGearsMax, this.parent.obGearsMax2);
 	    var momGearsMin = Math.min(this.parent.momGearsMin, this.parent.momGearsMin2);
 	    var momGearsMax = Math.max(this.parent.momGearsMax, this.parent.momGearsMax2);
-	    var finishRank = numBox == 1 ? this.parent.finishRank : this.parent.finishRank2; 
+	    var finishRank = numBox == 1 ? this.parent.finishRank : this.parent.finishRank2;
 		
 		if (!svgExists)
 			return;
