@@ -21,39 +21,62 @@ $(function() {
 
 	initialize();
 
-	$("#engineNew").click(engineNew);
+	$("#engineNew").click(function() {
+		if ($("#engineName").attr("modif") == "true") {
+			$("#newThing").attr("thing", "engineNew").html("Создать новые параметры двигателя.");
+			$("#newConfirm").modal();
+		}
+		else
+			engineNew();
+	});
 	$("#engineOpen").click(function() {
-		fillDropDown("engines");
-	    $("#engineInput").val("");
-	    $("#enginesLoad").modal();
+		if ($("#engineName").attr("modif") == "true") {
+			$("#newThing").attr("thing", "engineLoad").html("Загрузить параметры двигателя из базы.");
+			$("#newConfirm").modal();
+		}
+		else
+			engineLoad();
 	});
 	$("#engineSave").click(engineSave);
 	$("#engineRemove").click(function() {
 		if ($("#engineName").attr("engineID") != "") {
-			$("#removingThing").text($("#engineName").val()).attr("table", "engines").attr("recordID", $("#engineName").attr("engineID"));
+			$("#removingThing")
+				.text($("#engineName").val())
+				.attr("table", "engines")
+				.attr("recordID", $("#engineName")
+				.attr("engineID"));
 			$("#removingConfirm").modal();
 		}
 	});
 	$("#engineLoadApply").click(function() {
-	    if (engineLoadApply($("#engineInput").val().split("\n")))
+	    if (engineLoadApply($("#engineInput").val().split("\n"))) {
 	        $("#enginesLoad").modal("hide");
+	        $("#engineName").attr("modif", "true");
+	    }
         else
             alert("Введены некорректные данные зависимости момента двигателя от оборотов.");
 	});
 	$(".dropdown-toggle").dropdown();
-	$("#Confirm").click(removeRecord);
+	$("#ConfirmRemove").click(removeRecord);
+	$("#ConfirmNew").click(function() {
+		$("#newConfirm").modal("hide");
+		eval($("#newThing").attr("thing") + "();");
+	});
 	
 	$("#obFrom").change(function() {
+		$("#engineName").attr("modif", "true");
 		obFrom = parseFloat($(this).val());
 		createObTable();
 		refreshResult();
 	});
 	$("#obTo").change(function() {
+		$("#engineName").attr("modif", "true");
 		obTo = parseFloat($(this).val());
 		createObTable();
 		refreshResult();
 	});
 	$("#obCols").change(function() {
+		$("#engineName").attr("modif", "true");
 		obCols = $(this).val();
 		if (obCols < 4) {
 			$(this).val(4);
@@ -208,8 +231,10 @@ function getLastEngine() {
         if (dat[0] == "ok") {
             if (dat[3] != "") {
 
-                $("#engineName").attr("engineID", dat[1]);
-                $("#engineName").val(dat[2]);
+                $("#engineName")
+                	.attr("engineID", dat[1])
+                	.attr("modif", "false")
+                	.val(dat[2]);
 
                 var d = new Array(2);
                 d[0] = dat[3];
@@ -240,6 +265,7 @@ function engineNew() {
 	$("#obTo").val(obTo);
 	obCols = 0;
 	$("#obCols").val(obCols);
+	$("#engineName").attr("modif", "true");
 
 	createObTable();
 	refreshResult();
@@ -292,6 +318,16 @@ function removeRecord() {
 }
 //------------------------------------------------------
 
+function engineLoad() {
+
+	fillDropDown("engines");
+	$("#engineInput").val("");
+	$("#enginesLoad").modal();
+	$("#engineName").attr("modif", "false");
+
+}
+//------------------------------------------------------
+
 function engineLoadApply(data) {
 
     var subData;
@@ -333,7 +369,9 @@ function engineSave() {
         //console.log(data);
         var dat = data.split("-=-");
         if (dat[0] == "ok") {
-            $("#engineName").attr("engineID", dat[1]);
+            $("#engineName")
+            	.attr("engineID", dat[1])
+            	.attr("modif", "false");
             alert("Параметры двигателя успешно сохранены");
         }
         else
@@ -413,7 +451,10 @@ function createObTable() {
 	
 	$("#obTable").html(html);
 
-	$("input.mom, input.gearNumber").change(refreshResult);
+	$("input.mom, input.gearNumber").change(function() {
+		$("#engineName").attr("modif", "true");
+		refreshResult();
+	});
 	
 } // createObTable
 //------------------------------------------------------
