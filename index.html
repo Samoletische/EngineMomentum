@@ -17,7 +17,7 @@
 					<span class="header">Параметры двигателя</span>
 					<input id="engineName" type="text" engineID="" modif="false" value="" />
 					<span id="engineNew" class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
-					<span id="engineOpen" class="glyphicon glyphicon-open"></span>
+					<span id="engineOpen" class="glyphicon glyphicon-open" aria-hidden="true"></span>
 					<span id="engineSave" class="glyphicon glyphicon-save" aria-hidden="true"></span>
 					<span id="engineRemove" class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
 				</div>
@@ -46,7 +46,14 @@
 			<div class="row">
 				<div class="gearBox col-sm-6">
 					<div class="row">
-						<div class="col-sm-12 bg-warning header"><h5>Коробка № 1</h5></div>
+						<div class="col-sm-12 bg-warning">
+							<span class="header">Коробка № 1</span>
+							<input class="gearName" gearNumber="1" type="text" gearID="" modif="false" value="" />
+							<span class="gearNew glyphicon glyphicon-plus-sign" aria-hidden="true" gearNumber="1"></span>
+							<span class="gearOpen glyphicon glyphicon-open" aria-hidden="true" gearNumber="1"></span>
+							<span class="gearSave glyphicon glyphicon-save" aria-hidden="true" gearNumber="1"></span>
+							<span class="gearRemove glyphicon glyphicon-minus-sign" aria-hidden="true" gearNumber="1"></span>
+						</div>
 					</div>
 					<div class="row">
 						<div class="paramCaption col-sm-2">Главная пара</div>
@@ -62,7 +69,14 @@
 				</div>
 				<div class="gearBox col-sm-6">
 					<div class="row">
-						<div class="col-sm-12 bg-warning header"><h5>Коробка № 2</h5></div>
+						<div class="col-sm-12 bg-warning">
+							<span class="header">Коробка № 2</span>
+							<input class="gearName" gearNumber="2" type="text" gearID="" modif="false" value="" />
+							<span class="gearNew glyphicon glyphicon-plus-sign" aria-hidden="true" gearNumber="2"></span>
+							<span class="gearOpen glyphicon glyphicon-open" aria-hidden="true" gearNumber="2"></span>
+							<span class="gearSave glyphicon glyphicon-save" aria-hidden="true" gearNumber="2"></span>
+							<span class="gearRemove glyphicon glyphicon-minus-sign" aria-hidden="true" gearNumber="2"></span>
+						</div>
 					</div>
 					<div class="row">
 						<div class="paramCaption col-sm-2">Главная пара</div>
@@ -126,6 +140,7 @@
 				</div>
 			</div>
 		</div>
+
 		<!-- modals -->
 		<div id="enginesLoad" class="modal fade" tabindex="-1" role="dialog">
 			<div class="modal-dialog" role="document">
@@ -141,10 +156,7 @@
 								Сохранённые параметры двигателей
 								<span class="caret"></span>
 							</button>
-							<ul id="enginesDropDown" class="dropdown-menu" aria-labelledby="dropdownMenuEngine">
-								<li><a class="enginesLoad" enginesID="1" href="#">ВАЗ</a></li>
-								<li><a class="enginesLoad" enginesID="1" href="#">ГАЗ</a></li>
-							</ul>
+							<ul id="enginesDropDown" class="dropdown-menu" aria-labelledby="dropdownMenuEngine"></ul>
 						</div>
 						<hr>
 						<h4>Загрузка из Excel</h4>
@@ -159,6 +171,35 @@
 			</div><!-- /.modal-dialog -->
 		</div><!-- /.modal -->
 
+		<div id="gearsLoad" class="modal fade" tabindex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title">Загрузка данных коробки передач</h4>
+					</div>
+					<div class="modal-body">
+						<div class="dropdown">
+							<h4>Загрузка из базы</h4>
+							<button id="dropdownMenuGear" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+								Сохранённые параметры коробок
+								<span class="caret"></span>
+							</button>
+							<ul id="gearsDropDown" class="dropdown-menu" aria-labelledby="dropdownMenuGear"></ul>
+						</div>
+						<hr>
+						<h4>Загрузка из Excel</h4>
+						Вставьте сюда данные из Excel (первая строка - отсечка; вторая строка - главная пара; остальные строки - передаточные числа передач по-порядку):
+						<textarea id="gearInput" gearNumber="1" rows="6"></textarea>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
+						<button id="gearLoadApply" type="button" class="btn btn-primary">Загрузить</button>
+					</div>
+				</div><!-- /.modal-content -->
+			</div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+
 		<div id="removingConfirm" class="modal fade" tabindex="-1" role="dialog">
 			<div class="modal-dialog" role="document">
 				<div class="modal-content">
@@ -167,7 +208,7 @@
 						<h4 class="modal-title">Вы действительно хотите удалить следующую запись из базы?</h4>
 					</div>
 					<div class="modal-body">
-						<div id="removingThing" table="" recordID=""></div>
+						<div id="removingThing" table="" recordID="" number="1"></div>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-primary" data-dismiss="modal">Нет</button>
@@ -185,7 +226,7 @@
 						<h4 class="modal-title">Вы действительно хотите выполнить это действие?</h4>
 					</div>
 					<div class="modal-body">
-						<div id="newThing" thing="engineNew"></div>
+						<div id="newThing" thing="engineNew" number="1"></div>
 						<div>Все несохранённые текущие параметры будут утеряны!</div>
 					</div>
 					<div class="modal-footer">

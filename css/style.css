@@ -37,6 +37,21 @@
     resize: vertical;
 }
 
+.gearName {
+    border: 1px solid #999;
+    padding: 1px 8px;
+    margin: 2px;
+    border-radius: 8px;
+    width: 300px;
+}
+
+#gearInput {
+    border: 1px solid #999;
+    border-radius: 8px;
+    width: 100%;
+    resize: vertical;
+}
+
 .paramCaption {
 	text-align: left;
 	font-weight: bold;
