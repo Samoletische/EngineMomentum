@@ -28,7 +28,7 @@ if ($res == "") {
 				$res = getGear($_POST["id"], $_POST["number"]);
 				break;
             case "removeRecord":
-				$res = removeRecord($_POST["table"], $_POST["id"]);
+				$res = removeRecord($_POST["table"], $_POST["id"], $_POST["number"]);
 				break;
             case "getDropDown":
             	$res = getDropDown($_POST["table"], $_POST["number"]);
@@ -121,7 +121,7 @@ function getDropDown($table, $number) {
 } // getDropDown
 //------------------------------------------------------
 
-function removeRecord($table, $id) {
+function removeRecord($table, $id, $number) {
 
 	global $db;
 
@@ -130,8 +130,14 @@ function removeRecord($table, $id) {
 		if (!$query)
 			throw new Exception("(013) Не могу работать с базой");
 
-		if (!insertLastParam("engineID", 0))
-			throw new Exception("(024) Не могу работать с базой");
+		if ($number == "") {
+			if (!insertLastParam("engineID", 0))
+				throw new Exception("(024) Не могу работать с базой");
+		}
+		else {
+			if (!insertLastParam("gearID".$number, 0))
+            				throw new Exception("(025) Не могу работать с базой");
+		}
 	}
 	catch (Exception $e) {
 		return ".-=-".$e;

@@ -25,13 +25,13 @@ $(function() {
 	$("#engineNew").click(function() {
 		if ($("#engineName").attr("modif") == "true") {
 			$("#newThing")
-				.attr("thing", "engineNew")
+				.attr("thing", "enginesNew")
 				.attr("number", "")
 				.html("Создать новые параметры двигателя.");
 			$("#newConfirm").modal();
 		}
 		else
-			engineNew();
+			enginesNew();
 	});
 	$("#engineOpen").click(function() {
 		if ($("#engineName").attr("modif") == "true") {
@@ -51,7 +51,8 @@ $(function() {
 				.text($("#engineName").val())
 				.attr("table", "engines")
 				.attr("recordID", $("#engineName")
-				.attr("engineID"));
+				.attr("engineID"))
+				.attr("gearNumber", "");
 			$("#removingConfirm").modal();
 		}
 	});
@@ -72,13 +73,13 @@ $(function() {
 
 		if ($(".gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
 			$("#newThing")
-				.attr("thing", "gearNew")
+				.attr("thing", "gearsNew")
 				.attr("number", gearNumber)
 				.html("Создать новые параметры коробки передач.");
 			$("#newConfirm").modal();
 		}
 		else
-			gearNew(gearNumber);
+			gearsNew(gearNumber);
 	});
 	$(".gearOpen").click(function() {
 		var gearNumber = $(this).attr("gearNumber");
@@ -294,7 +295,7 @@ function getLastEngine() {
             else {
 
 				//alert(dat[1]);
-                engineNew();
+                enginesNew();
 
             }
         }
@@ -305,7 +306,7 @@ function getLastEngine() {
 } // getLastEngine
 //------------------------------------------------------
 
-function engineNew() {
+function enginesNew() {
 
 	$("#engineName")
 		.val("")
@@ -321,7 +322,7 @@ function engineNew() {
 	createObTable();
 	refreshResult();
 
-} // engineNew
+} // enginesNew
 //------------------------------------------------------
 
 function getengines(id) {
@@ -450,7 +451,7 @@ function getLastGear(gearNumber) {
             else {
 
 				//alert(dat[1]);
-                gearNew();
+                gearsNew(gearNumber);
 
             }
         }
@@ -461,39 +462,39 @@ function getLastGear(gearNumber) {
 } // getLastGear
 //------------------------------------------------------
 
-function gearNew(gearNumber) {
+function gearsNew(gearNumber) {
 
 	$(".gearName[gearNumber='" + gearNumber + "']")
 		.val("")
 		.attr("gearID", "")
 		.attr("modif", "false");
-	if (gearNumber == "1") {
-		gearMain = 0;
+	if (gearNumber == 1) {
+		gearMain = 1;
 		$("#gearMain").val(gearMain);
 		gearCols = 0;
 		$("#gearCols").val(gearCols);
-		obFinish = 0;
+		obFinish = obTo ? obTo : 0;
 		$("#obFinish").val(obFinish);
 	}
 	else {
-		gearMain2 = 0;
+		gearMain2 = 1;
     	$("#gearMain2").val(gearMain2);
     	gearCols2 = 0;
     	$("#gearCols2").val(gearCols2);
-    	obFinish2 = 0;
+    	obFinish2 = obTo ? obTo : 0;
     	$("#obFinish2").val(obFinish2);
     }
 
 	createGearTable(gearNumber);
 	refreshResult();
 
-} // gearNew
+} // gearsNew
 //------------------------------------------------------
 
 function getgears(id, gearNumber) {
 
     $.post("engine.php", "command=getGear&id=" + id + "&number=" + gearNumber, function(data) {
-        alert(data);
+        //alert(data);
         var dat = data.split("-=-");
 
         if (dat[0] == "ok") {
@@ -578,9 +579,9 @@ function gearSave(gearNumber) {
 
 	var gearID = $(".gearName[gearNumber='" + gearNumber + "']").attr("gearID");
 	var gearTitle = $(".gearName[gearNumber='" + gearNumber + "']").val();
-	var obFinishCurr = gearNumber == "1" ? obFinish : obFinish2;
-	var gearMainCurr = gearNumber == "1" ? gearMain : gearMain2;
-	var gearNumbersCurr = gearNumber == "1" ? gearNumbers : gearNumbers2;
+	var obFinishCurr = gearNumber == 1 ? obFinish : obFinish2;
+	var gearMainCurr = gearNumber == 1 ? gearMain : gearMain2;
+	var gearNumbersCurr = gearNumber == 1 ? gearNumbers : gearNumbers2;
     var command = "command=saveGear&id=" + gearID + "&title=" + gearTitle + "&number=" + gearNumber + "&data=" + obFinishCurr + ";" + gearMainCurr + ";" + gearNumbersCurr.join(";");
     //alert("save - " + command);
     $.post("engine.php", command, function(data) {
@@ -632,11 +633,11 @@ function fillDropDown(table, number = -1) {
 function removeRecord() {
 
 	$("#removingConfirm").modal("hide");
-	$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
+	$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&number=" + $("#removingThing").attr("number") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
 		var dat = data.split("-=-");
 
 		if (dat[0] == "ok") {
-			engineNew();
+			eval($("#removingThing").attr("table") + "New(" + $("#removingThing").attr("number") + ");");
 			alert("Запись успешно удалена из базы");
 		}
 		else
@@ -710,6 +711,8 @@ function createObTable() {
 	obCurr = obFrom;
 	for (c = 0; c < obCols; c++) {
 		obs[c] = roundForInterpol(obCurr);
+		if (!moms[c])
+			moms[c] = 1;
 		header += "<th id='ob" + c + "'>" + obs[c] + "</th>";
 		body += "<td><input id='mom" + c + "' class='mom' type='number' value='" + moms[c] + "'></td>";
 		//console.log(obCurr + " - " + obs[c] + " - " + moms[c]);
@@ -741,7 +744,10 @@ function createGearTable(num) {
 	idS = num == 1 ? "" : "2";
 
 	if (gC == 0) {
-		$("#gearTable").html("");
+		if (num == 1)
+			$("#gearTable").html("");
+		else
+			$("#gearTable2").html("");
 		gN.length = 0;
 		return;
 	}
@@ -751,6 +757,8 @@ function createGearTable(num) {
 	header = "<tr><th>Передача</th>";
 	body = "<tr><td>Передаточное число</td>";
 	for (gearCurr = 1; gearCurr <= gC; gearCurr++) {
+		if (!gN[gearCurr - 1])
+			gN[gearCurr - 1] = 1;
 		header += "<th style='color: #fff; background-color: " + col[gearCurr] + "'>" + gearCurr + "</th>";
 		body += "<td><input id='gearNumber" + idS + (gearCurr - 1) + "' class='gearNumber' type='number' value='" + gN[gearCurr - 1] + "'></td>";
 	}
