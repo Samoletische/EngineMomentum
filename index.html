@@ -1,125 +1,244 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-	    <meta name="viewport" content="width=device-width, initial-scale=1">
-		<meta charset="UTF-8">
-		<title>Двигатель</title>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
-		<link rel="stylesheet" href="style.css">
-	</head>
-	<body>
-		<div class="container-fluid">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="UTF-8">
+	<title>Двигатель</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<link rel="stylesheet" href="css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+	<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container-fluid">
+	<div class="row">
+		<div class="col-sm-12 bg-success">
+			<span class="header">Параметры двигателя</span>
+			<input id="engineName" type="text" engineID="" modif="false" value="" />
+			<span id="engineNew" class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+			<span id="engineOpen" class="glyphicon glyphicon-open" aria-hidden="true"></span>
+			<span id="engineSave" class="glyphicon glyphicon-save" aria-hidden="true"></span>
+			<span id="engineRemove" class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
+		</div>
+	</div>
+	<div class="row">
+		<div class="paramCaption col-sm-12">
 			<div class="row">
-				<div class="col-sm-12 bg-success header"><h4>Параметры двигателя</h4></div>
-			</div>
-			<div class="row">
-				<div class="paramCaption col-sm-12">
-					<div class="row">
-						<div class="paramCaption col-sm-3">Диапазон оборотов, об.</div>
-						<div class="paramValue col-sm-2">
-							от <input id="obFrom" type="number" value="">
-							до <input id="obTo" type="number" value="">
-						</div>
-						<div class="paramCaption col-sm-2">Количество значений</div>
-						<div class="paramValue col-sm-2"><input id="obCols" type="number" value=""></div>
-					</div>
+				<div class="paramCaption col-sm-3">Диапазон оборотов, об.</div>
+				<div class="paramValue col-sm-2">
+					от <input id="obFrom" type="number" value="">
+					до <input id="obTo" type="number" value="">
 				</div>
-			</div>
-			<div class="row">
-				<div id="obTable" class="col-sm-12"></div>
-			</div>
-			<div class="row">
-				<div class="col-sm-12 bg-success header"><h4>Параметры коробок передач</h4></div>
-			</div>
-			<div class="row">
-				<div class="gearBox col-sm-6">
-					<div class="row">
-						<div class="col-sm-12 bg-warning header"><h5>Коробка № 1</h5></div>
-					</div>
-					<div class="row">
-						<div class="paramCaption col-sm-2">Главная пара</div>
-						<div class="paramValue col-sm-2"><input id="gearMain" type="number" value=""></div>
-						<div class="paramCaption col-sm-2">Количество передач</div>
-						<div class="paramValue col-sm-2"><input id="gearCols" type="number" value=""></div>
-						<div class="paramCaption col-sm-2">Отсечка, об.</div>
-						<div class="paramValue col-sm-2"><input id="obFinish" type="number" value=""></div>
-					</div>
-					<div class="row">
-						<div id="gearTable" class="col-sm-12 gearTable"></div>
-					</div>
-				</div>
-				<div class="gearBox col-sm-6">
-					<div class="row">
-						<div class="col-sm-12 bg-warning header"><h5>Коробка № 2</h5></div>
-					</div>
-					<div class="row">
-						<div class="paramCaption col-sm-2">Главная пара</div>
-						<div class="paramValue col-sm-2"><input id="gearMain2" type="number" value=""></div>
-						<div class="paramCaption col-sm-2">Количество передач</div>
-						<div class="paramValue col-sm-2"><input id="gearCols2" type="number" value=""></div>
-						<div class="paramCaption col-sm-2">Отсечка, об.</div>
-						<div class="paramValue col-sm-2"><input id="obFinish2" type="number" value=""></div>
-					</div>
-					<div class="row">
-						<div id="gearTable2" class="col-sm-12 gearTable"></div>
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-xs-12 bg-success header"><h4>Параметры колес</h4></div>
-			</div>
-			<div class="row">
-				<div class="wheelParams col-sm-6">
-					<div class="row">
-						<div class="col-sm-12 bg-warning header"><h5>Колесо № 1</h5></div>
-					</div>
-					<div class="row">
-						<div class="paramCaption col-md-2">Ширина шины, мм</div>
-						<div class="paramValue col-md-2"><input id="wheelWidth" type="number" value=""></div>
-						<div class="paramCaption col-md-2">Высота шины, %</div>
-						<div class="paramValue col-md-2"><input id="wheelHeight" type="number" value=""></div>
-						<div class="paramCaption col-md-2">Диск, дюйм</div>
-						<div class="paramValue col-md-2"><input id="wheelDisk" type="number" value=""></div>
-					</div>
-				</div>
-				<div class="wheelParams col-sm-6">
-					<div class="row">
-						<div class="col-sm-12 bg-warning header"><h5>Колесо № 2</h5></div>
-					</div>
-					<div class="row">
-						<div class="paramCaption col-md-2">Ширина шины, мм</div>
-						<div class="paramValue col-md-2"><input id="wheelWidth2" type="number" value=""></div>
-						<div class="paramCaption col-md-2">Высота шины, %</div>
-						<div class="paramValue col-md-2"><input id="wheelHeight2" type="number" value=""></div>
-						<div class="paramCaption col-md-2">Диск, дюйм</div>
-						<div class="paramValue col-md-2"><input id="wheelDisk2" type="number" value=""></div>
-					</div>
-				</div>
-			</div>
-			<hr>
-			<div class="row">
-				<div class="col-md-6 paramCaption">Результаты по коробке и колесу № 1</div>
-				<div class="col-md-6 paramCaption">Результаты по коробке и колесу № 2</div>
-			</div>
-			<div class="row">
-				<div id="resTable1" class="col-md-6"></div>
-				<div id="resTable2" class="col-md-6"></div>
-			</div>
-			<div class="row">
-				<div class="col-md-6">
-					<div id="engineDraw"></div>
-				</div>
-				<div class="col-md-6">
-					<div id="gearsDraw"></div>
-				</div>
+				<div class="paramCaption col-sm-2">Количество значений</div>
+				<div class="paramValue col-sm-2"><input id="obCols" type="number" value=""></div>
 			</div>
 		</div>
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/2.6.6/svg.min.js"></script>
-		<script type="text/javascript" src="script.js"></script>
-	</body>
+	</div>
+	<div class="row">
+		<div id="obTable" class="col-sm-12"></div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12 bg-success">
+			<span class="header">Параметры коробок передач</span>
+		</div>
+	</div>
+	<div class="row">
+		<div class="gearBox col-sm-6">
+			<div class="row">
+				<div class="col-sm-12 bg-warning">
+					<span class="header">Коробка № 1</span>
+					<input class="gearName" gearNumber="1" type="text" gearID="" modif="false" value="" />
+					<span class="gearNew glyphicon glyphicon-plus-sign" aria-hidden="true" gearNumber="1"></span>
+					<span class="gearOpen glyphicon glyphicon-open" aria-hidden="true" gearNumber="1"></span>
+					<span class="gearSave glyphicon glyphicon-save" aria-hidden="true" gearNumber="1"></span>
+					<span class="gearRemove glyphicon glyphicon-minus-sign" aria-hidden="true" gearNumber="1"></span>
+				</div>
+			</div>
+			<div class="row">
+				<div class="paramCaption col-sm-2">Главная пара</div>
+				<div class="paramValue col-sm-2"><input id="gearMain" type="number" value=""></div>
+				<div class="paramCaption col-sm-2">Количество передач</div>
+				<div class="paramValue col-sm-2"><input id="gearCols" type="number" value=""></div>
+				<div class="paramCaption col-sm-2">Отсечка, об.</div>
+				<div class="paramValue col-sm-2"><input id="obFinish" type="number" value=""></div>
+			</div>
+			<div class="row">
+				<div id="gearTable" class="col-sm-12 gearTable"></div>
+			</div>
+		</div>
+		<div class="gearBox col-sm-6">
+			<div class="row">
+				<div class="col-sm-12 bg-warning">
+					<span class="header">Коробка № 2</span>
+					<input class="gearName" gearNumber="2" type="text" gearID="" modif="false" value="" />
+					<span class="gearNew glyphicon glyphicon-plus-sign" aria-hidden="true" gearNumber="2"></span>
+					<span class="gearOpen glyphicon glyphicon-open" aria-hidden="true" gearNumber="2"></span>
+					<span class="gearSave glyphicon glyphicon-save" aria-hidden="true" gearNumber="2"></span>
+					<span class="gearRemove glyphicon glyphicon-minus-sign" aria-hidden="true" gearNumber="2"></span>
+				</div>
+			</div>
+			<div class="row">
+				<div class="paramCaption col-sm-2">Главная пара</div>
+				<div class="paramValue col-sm-2"><input id="gearMain2" type="number" value=""></div>
+				<div class="paramCaption col-sm-2">Количество передач</div>
+				<div class="paramValue col-sm-2"><input id="gearCols2" type="number" value=""></div>
+				<div class="paramCaption col-sm-2">Отсечка, об.</div>
+				<div class="paramValue col-sm-2"><input id="obFinish2" type="number" value=""></div>
+			</div>
+			<div class="row">
+				<div id="gearTable2" class="col-sm-12 gearTable"></div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-xs-12 bg-success header"><h4>Параметры колес</h4></div>
+	</div>
+	<div class="row">
+		<div class="wheelParams col-sm-6">
+			<div class="row">
+				<div class="col-sm-12 bg-warning header"><h5>Колесо № 1</h5></div>
+			</div>
+			<div class="row">
+				<div class="paramCaption col-md-2">Ширина шины, мм</div>
+				<div class="paramValue col-md-2"><input id="wheelWidth" type="number" value=""></div>
+				<div class="paramCaption col-md-2">Высота шины, %</div>
+				<div class="paramValue col-md-2"><input id="wheelHeight" type="number" value=""></div>
+				<div class="paramCaption col-md-2">Диск, дюйм</div>
+				<div class="paramValue col-md-2"><input id="wheelDisk" type="number" value=""></div>
+			</div>
+		</div>
+		<div class="wheelParams col-sm-6">
+			<div class="row">
+				<div class="col-sm-12 bg-warning header"><h5>Колесо № 2</h5></div>
+			</div>
+			<div class="row">
+				<div class="paramCaption col-md-2">Ширина шины, мм</div>
+				<div class="paramValue col-md-2"><input id="wheelWidth2" type="number" value=""></div>
+				<div class="paramCaption col-md-2">Высота шины, %</div>
+				<div class="paramValue col-md-2"><input id="wheelHeight2" type="number" value=""></div>
+				<div class="paramCaption col-md-2">Диск, дюйм</div>
+				<div class="paramValue col-md-2"><input id="wheelDisk2" type="number" value=""></div>
+			</div>
+		</div>
+	</div>
+	<hr>
+	<div class="row">
+		<div class="col-md-6 paramCaption">Результаты по коробке и колесу № 1</div>
+		<div class="col-md-6 paramCaption">Результаты по коробке и колесу № 2</div>
+	</div>
+	<div class="row">
+		<div id="resTable1" class="col-md-6"></div>
+		<div id="resTable2" class="col-md-6"></div>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<div id="engineDraw"></div>
+		</div>
+		<div class="col-md-6">
+			<div id="gearsDraw"></div>
+		</div>
+	</div>
+</div>
+
+<!-- modals -->
+<div id="enginesLoad" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Загрузка данных двигателя</h4>
+			</div>
+			<div class="modal-body">
+				<div class="dropdown">
+					<h4>Загрузка из базы</h4>
+					<button id="dropdownMenuEngine" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+						Сохранённые параметры двигателей
+						<span class="caret"></span>
+					</button>
+					<ul id="enginesDropDown" class="dropdown-menu" aria-labelledby="dropdownMenuEngine"></ul>
+				</div>
+				<hr>
+				<h4>Загрузка из Excel</h4>
+				Вставьте сюда данные из Excel (две строки: верхняя - обороты; нижняя - момент):
+				<textarea id="engineInput" rows="6"></textarea>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
+				<button id="engineLoadApply" type="button" class="btn btn-primary">Загрузить</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="gearsLoad" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Загрузка данных коробки передач</h4>
+			</div>
+			<div class="modal-body">
+				<div class="dropdown">
+					<h4>Загрузка из базы</h4>
+					<button id="dropdownMenuGear" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+						Сохранённые параметры коробок
+						<span class="caret"></span>
+					</button>
+					<ul id="gearsDropDown" class="dropdown-menu" aria-labelledby="dropdownMenuGear"></ul>
+				</div>
+				<hr>
+				<h4>Загрузка из Excel</h4>
+				Вставьте сюда данные из Excel (первая строка - отсечка; вторая строка - главная пара; остальные строки - передаточные числа передач по-порядку):
+				<textarea id="gearInput" gearNumber="1" rows="6"></textarea>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
+				<button id="gearLoadApply" type="button" class="btn btn-primary">Загрузить</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="removingConfirm" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Вы действительно хотите удалить следующую запись из базы?</h4>
+			</div>
+			<div class="modal-body">
+				<div id="removingThing" table="" recordID="" number="1"></div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-dismiss="modal">Нет</button>
+				<button id="ConfirmRemove" type="button" class="btn btn-default">Да</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="newConfirm" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Вы действительно хотите выполнить это действие?</h4>
+			</div>
+			<div class="modal-body">
+				<div id="newThing" thing="engineNew" number="1"></div>
+				<div>Все несохранённые текущие параметры будут утеряны!</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-dismiss="modal">Нет</button>
+				<button id="ConfirmNew" type="button" class="btn btn-default">Да</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="js/svg.min.js"></script>
+<script src="js/script.js"></script>
+</body>
 </html>
