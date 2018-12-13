@@ -1,9 +1,7 @@
 <?php
 //echo "start";
 $res = "";
-$db = mysqli_connect("localhost", "root", "5ql@dmin", "engine");
-if (!$db)
-	$res = ".-=-(001) Не могу подключиться к базе данных по причине: ".mysqli_connect_error();
+require("config.php");
 
 if ($res == "") {
 	mysqli_query($db, "SET NAMES utf8");
