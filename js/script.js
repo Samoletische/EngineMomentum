@@ -20,18 +20,134 @@ var colors2 = ["#E040FB", "#0018A9", "#1029BA", "#203ACB", "#314BDC", "#425CED",
 $(function() {
 
 	initialize();
-	
+
+	// ------- engine modal start -------
+	$("#engineNew").click(function() {
+		if ($("#engineName").attr("modif") == "true") {
+			$("#newThing")
+				.attr("thing", "enginesNew")
+				.attr("number", "")
+				.html("Создать новые параметры двигателя.");
+			$("#newConfirm").modal();
+		}
+		else
+			enginesNew();
+	});
+	$("#engineOpen").click(function() {
+		if ($("#engineName").attr("modif") == "true") {
+			$("#newThing")
+				.attr("thing", "engineLoad")
+				.attr("number", "")
+				.html("Загрузить параметры двигателя из базы.");
+			$("#newConfirm").modal();
+		}
+		else
+			engineLoad();
+	});
+	$("#engineSave").click(engineSave);
+	$("#engineRemove").click(function() {
+		if ($("#engineName").attr("engineID") != "") {
+			$("#removingThing")
+				.text($("#engineName").val())
+				.attr("table", "engines")
+				.attr("recordID", $("#engineName")
+				.attr("engineID"))
+				.attr("gearNumber", "");
+			$("#removingConfirm").modal();
+		}
+	});
+	$("#engineLoadApply").click(function() {
+	    if (engineLoadApply($("#engineInput").val().split("\n"))) {
+	        $("#enginesLoad").modal("hide");
+	        $("#engineName").attr("modif", "true");
+	    }
+        else
+            alert("Введены некорректные данные зависимости момента двигателя от оборотов.");
+	});
+	$(".dropdown-toggle").dropdown();
+	// ------- engine modal end -------
+
+	// ------- gear modal start -------
+	$(".gearNew").click(function() {
+		var gearNumber = $(this).attr("gearNumber");
+
+		if ($(".gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
+			$("#newThing")
+				.attr("thing", "gearsNew")
+				.attr("number", gearNumber)
+				.html("Создать новые параметры коробки передач.");
+			$("#newConfirm").modal();
+		}
+		else
+			gearsNew(gearNumber);
+	});
+	$(".gearOpen").click(function() {
+		var gearNumber = $(this).attr("gearNumber");
+
+		if ($(".gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
+			$("#newThing")
+				.attr("thing", "gearLoad")
+				.attr("gearNumber", gearNumber)
+				.html("Загрузить параметры коробки передач из базы.");
+			$("#newConfirm").modal();
+		}
+		else
+			gearLoad(gearNumber);
+	});
+	$(".gearSave").click(function() {
+		gearSave($(this).attr("gearNumber"));
+	});
+	$(".gearRemove").click(function() {
+		var gearNumber = $(this).attr("gearNumber");
+
+		if ($(".gearName[gearNumber='" + gearNumber + "']").attr("gearID") != "") {
+			$("#removingThing")
+				.text($(".gearName[gearNumber='" + gearNumber + "']").val())
+				.attr("table", "gears")
+				.attr("recordID", $(".gearName[gearNumber='" + gearNumber + "']").attr("gearID"))
+				.attr("number", gearNumber);
+			$("#removingConfirm").modal();
+		}
+	});
+	$("#gearLoadApply").click(function() {
+		var gearNumber = $("#gearInput").attr("gearNumber");
+
+		if (gearLoadApply($("#gearInput").val().split("\n"), gearNumber)) {
+			$("#gearsLoad").modal("hide");
+			$(".gearName[gearNumber='" + gearNumber + "']").attr("modif", "true");
+		}
+		else
+			alert("Введены некорректные данные коробки передач.");
+	});
+	$(".dropdown-toggle").dropdown();
+	// ------- gear modal end -------
+
+	// ------- common modals start -------
+	$("#ConfirmRemove").click(removeRecord);
+	$("#ConfirmNew").click(function() {
+		$("#newConfirm").modal("hide");
+		if ($("#newThing").attr("number") == "")
+			eval($("#newThing").attr("thing") + "();");
+		else
+			eval($("#newThing").attr("thing") + "(" + $("#newThing").attr("number") + ");");
+	});
+	// ------- common modals end -------
+
+	// ------- engine elements start -------
 	$("#obFrom").change(function() {
+		$("#engineName").attr("modif", "true");
 		obFrom = parseFloat($(this).val());
 		createObTable();
 		refreshResult();
 	});
 	$("#obTo").change(function() {
+		$("#engineName").attr("modif", "true");
 		obTo = parseFloat($(this).val());
 		createObTable();
 		refreshResult();
 	});
 	$("#obCols").change(function() {
+		$("#engineName").attr("modif", "true");
 		obCols = $(this).val();
 		if (obCols < 4) {
 			$(this).val(4);
@@ -41,35 +157,45 @@ $(function() {
 		createObTable();
 		refreshResult();
 	});
-	
+	// ------- engine elements end -------
+
+	// ------- gears elements start -------
 	$("#gearCols").change(function() {
+		$(".gearName[gearNumber='1']").attr("modif", "true");
 		gearCols = parseInt($(this).val());
 		createGearTable(1);
 		refreshResult();
 	});
 	$("#gearMain").change(function() {
+		$(".gearName[gearNumber='1']").attr("modif", "true");
 		gearMain = parseFloat($(this).val());
 		refreshResult();
 	});
 	$("#obFinish").change(function() {
+		$(".gearName[gearNumber='1']").attr("modif", "true");
 		obFinish = parseFloat($(this).val());
 		refreshResult();
 	});
 	
 	$("#gearCols2").change(function() {
+		$(".gearName[gearNumber='2']").attr("modif", "true");
 		gearCols2 = parseInt($(this).val());
 		createGearTable(2);
 		refreshResult();
 	});
 	$("#gearMain2").change(function() {
+		$(".gearName[gearNumber='2']").attr("modif", "true");
 		gearMain2 = parseFloat($(this).val());
 		refreshResult();
 	});
 	$("#obFinish2").change(function() {
+		$(".gearName[gearNumber='2']").attr("modif", "true");
 		obFinish2 = parseFloat($(this).val());
 		refreshResult();
 	});
-	
+	// ------- gears elements end -------
+
+	// ------- wheels elements start -------
 	$("#wheelWidth").change(function() {
 		wheelWidth = parseFloat($(this).val());
 		refreshResult();
@@ -97,34 +223,12 @@ $(function() {
 		//console.log("change wheelDisk");
 		refreshResult();
 	});
-	
-	$("input.mom, input.gearNumber").change(refreshResult);
+	// ------- wheels elements end -------
 	
 }); // start
 //------------------------------------------------------
 
 function initialize() {
-	
-	obFrom = 2000;
-	$("#obFrom").val(obFrom);
-	obTo = 9000;
-	$("#obTo").val(obTo);
-	obCols = 15;
-	$("#obCols").val(obCols);
-	
-	gearCols = 5;
-	$("#gearCols").val(gearCols);
-	gearMain = 4.9;
-	$("#gearMain").val(gearMain);
-	obFinish = 8000;
-	$("#obFinish").val(obFinish);
-	
-	gearCols2 = 5;
-	$("#gearCols2").val(gearCols2);
-	gearMain2 = 3.9;
-	$("#gearMain2").val(gearMain2);
-	obFinish2 = 7000;
-	$("#obFinish2").val(obFinish2);
 	
 	interpolStep = 50;
 	
@@ -141,17 +245,15 @@ function initialize() {
 	$("#wheelHeight2").val(wheelHeight2);
 	wheelDisk2 = 14;
 	$("#wheelDisk2").val(wheelDisk2);
-	
-	obs = [2000, 2500, 3000, 3500, 4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500, 8000, 8500, 9000];
-	moms = [92, 92, 101, 108, 120, 132, 134, 136, 133, 132, 125, 117, 107, 88, 56];
-	gearNumbers = [2.92, 2.05, 1.56, 1.31, 1.13];
-	gearNumbers2 = [2.92, 1.81, 1.28, 0.97, 0.78];
+
+	getLastEngine();
+
+	getLastGear(1);
+	getLastGear(2);
+//	gearNumbers = [2.92, 2.05, 1.56, 1.31, 1.13];
+//	gearNumbers2 = [2.92, 1.81, 1.28, 0.97, 0.78];
 	
 	engine = new Engine();
-	
-	createObTable();
-	createGearTable(1);
-	createGearTable(2);
 	
 	drawWidth = $("#engineDraw").width();
 	drawHeight = 600;
@@ -168,9 +270,392 @@ function initialize() {
 } // initialize
 //------------------------------------------------------
 
+// ------- Engine start -------
+
+function getLastEngine() {
+
+    $.post("engine.php", "command=getLastEngine", function(data) {
+        //alert(data);
+        var dat = data.split("-=-");
+
+        if (dat[0] == "ok") {
+            if ((dat.length > 2) && (dat[3] != "")) {
+
+                $("#engineName")
+                	.attr("engineID", dat[1])
+                	.attr("modif", "false")
+                	.val(dat[2]);
+
+                var d = new Array(2);
+                d[0] = dat[3]; // obs
+                d[1] = dat[4]; // moms
+                engineLoadApply(d);
+
+            }
+            else {
+
+				//alert(dat[1]);
+                enginesNew();
+
+            }
+        }
+        else
+            alert(dat[1]);
+    });
+
+} // getLastEngine
+//------------------------------------------------------
+
+function enginesNew() {
+
+	$("#engineName")
+		.val("")
+		.attr("engineID", "")
+		.attr("modif", "false");
+	obFrom = 0;
+	$("#obFrom").val(obFrom);
+	obTo = 0;
+	$("#obTo").val(obTo);
+	obCols = 0;
+	$("#obCols").val(obCols);
+
+	createObTable();
+	refreshResult();
+
+} // enginesNew
+//------------------------------------------------------
+
+function getengines(id) {
+
+    $.post("engine.php", "command=getEngine&id=" + id, function(data) {
+        //alert(data);
+        var dat = data.split("-=-");
+
+        if (dat[0] == "ok") {
+            if (dat[3] != "") {
+
+                $("#engineName")
+                	.attr("engineID", dat[1])
+                	.val(dat[2]);
+
+                var d = new Array(2);
+                d[0] = dat[3]; // obs
+                d[1] = dat[4]; // moms
+                engineLoadApply(d);
+
+            }
+            else
+				alert(dat[1]);
+        }
+        else
+            alert(dat[1]);
+    });
+
+} // getengines
+//------------------------------------------------------
+
+function engineLoad() {
+
+	fillDropDown("engines");
+	$("#engineInput").val("");
+	$("#enginesLoad").modal();
+	$("#engineName").attr("modif", "false");
+
+} // engineLoad
+//------------------------------------------------------
+
+function engineLoadApply(data) {
+
+    var subData;
+
+    if (data.length != 2)
+        return false;
+
+    subData = data[0].split("\t");
+    obs = new Array(subData.length);
+    for (var c = 0; c < obs.length; c++)
+        obs[c] = parseInt(subData[c]);
+
+    subData = data[1].split("\t");
+    moms = new Array(subData.length);
+    for (var c = 0; c < moms.length; c++)
+        moms[c] = parseFloat(subData[c]);
+
+    obCols = obs.length;
+    $("#obCols").val(obCols);
+    obFrom = obs[0];
+    $("#obFrom").val(obFrom);
+    obTo = obs[obCols - 1];
+    $("#obTo").val(obTo);
+
+    createObTable();
+    refreshResult();
+
+    return true;
+
+} // engineLoadApply
+//------------------------------------------------------
+
+function engineSave() {
+
+    var command = "command=saveEngine&id=" + $("#engineName").attr("engineID") + "&title=" + $("#engineName").val() + "&data=" + obs.join(",") + ";" + moms.join(",");
+    //alert("save - " + command);
+    $.post("engine.php", command, function(data) {
+        //alert(data);
+        //console.log(data);
+        var dat = data.split("-=-");
+        if (dat[0] == "ok") {
+            $("#engineName")
+            	.attr("engineID", dat[1])
+            	.attr("modif", "false");
+            alert("Параметры двигателя успешно сохранены");
+        }
+        else
+            alert(dat[1]);
+    });
+
+} // engineSave
+//------------------------------------------------------
+
+// ------- Engine end -------
+
+// ------- Gears start -------
+
+function getLastGear(gearNumber) {
+
+    $.post("engine.php", "command=getLastGear&number=" + gearNumber, function(data) {
+        //alert(data);
+        //console.log(data);
+        var dat = data.split("-=-");
+
+        if (dat[0] == "ok") {
+            if ((dat.length > 2) && (dat[3] != "")) {
+
+                $(".gearName[gearNumber='" + gearNumber + "']")
+                	.attr("gearID", dat[1])
+                	.attr("modif", "false")
+                	.val(dat[2]);
+
+//                var gNumbers = dat[5].split(";");
+//				var d = new Array(gNumbers.length + 2);
+//
+//				d[0] = dat[3]; // obFinish
+//				d[1] = dat[4]; // gearMain
+//				// gearNumbers
+//				for (var c = 0; c < gNumbers.length; c++)
+//					d[c+2] = gNumbers[c];
+
+                gearLoadApply(dat[3].split(";"), gearNumber);
+
+            }
+            else {
+
+				//alert(dat[1]);
+                gearsNew(gearNumber);
+
+            }
+        }
+        else
+            alert(dat[1]);
+    });
+
+} // getLastGear
+//------------------------------------------------------
+
+function gearsNew(gearNumber) {
+
+	$(".gearName[gearNumber='" + gearNumber + "']")
+		.val("")
+		.attr("gearID", "")
+		.attr("modif", "false");
+	if (gearNumber == 1) {
+		gearMain = 1;
+		$("#gearMain").val(gearMain);
+		gearCols = 0;
+		$("#gearCols").val(gearCols);
+		obFinish = obTo ? obTo : 0;
+		$("#obFinish").val(obFinish);
+	}
+	else {
+		gearMain2 = 1;
+    	$("#gearMain2").val(gearMain2);
+    	gearCols2 = 0;
+    	$("#gearCols2").val(gearCols2);
+    	obFinish2 = obTo ? obTo : 0;
+    	$("#obFinish2").val(obFinish2);
+    }
+
+	createGearTable(gearNumber);
+	refreshResult();
+
+} // gearsNew
+//------------------------------------------------------
+
+function getgears(id, gearNumber) {
+
+    $.post("engine.php", "command=getGear&id=" + id + "&number=" + gearNumber, function(data) {
+        //alert(data);
+        var dat = data.split("-=-");
+
+        if (dat[0] == "ok") {
+            if (dat[3] != "") {
+
+                $(".gearName[gearNumber='" + gearNumber + "']")
+                	.attr("gearID", dat[1])
+                	.val(dat[2]);
+
+//				var gNumbers = dat[5].split(";");
+//                var d = new Array(gNumbers.length + 2);
+//
+//                d[0] = dat[3]; // obFinish
+//                d[1] = dat[4]; // gearMain
+//                // gearNumbers
+//                for (var c = 0; c < gNumbers.length; c++)
+//                	d[c+2] = gNumbers[c];
+
+                gearLoadApply(dat[3].split(";"), gearNumber);
+
+            }
+            else
+				alert(dat[1]);
+        }
+        else
+            alert(dat[1]);
+    });
+
+} // getgears
+//------------------------------------------------------
+
+function gearLoad(gearNumber) {
+
+	//alert("gearsLoad");
+	fillDropDown("gears", gearNumber);
+	$("#gearInput")
+		.val("")
+		.attr("gearNumber", gearNumber);
+	$("#gearsLoad").modal();
+	$(".gearName[gearNumber='" + gearNumber + "']").attr("modif", "false");
+
+} // gearLoad
+//------------------------------------------------------
+
+function gearLoadApply(data, gearNumber) {
+
+    if (data.length < 3)
+        return false;
+	//console.log("gearNumber=" + gearNumber);
+    if (gearNumber == 1) {
+		obFinish = parseInt(data[0].replace(",", "."));
+    	gearMain = parseFloat(data[1].replace(",", "."));
+    	gearCols = parseInt(data.length - 2);
+    	gearNumbers = new Array(gearCols);
+    	for (var c = 2; c < data.length; c++)
+    		gearNumbers[c-2] = parseFloat(data[c].replace(",", "."));
+    	$("#gearMain").val(gearMain);
+    	$("#gearCols").val(gearCols);
+    	$("#obFinish").val(obFinish);
+    }
+    else {
+		obFinish2 = parseInt(data[0].replace(",", "."));
+		gearMain2 = parseFloat(data[1].replace(",", "."));
+		gearCols2 = parseInt(data.length - 2);
+		gearNumbers2 = new Array(gearCols2);
+		for (var c = 2; c < data.length; c++)
+			gearNumbers2[c-2] = parseFloat(data[c].replace(",", "."));
+		$("#gearMain2").val(gearMain2);
+		$("#gearCols2").val(gearCols2);
+		$("#obFinish2").val(obFinish2);
+	 }
+
+    createGearTable(gearNumber);
+    refreshResult();
+
+    return true;
+
+} // gearLoadApply
+//------------------------------------------------------
+
+function gearSave(gearNumber) {
+
+	var gearID = $(".gearName[gearNumber='" + gearNumber + "']").attr("gearID");
+	var gearTitle = $(".gearName[gearNumber='" + gearNumber + "']").val();
+	var obFinishCurr = gearNumber == 1 ? obFinish : obFinish2;
+	var gearMainCurr = gearNumber == 1 ? gearMain : gearMain2;
+	var gearNumbersCurr = gearNumber == 1 ? gearNumbers : gearNumbers2;
+    var command = "command=saveGear&id=" + gearID + "&title=" + gearTitle + "&number=" + gearNumber + "&data=" + obFinishCurr + ";" + gearMainCurr + ";" + gearNumbersCurr.join(";");
+    //alert("save - " + command);
+    $.post("engine.php", command, function(data) {
+        //alert(data);
+        //console.log(data);
+        var dat = data.split("-=-");
+        if (dat[0] == "ok") {
+            $(".gearName[gearNumber='" + gearNumber + "']")
+            	.attr("gearID", dat[1])
+            	.attr("modif", "false");
+            alert("Параметры коробки передач успешно сохранены");
+        }
+        else
+            alert(dat[1]);
+    });
+
+} // gearSave
+//------------------------------------------------------
+
+// ------- Gears end -------
+
+// ------- Common DB start -------
+function fillDropDown(table, number = -1) {
+
+	var command = "command=getDropDown&table=" + table + "&number=" + number;
+	$.post("engine.php", command, function(data) {
+		//alert(data);
+		var dat = data.split("-=-");
+
+        if (dat[0] == "ok") {
+			$("#" + table + "DropDown").html(dat[1]);
+			$("." + table + "Load").click(function() {
+				var el = $(this);
+
+				$("#" + table + "Load").modal("hide");
+				if (el.attr("number"))
+					eval("get" + table + "(" + el.attr(table + "ID") + ", " + el.attr("number") + ");");
+				else
+					eval("get" + table + "(" + el.attr(table + "ID") + ");");
+			});
+		}
+		else
+			alert(dat[1]);
+	});
+
+} // fillDropDown
+//------------------------------------------------------
+
+function removeRecord() {
+
+	$("#removingConfirm").modal("hide");
+	$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&number=" + $("#removingThing").attr("number") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
+		var dat = data.split("-=-");
+
+		if (dat[0] == "ok") {
+			eval($("#removingThing").attr("table") + "New(" + $("#removingThing").attr("number") + ");");
+			alert("Запись успешно удалена из базы");
+		}
+		else
+			alert(dat[1]);
+	});
+
+} // removeRecord
+//------------------------------------------------------
+
+// ------- Common DB end -------
+
+// ------- Common elements start -------
+
 function refreshResult() {
-	
+
+    //console.log("start refresh");
 	engine.initialize();
+	//console.log("must start moms");
 	engine.interpol();
 	engine.gearInitialize();
 	engine.drawMomentum();
@@ -200,7 +685,15 @@ function roundForInterpol(value) {
 //------------------------------------------------------
 
 function createObTable() {
-	
+
+	if ((obCols < 5) || (obTo <= obFrom)) {
+		$("#obTable").html("");
+		getRank();
+		obs.length = 0;
+        moms.length = 0;
+		return;
+	}
+
 	var html = "<table class='table table-bordered'>";
 	var header = "";
 	var body = "";
@@ -218,15 +711,22 @@ function createObTable() {
 	obCurr = obFrom;
 	for (c = 0; c < obCols; c++) {
 		obs[c] = roundForInterpol(obCurr);
+		if (!moms[c])
+			moms[c] = 1;
 		header += "<th id='ob" + c + "'>" + obs[c] + "</th>";
 		body += "<td><input id='mom" + c + "' class='mom' type='number' value='" + moms[c] + "'></td>";
+		//console.log(obCurr + " - " + obs[c] + " - " + moms[c]);
 		obCurr += obStep;
-      //console.log(obCurr);
 	}
 	
 	html += header + "</tr>" + body + "</tr></table>";
 	
 	$("#obTable").html(html);
+
+	$("input.mom").change(function() {
+		$("#engineName").attr("modif", "true");
+		refreshResult();
+	});
 	
 } // createObTable
 //------------------------------------------------------
@@ -242,25 +742,43 @@ function createGearTable(num) {
 	gN = num == 1 ? gearNumbers : gearNumbers2;
 	col = num == 1 ? colors : colors2;
 	idS = num == 1 ? "" : "2";
-	
-	gearNumbers.length = gearCols;
+
+	if (gC == 0) {
+		if (num == 1)
+			$("#gearTable").html("");
+		else
+			$("#gearTable2").html("");
+		gN.length = 0;
+		return;
+	}
+
+	gN.length = gC;
 	
 	header = "<tr><th>Передача</th>";
 	body = "<tr><td>Передаточное число</td>";
 	for (gearCurr = 1; gearCurr <= gC; gearCurr++) {
+		if (!gN[gearCurr - 1])
+			gN[gearCurr - 1] = 1;
 		header += "<th style='color: #fff; background-color: " + col[gearCurr] + "'>" + gearCurr + "</th>";
 		body += "<td><input id='gearNumber" + idS + (gearCurr - 1) + "' class='gearNumber' type='number' value='" + gN[gearCurr - 1] + "'></td>";
 	}
 	html += header + "</tr>" + body + "</tr></table>";
 	
 	num == 1 ? $("#gearTable").html(html) : $("#gearTable2").html(html);
+
+	$("input.gearNumber").change(function() {
+		$(".gearName[gearNumber='" + num + "']").attr("modif", "true");
+		refreshResult();
+	});
 	
 } // createGearTable
 //------------------------------------------------------
 
 function getMoms() {
-	for (var c = 0; c < obCols; c++)
+	for (var c = 0; c < obCols; c++) {
 		moms[c] = parseFloat($("#mom" + c).val());
+		//console.log(moms[c]);
+    }
 } // getMoms
 //------------------------------------------------------
 
@@ -273,8 +791,26 @@ function getGearNumbers() {
 } // getGearNumbers
 //------------------------------------------------------
 
-function interpolSpline3(ob, mom, secondIndex) { // interpolation of 3 power spline
+function clearEngineDraw() {
 	
+	engineDraw.rect(drawWidth, drawHeight).fill("#ddddff");
+	
+} // clearEngineDraw
+//------------------------------------------------------
+
+function clearGearsDraw() {
+	
+	gearsDraw.rect(drawWidth, drawHeight).fill("#ddffdd");
+	
+} // clearGearsDraw
+//------------------------------------------------------
+
+// ------- Common elements end -------
+
+// ------- Mathematics start -------
+
+function interpolSpline3(ob, mom, secondIndex) { // interpolation of 3 power spline
+
 	var h = new Array(obCols);
 	var l = new Array(obCols);
 	var lambda = new Array(obCols);
@@ -282,12 +818,12 @@ function interpolSpline3(ob, mom, secondIndex) { // interpolation of 3 power spl
 	var b = new Array(obCols);
 	var c = new Array(obCols);
 	var d = new Array(obCols);
-		
+
 	// h & l
 	var k, cc, x, prevIndex;
-		
+
 	//console.log("second index=" + this.secondIndex);
-	
+
 	prevIndex = 0;
 	k = 1;
 	for (cc = secondIndex; cc <= rank; cc++) {
@@ -304,7 +840,7 @@ function interpolSpline3(ob, mom, secondIndex) { // interpolation of 3 power spl
 		prevIndex = cc;
 		k++;
 	}
-	
+
 	// delta & lambda
 	delta[1] = - h[2] / (2.0 * (h[1] + h[2]));
 	lambda[1] = 1.5 * (l[2] - l[1]) / (h[1] + h[2]);
@@ -317,7 +853,7 @@ function interpolSpline3(ob, mom, secondIndex) { // interpolation of 3 power spl
 		//console.log("delta=" + delta[k-1]);
 		//console.log("lambda=" + lambda[k-1]);
 	}
-	
+
 	// c, b & d
 	c[0] = 0;
 	c[obCols - 1] = 0;
@@ -331,7 +867,7 @@ function interpolSpline3(ob, mom, secondIndex) { // interpolation of 3 power spl
 		//console.log(k + " - b=" + this.b[k]);
 		//console.log(k + " - d=" + this.d[k]);
 	}
-	
+
 	// interpolation
 	prevIndex = rank;
 	k = obCols - 1;
@@ -345,18 +881,18 @@ function interpolSpline3(ob, mom, secondIndex) { // interpolation of 3 power spl
 		mom[cc] = mom[prevIndex] + b[k] * x + c[k] * x * x + d[k] * x * x * x;
 		//console.log(cc + " - mom=" + this.mom[cc] + "; x=" + x + "; b=" + b[k] + "; c=" + c[k] + "; d=" + d[k]);
 	}
-	
+
 } // interpolSpline3
 //------------------------------------------------------
 
 function findCrossingGears(gearCols, gears, wheelDiametr, gM, numBox, finishRank) {
-	
+
 	var lastC;
 	var sResult = "";
 	var oborot;
-	var gN = numBox == 1 ? gearNumbers : gearNumbers2; 
-	
-	// find point between which exists cross 
+	var gN = numBox == 1 ? gearNumbers : gearNumbers2;
+
+	// find point between which exists cross
 	for (var k = 1; k < gearCols; k++) {
 		lastC = 0;
 		oborot = -1;
@@ -370,24 +906,24 @@ function findCrossingGears(gearCols, gears, wheelDiametr, gM, numBox, finishRank
 			for (var cc = 1; cc <= finishRank; cc++) {
 				if (gears[k-1].mom[cc] == 0.0)
 					continue;
-				
+
 				//console.log(this.gears[k-1].ob[lastCC] + ", " + this.gears[k-1].ob[cc] + " -=- " + this.gears[k].ob[lastC] + ", " + this.gears[k].ob[c]);
-				
+
 				if (gears[k-1].ob[cc] < gears[k].ob[lastC]) {
 					lastCC = cc;
 					//console.log("continue before crossing");
 					continue;
 				}
-				
+
 				crossExists = false;
-				
+
 				if (gears[k-1].ob[lastCC] > gears[k].ob[c]) {
 					//console.log("x11=" + this.gears[k-1].ob[lastCC] + "; x21=" + this.gears[k].ob[lastC] + "; x12=" + this.gears[k-1].ob[cc] + "; x22=" + this.gears[k].ob[c]);
 					//console.log("max=" + Math.max(this.gears[k-1].ob[lastCC], this.gears[k].ob[lastC]) + "; min=" + Math.min(this.gears[k-1].ob[cc], this.gears[k].ob[c]));
 					//console.log("break before crossing");
 					break;
 				}
-			
+
 				// found this interval
 				//crossExists = (this.gears[k-1].mom[lastCC] > this.gears[k].mom[lastC]) != (this.gears[k-1].mom[cc] > this.gears[k].mom[c]);
 				crossExists = Math.max(gears[k-1].ob[lastCC], gears[k].ob[lastC]) <= Math.min(gears[k-1].ob[cc], gears[k].ob[c]);
@@ -423,23 +959,23 @@ function findCrossingGears(gearCols, gears, wheelDiametr, gM, numBox, finishRank
 				break;
 			lastC = c;
 		}
-		
-		// if gears not crossing, find value (y) of greater gear from last oborot (x) of lesser gear  
+
+		// if gears not crossing, find value (y) of greater gear from last oborot (x) of lesser gear
 		if (oborot == -1) {
 			lastC = 0;
 			for (var c = 1; c <= finishRank; c++) {
 				if (gears[k].mom[cc] == 0.0)
 					continue;
-				
+
 				if ((gears[k].ob[lastC] <= gears[k-1].ob[finishRank]) && (gears[k-1].ob[finishRank] <= gears[k].ob[c])) {
 					oborot = Math.round(gears[k-1].ob[finishRank] / 60.0 / 3.14 / wheelDiametr * gM * gN[k-1] * 1000.0);
 					break;
 				}
-				
+
 				lastC = c;
 			}
 		}
-		
+
 		if (oborot != -1) {
 			sResult += sResult == "" ? "" : "<br />";
 			sResult += "С " + k + " передачи на " + (k + 1) + " передачу следует переключаться при " + oborot + " оборотах двигателя";
@@ -448,18 +984,18 @@ function findCrossingGears(gearCols, gears, wheelDiametr, gM, numBox, finishRank
 			sResult += sResult == "" ? "" : "<br />";
 			sResult += "Между " + k + " передачей и " + (k + 1) + " передачей нет ни пересечений, ни вообще общих интервалов оборотов двигателя";
 		}
-			
+
 	}
-	
+
 	return sResult;
-	
+
 } // findCrossingGears
 //------------------------------------------------------
 
 function findCrossPoint(x11, y11, x12, y12, x21, y21, x22, y22, method) {
-	
+
 	var x, y;
-	
+
 	switch (method) {
 		case 0:
 			if ((x11 == x12) || (x21 == x22)) {
@@ -470,56 +1006,46 @@ function findCrossPoint(x11, y11, x12, y12, x21, y21, x22, y22, method) {
 			// less gear
 			a1 = (y11 - y12) / (x11 - x12);
 			b1 = y11 - a1 * x11;
-				
+
 			// great gear
 			a2 = (y21 - y22) / (x21 - x22);
 			b2 = y21 - a2 * x21;
-				
+
 			if (a1 == a2) {
 				//console.log("Невозможно посчитать пересечение, т. к. линии параллельны!");
 				x = 0.0;
 				break;
 			}
-			
+
 			// cross point
 			x = (b2 - b1) / (a1 - a2);
 			y = a1 * x + b1;
-			
+
 			if ((Math.max(x11, x21) >= x) || (x >= Math.min(x12, x22)))
 				x = 0.0;
-			
+
 			//console.log(x11 + ", " + x21 + " <= " + x + " <= " + x12 + ", " + x22);
-			
+
 			break;
 	};
-	
+
 	return {"x": x, "y": y};
-	
+
 } // findCrossPoint
 //------------------------------------------------------
 
 function fn(x, mx, my) {
-	
+
 	for (var c = 0; c <= rank; c++)
 		if (mx[c] == x)
 			return my[c];
-	
-}
+
+} // fn
 //------------------------------------------------------
 
-function clearEngineDraw() {
-	
-	engineDraw.rect(drawWidth, drawHeight).fill("#ddddff");
-	
-} // clearEngineDraw
-//------------------------------------------------------
+// ------- Mathematics end -------
 
-function clearGearsDraw() {
-	
-	gearsDraw.rect(drawWidth, drawHeight).fill("#ddffdd");
-	
-} // clearGearsDraw
-//------------------------------------------------------
+// ------- Objects start -------
 
 function Engine() {
 	
@@ -551,7 +1077,10 @@ function Engine() {
 	} // createGears
 	
 	this.initialize = function() {
-		
+
+		getMoms();
+        getGearNumbers();
+
 		this.gearCols = gearNumbers.length;
 		this.gearCols2 = gearNumbers2.length;
 		this.ob = new Array(rank);
@@ -570,9 +1099,6 @@ function Engine() {
 		var oF2 = Math.min(obFinish2, obTo);
 		var rankExists = false;
 		var rank2Exists = false;
-		
-		getMoms();
-		getGearNumbers();
 		
 		var c = 0;
 		obCurr = obs[0];
@@ -640,38 +1166,62 @@ function Engine() {
 		var obCurr, momCurr;
 		var obStep = parseFloat((obTo - obFrom) / (obCols - 1.0));
 		var momStep = parseFloat(this.momMax / (obCols - 1.0));
+
+		var first = true;
+		var colorAxe = "#909";
+		var colorOther = "#999";
+		var color = colorAxe;
 		
 		if (!svgExists)
 			return;
 		
 		clearEngineDraw();
-		
+
+		if (this.momMax == 0.0)
+			return;
+
 		// axes
 		obCurr = obFrom;
+		first = true;
 		for (var c = 0; c < obCols; c++) {
 			
 			x = roundForInterpol(obCurr);
 			x = Math.round((drawWidth - 80) / (obTo - obFrom) * (x - obFrom) + 50);
-			engineDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 90).font({fill: "#999", family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
-			engineDraw.line(x, 50, x, drawHeight - 90).fill("none").stroke({color: "#999", width: 2});
+			engineDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 90).font({fill: colorAxe, family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
+			if (first) {
+				first = false;
+				color = colorAxe;
+			}
+			else
+				color = colorOther;
+			engineDraw.line(x, 50, x, drawHeight - 90).fill("none").stroke({color: color, width: 2});
 			
 			//console.log(x);
 			obCurr += obStep;
 			
 		}
 		momCurr = 0;
+		first = true;
 		for (var c = 0; c <= obCols; c++) {
 			
 			y = Math.round(drawHeight - 200 - (drawHeight - 200) / this.momMax * momCurr + 100);
 			if (y < 50)
 				break;
-			engineDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: "#999", family: "Helvetica", anchor: "middle"});
-			engineDraw.line(50, y, drawWidth - 20, y).fill("none").stroke({color: "#999", width: 2});
+			engineDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: colorAxe, family: "Helvetica", anchor: "middle"});
+			if (first) {
+				first = false;
+				color = colorAxe;
+			}
+			else
+				color = colorOther;
+			engineDraw.line(40, y, drawWidth - 20, y).fill("none").stroke({color: color, width: 2});
 			
 			momCurr += momStep;
 			
 		}
-		
+		engineDraw.text("Момент, Н*м").move(55, 50).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
+		engineDraw.text("Обороты, об./мин.").move(drawWidth - 150, drawHeight - 120).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
+
 		// data
 		for (var c = 0; c <= rank; c++) {
 			if (this.mom[c] == 0.0)
@@ -712,36 +1262,60 @@ function Engine() {
 	    var obCurr, momCurr;
 		var obStep = parseFloat((obGearsMax - obGearsMin) / (obCols - 1));
 		var momStep = parseFloat((momGearsMax - momGearsMin) / (obCols - 1));
+
+		var first = true;
+		var colorAxe = "#909";
+		var colorOther = "#999";
+		var color = colorAxe;
 		
 		clearGearsDraw();
+
+		if ((this.momMax == 0.0) || (!momGearsMax) || (momGearsMax == -1))
+			return;
 		
 		//x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (this.ob[c] - obGearsMin) + 50);
 		//y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (this.mom[c] - momGearsMin) + 50);
 		
 		// axes
 		obCurr = obGearsMin;
+		first = true;
 		for (var c = 0; c < obCols; c++) {
 			
 			x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (obCurr - obGearsMin) + 50);
-			gearsDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 25).font({fill: "#999", family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
-			gearsDraw.line(x, 20, x, drawHeight - 25).fill("none").stroke({color: "#999", width: 2});
+			gearsDraw.text(Math.round(obCurr).toString()).move(x, drawHeight - 25).font({fill: colorAxe, family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
+			if (first) {
+				first = false;
+				color = colorAxe;
+			}
+			else
+				color = colorOther;
+			gearsDraw.line(x, 20, x, drawHeight - 25).fill("none").stroke({color: color, width: 2});
 			
 			//console.log(x);
 			obCurr += obStep;
 			
 		}
 		momCurr = momGearsMin;
+		first = true;
 		for (var c = 0; c < obCols; c++) {
 			
 			y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (momCurr - momGearsMin) + 50);
 			if (y < 20)
 				break;
-			gearsDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: "#999", family: "Helvetica", anchor: "middle"});
-			gearsDraw.line(50, y, drawWidth - 15, y).fill("none").stroke({color: "#999", width: 2});
+			gearsDraw.text(Math.round(momCurr).toString()).move(25, y - 8).font({fill: colorAxe, family: "Helvetica", anchor: "middle"});
+			if (first) {
+				first = false;
+				color = colorAxe;
+			}
+			else
+				color = colorOther;
+			gearsDraw.line(44, y, drawWidth - 15, y).fill("none").stroke({color: color, width: 2});
 			
 			momCurr += momStep;
 			
 		}
+		gearsDraw.text("Момент, Н*м").move(55, 20).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
+		gearsDraw.text("Скорость, км/ч").move(drawWidth - 130, drawHeight - 50).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
 		
 		for (var c = 0; c < this.gearCols; c++)
 			this.gears[c].drawGear(1);
@@ -786,8 +1360,8 @@ function Gear(num, parent, numBox) {
 	    var momGearsMin = numBox == 1 ? this.parent.momGearsMin : this.parent.momGearsMin2;
 	    var momGearsMax = numBox == 1 ? this.parent.momGearsMax : this.parent.momGearsMax2;
 	    var wD = numBox == 1 ? this.parent.wheelDiametr : this.parent.wheelDiametr2;
-		
-		c = 0;
+
+	    c = 0;
 		for (k = 0; k <= rank; k++) {
 			
 			this.ob[k] = this.parent.ob[k] / gN[this.gearNumber] / gM * 60.0 * 3.14 * wD / 1000.0; // x
@@ -847,7 +1421,7 @@ function Gear(num, parent, numBox) {
 	    var obGearsMax = Math.max(this.parent.obGearsMax, this.parent.obGearsMax2);
 	    var momGearsMin = Math.min(this.parent.momGearsMin, this.parent.momGearsMin2);
 	    var momGearsMax = Math.max(this.parent.momGearsMax, this.parent.momGearsMax2);
-	    var finishRank = numBox == 1 ? this.parent.finishRank : this.parent.finishRank2; 
+	    var finishRank = numBox == 1 ? this.parent.finishRank : this.parent.finishRank2;
 		
 		if (!svgExists)
 			return;
@@ -871,3 +1445,5 @@ function Gear(num, parent, numBox) {
 
 } // Gear
 //------------------------------------------------------
+
+// ------- Objects end -------
