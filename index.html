@@ -12,8 +12,227 @@
 </head>
 <body>
 <div id="wrap">
-
-	<div class="row">
+	<div id="sheet">
+		<div class="row">
+			<div class="col col-sm-4">
+				<svg id="plus_under">
+					<path d="M 0 5 L 12 0 V 5 H 12"></path>
+				</svg>
+				<svg id="in_under1">
+					<path d="M 17 0 L 17 109 L 0 104 L 0 5 L 17 0"></path>
+				</svg>
+				<div id="leftPanel">
+					<div class="title">Двигатель</div>
+					<div class="hr"></div>
+					<div class="controlPanel">
+						<input class="engineName caption" type="text" engineID="" modif="false" value="ВАЗ-2108 двс проба 1" />
+						<span class="engineNew control glyphicon glyphicon-plus-sign"></span>
+						<span class="engineSave control glyphicon glyphicon-export"></span>
+						<span class="engineOpen control glyphicon glyphicon-import"></span>
+						<span class="engineRemove control glyphicon glyphicon-minus-sign"></span>
+					</div>
+					<div class="val">
+						<div class="valCaption">Диапазон ОТ, об</div>
+						<input class="obFrom valValue" type="number" value="2000" />
+					</div>
+					<div class="val">
+						<div class="valCaption">Диапазон ДО, об</div>
+						<input class="obTo valValue" type="number" value="8500" />
+					</div>
+					<div class="val">
+						<div class="valCaption">Количество значений</div>
+						<input class="obCols valValue" type="number" value="15" />
+					</div>
+					<table>
+						<tr>
+							<th>Обороты</th>
+							<th>Момент</th>
+						</tr>
+					</table>
+					<div class="engineTable">
+						<table>
+							<tr>
+								<td class="first">2000</td>
+								<td><input row="0" class="mom" type="number" value="92" /></td>
+							</tr>
+							<tr>
+								<td class="first">2450</td>
+								<td><input row="1" class="mom" type="number" value="93" /></td>
+							</tr>
+							<tr>
+								<td class="first">2950</td>
+								<td><input row="2" class="mom" type="number" value="116" /></td>
+							</tr>
+							<tr>
+								<td class="first">2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td class="first">2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>2000</td>
+								<td>92</td>
+							</tr>
+							<tr>
+								<td>8500</td>
+								<td>127</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+				<svg id="plus_above">
+					<path d="M 0 0 L 22 0 L 22 19 L 11 25 L 0 19 L 0 0"></path>
+				</svg>
+				<span id="tabPlus" class="glyphicon glyphicon-plus-sign"></span>
+				<svg id="in_above1">
+					<path d="M 0 0 L 29 0 L 39 49 L 29 99 L 0 99 L 0 0"></path>
+				</svg>
+				<span id="tabTitleIn1" class="tabTitle">1</span>
+				<span id="tabIn1" class="glyphicon glyphicon-minus-sign"></span>
+			</div>
+			<div class="col col-sm-4">
+				<svg id="out_under">
+					<path d="M 0 0 L 12 5 L 12 104 L 0 109 L 0 0"></path>
+				</svg>
+				<div id="rightPanel">
+					<div class="title">Коробка передач</div>
+					<div class="hr"></div>
+					<div class="controlPanel">
+						<input class="gearName caption" type="text" engineID="" modif="false" value="719 ряд Саблин 4,27" />
+						<span class="gearNew control glyphicon glyphicon-plus-sign"></span>
+						<span class="gearSave control glyphicon glyphicon-export"></span>
+						<span class="gearOpen control glyphicon glyphicon-import"></span>
+						<span class="gearRemove control glyphicon glyphicon-minus-sign"></span>
+					</div>
+					<div class="val">
+						<div class="valCaption">Отсечка, об</div>
+						<input class="obFinish valValue" type="number" value="8500" />
+					</div>
+					<div class="val">
+						<div class="valCaption">Главная пара</div>
+						<input class="gearMain valValue" type="number" value="4.27" />
+					</div>
+					<div class="val">
+						<div class="valCaption">Количество передач</div>
+						<input class="gearCols valValue" type="number" value="6" />
+					</div>
+					<table>
+						<tr>
+							<th>Передача</th>
+							<th>Передаточное число</th>
+						</tr>
+					</table>
+					<div class="gearTable">
+						<table>
+							<tr>
+								<td class="first">1</td>
+								<td><input row="0" class="gear" type="number" value="2.667" /></td>
+							</tr>
+							<tr>
+								<td class="first">2</td>
+								<td><input row="1" class="gear" type="number" value="1.933" /></td>
+							</tr>
+							<tr>
+								<td class="first">3</td>
+								<td><input row="2" class="gear" type="number" value="1.538" /></td>
+							</tr>
+							<tr>
+								<td class="first">4</td>
+								<td>1.316</td>
+							</tr>
+							<tr>
+								<td class="first">5</td>
+								<td>1.143</td>
+							</tr>
+							<tr>
+								<td>6</td>
+								<td>0.9</td>
+							</tr>
+						</table>
+					</div>
+					<div class="title">Колесо</div>
+					<div class="hr"></div>
+					<div class="controlPanel">
+						<input class="wheelName caption" type="text" engineID="" modif="false" value="719 ряд Саблин 4,27" />
+						<span class="wheelNew control glyphicon glyphicon-plus-sign"></span>
+						<span class="wheelSave control glyphicon glyphicon-export"></span>
+						<span class="wheelOpen control glyphicon glyphicon-import"></span>
+						<span class="wheelRemove control glyphicon glyphicon-minus-sign"></span>
+					</div>
+					<div class="val">
+						<div class="valCaption">Ширина шины, мм</div>
+						<input class="wheelWidth valValue" type="number" value="185" />
+					</div>
+					<div class="val">
+						<div class="valCaption">Высота профиля, %</div>
+						<input class="wheelHeight valValue" type="number" value="75" />
+					</div>
+					<div class="val">
+						<div class="valCaption">Диск, дюйм</div>
+						<input class="wheelDisk valValue" type="number" value="14" />
+					</div>
+					<table></table>
+					<div class="title">Переключение</div>
+					<div class="hr"></div>
+					<div class="val">
+						<div class="valCaptionBold">1->2 8500</div>
+						<div class="valValue">4->5 8500</div>
+					</div>
+					<div class="val">
+						<div class="valCaptionBold">2->3 8500</div>
+						<div class="valValue">5->6 8500</div>
+					</div>
+					<div class="val">
+						<div class="valCaptionBold">3->4 8500</div>
+						<div class="valValue"></div>
+					</div>
+				</div>
+				<svg id="out_above">
+					<path d="M 0 0 L 29 0 L 39 49 L 29 99 L 0 99 L 0 0"></path>
+				</svg>
+				<span id="tabTitleOut" class="tabTitle">1</span>
+			</div>
+			<div class="col col-sm-4">
+				<div id="engineDraw"></div>
+				<div id="gearsDraw"></div>
+			</div>
+		</div>
+	</div>
+	<!--div class="row">
 		<div class="col-sm-12 bg-success">
 			<span class="header">Параметры двигателя</span>
 			<input id="engineName" type="text" engineID="" modif="false" value="" />
@@ -139,7 +358,7 @@
 		<div class="col-md-6">
 			<div id="gearsDraw"></div>
 		</div>
-	</div>
+	</div-->
 </div>
 
 <!-- modals -->

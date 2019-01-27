@@ -256,7 +256,7 @@ function initialize() {
 	engine = new Engine();
 	
 	drawWidth = $("#engineDraw").width();
-	drawHeight = 600;
+	drawHeight = 388;
 	if (SVG.supported) {
 		engineDraw = SVG("engineDraw").size("100%", drawHeight);
 		gearsDraw = SVG("gearsDraw").size("100%", drawHeight);
