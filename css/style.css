@@ -20,6 +20,39 @@ body {
 	background-color: #b5b4c6;
 }
 
+#wrap {
+	position: absolute;
+	width: 95%;
+	height: 95%;
+	left: 0;
+	top: 0;
+	display: flex;
+	justify-content: left;
+	margin: 10px;
+	/*align-items: center;*/
+}
+
+#sheet {
+	/*left: 0px;
+	top: 0px;*/
+	/*width: 960px;*/
+	width: 1260px;
+	height: 780px;
+	/*border: 1px solid red;*/
+}
+
+.leftCol {
+	z-index: 30;
+}
+
+.middleCol {
+	z-index: 20;
+}
+
+.rightCol {
+	z-index: 10;
+}
+
 .tabTitle {
 	font-size: 18pt;
 	color: #fff;
@@ -54,7 +87,7 @@ body {
 }
 
 .caption {
-	width: 163px;
+	width: 150px;
 	height: 22px;
 	margin-left: 32px;
 	padding: 5px;
@@ -68,13 +101,25 @@ body {
 }
 
 .valCaption, .valCaptionBold {
-	width: 170px;
+	width: 160px;
 	height: 30px;
 	padding-left: 37px;
-	font-size: 10pt;
+	font-size: 9pt;
 	text-align: left;
 	color: #000;
 	float: left;
+	/*border: 1px solid red;*/
+}
+
+.valCaptionRight {
+	width: 140px;
+	height: 30px;
+	padding-right: 30px;
+	font-size: 9pt;
+	text-align: center;
+	color: #000;
+	float: right;
+	font-family: HelveticaNeueBlack;
 	/*border: 1px solid red;*/
 }
 
@@ -87,28 +132,20 @@ body {
 }
 
 .valValue {
-	width: 128px;
+	width: 125px;
 	height: 22px;
 	font-family: HelveticaNeueBlack;
 	font-size: 10pt;
 	text-align: center;
 	color: #000;
-	float: right;
+	/*float: right;*/
 	border: 0px;
 	background-color: #eee;
 	/*border: 1px solid;*/
 }
 
-.mom {
-	text-align: center;
-	padding-left: 15px;
-	border: 0px;
-    background-color: inherit;
-    width: 80px;
-}
-
 table {
-	width: 258px;
+	width: 238px;
 	margin-left: 37px;
 	/*border: 1px solid red;*/
 	font-family: HelveticaNeueBlack;
@@ -132,7 +169,7 @@ th {
 }
 
 th:first-of-type, td:first-of-type {
-	width: 130px;
+	width: 110px;
 }
 
 td {
@@ -147,26 +184,6 @@ td.first {
 .row, .col {
 	margin: 0px;
 	padding: 0px;
-}
-
-#wrap {
-	position: absolute;
-	width: 95%;
-	height: 95%;
-	left: 0;
-	top: 0;
-	display: flex;
-	justify-content: left;
-	margin: 10px;
-	/*align-items: center;*/
-}
-
-#sheet {
-	/*left: 0px;
-	top: 0px;*/
-	width: 960px;
-	height: 780px;
-	/*border: 1px solid red;*/
 }
 
 /* Left panel */
@@ -199,17 +216,31 @@ path {
 	/*border: 1px solid green;*/
 	border-radius: 8px 0px 0px 8px;
 	/*width: 325px;*/
-	width: 303px;
+	width: 286px;
 	height: 780px;
 	margin-left: 18px;
 	background-color: #eee;
 }
 
+#engineTable {
+	width: 290px;
+	height: 540px;
+	overflow: auto;
+}
+
 .tableEngine {
-	width: 320px;
+	width: 300px;
 	height: 560px;
 	overflow-x: hidden;
 	overflow-y: auto;
+}
+
+.mom {
+	text-align: center;
+	padding-left: 15px;
+	border: 0px;
+    background-color: inherit;
+    width: 80px;
 }
 
 #plus_above {
@@ -233,6 +264,13 @@ path {
 	cursor: pointer;
 }
 
+.tabMinus {
+	position: absolute;
+	left: 10px;
+	top: 135px;
+	cursor: pointer;
+}
+
 #in_above1 {
 	position: absolute;
 	left: 0px;
@@ -243,7 +281,7 @@ path {
 	cursor: pointer;
 }
 
-#tabTitleIn1 {
+.tabTitle {
 	position: absolute;
 	left: 10px;
 	top: 92px;
@@ -261,39 +299,42 @@ path {
 
 #out_under {
 	position: absolute;
-	left: 319px;
+	left: 304px;
 	top: 660px;
 	width: 13px;
 	height: 110px;
 	fill: #4c7300;
-	z-index: 10;
 	/*border: 1px solid red;*/
 }
 
 #rightPanel {
 	border-radius: 0px 8px 8px 0px;
 	/*width: 325px;*/
-	width: 319px;
+	width: 304px;
 	height: 780px;
 	background-color: #eee;
 }
 
 #out_above {
 	position: absolute;
-	left: 302px;
+	left: 287px;
 	top: 665px;
 	width: 40px;
 	height: 100px;
 	fill: #81c000;
-	z-index: 20;
 }
 
 #tabTitleOut {
 	position: absolute;
-	left: 313px;
+	left: 295px;
 	top: 698px;
 	cursor: pointer;
-	z-index: 30;
+}
+
+#gearTable {
+	width: 290px;
+	height: 230px;
+	overflow: auto;
 }
 
 .gear {
@@ -302,10 +343,6 @@ path {
 	border: 0px;
     background-color: inherit;
     width: 80px;
-}
-
-.engineDraw, .gearsDraw {
-	z-index: 0;
 }
 
 /*.header {

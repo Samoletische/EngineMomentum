@@ -14,7 +14,7 @@
 <div id="wrap">
 	<div id="sheet">
 		<div class="row">
-			<div class="col col-sm-4">
+			<div class="col col-lg-3 leftCol">
 				<svg id="plus_under">
 					<path d="M 0 5 L 12 0 V 5 H 12"></path>
 				</svg>
@@ -25,23 +25,23 @@
 					<div class="title">Двигатель</div>
 					<div class="hr"></div>
 					<div class="controlPanel">
-						<input class="engineName caption" type="text" engineID="" modif="false" value="ВАЗ-2108 двс проба 1" />
-						<span class="engineNew control glyphicon glyphicon-plus-sign"></span>
-						<span class="engineSave control glyphicon glyphicon-export"></span>
-						<span class="engineOpen control glyphicon glyphicon-import"></span>
-						<span class="engineRemove control glyphicon glyphicon-minus-sign"></span>
+						<input id="engineName" class="caption" type="text" engineID="" modif="false" value="" />
+						<span id="engineNew" class="control glyphicon glyphicon-plus-sign"></span>
+						<span id="engineSave" class="control glyphicon glyphicon-export"></span>
+						<span id="engineOpen" class="control glyphicon glyphicon-import"></span>
+						<span id="engineRemove" class="control glyphicon glyphicon-minus-sign"></span>
 					</div>
 					<div class="val">
 						<div class="valCaption">Диапазон ОТ, об</div>
-						<input class="obFrom valValue" type="number" value="2000" />
+						<input id="obFrom" class="valValue" type="number" value="" />
 					</div>
 					<div class="val">
 						<div class="valCaption">Диапазон ДО, об</div>
-						<input class="obTo valValue" type="number" value="8500" />
+						<input id="obTo" class="valValue" type="number" value="" />
 					</div>
 					<div class="val">
 						<div class="valCaption">Количество значений</div>
-						<input class="obCols valValue" type="number" value="15" />
+						<input id="obCols" class="valValue" type="number" value="" />
 					</div>
 					<table>
 						<tr>
@@ -49,69 +49,13 @@
 							<th>Момент</th>
 						</tr>
 					</table>
-					<div class="engineTable">
-						<table>
+					<div id="engineTable">
+						<!--table> // for example
 							<tr>
 								<td class="first">2000</td>
 								<td><input row="0" class="mom" type="number" value="92" /></td>
 							</tr>
-							<tr>
-								<td class="first">2450</td>
-								<td><input row="1" class="mom" type="number" value="93" /></td>
-							</tr>
-							<tr>
-								<td class="first">2950</td>
-								<td><input row="2" class="mom" type="number" value="116" /></td>
-							</tr>
-							<tr>
-								<td class="first">2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td class="first">2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>2000</td>
-								<td>92</td>
-							</tr>
-							<tr>
-								<td>8500</td>
-								<td>127</td>
-							</tr>
-						</table>
+						</table-->
 					</div>
 				</div>
 				<svg id="plus_above">
@@ -121,10 +65,10 @@
 				<svg id="in_above1">
 					<path d="M 0 0 L 29 0 L 39 49 L 29 99 L 0 99 L 0 0"></path>
 				</svg>
-				<span id="tabTitleIn1" class="tabTitle">1</span>
-				<span id="tabIn1" class="glyphicon glyphicon-minus-sign"></span>
+				<span class="tabTitle" number="1">1</span>
+				<span class="tabMinus glyphicon glyphicon-minus-sign"></span>
 			</div>
-			<div class="col col-sm-4">
+			<div class="col col-lg-3 middleCol">
 				<svg id="out_under">
 					<path d="M 0 0 L 12 5 L 12 104 L 0 109 L 0 0"></path>
 				</svg>
@@ -132,23 +76,23 @@
 					<div class="title">Коробка передач</div>
 					<div class="hr"></div>
 					<div class="controlPanel">
-						<input class="gearName caption" type="text" engineID="" modif="false" value="719 ряд Саблин 4,27" />
-						<span class="gearNew control glyphicon glyphicon-plus-sign"></span>
-						<span class="gearSave control glyphicon glyphicon-export"></span>
-						<span class="gearOpen control glyphicon glyphicon-import"></span>
-						<span class="gearRemove control glyphicon glyphicon-minus-sign"></span>
+						<input id="gearName" class="caption" type="text" engineID="" modif="false" value="" />
+						<span id="gearNew" class="control glyphicon glyphicon-plus-sign"></span>
+						<span id="gearSave" class="control glyphicon glyphicon-export"></span>
+						<span id="gearOpen" class="control glyphicon glyphicon-import"></span>
+						<span id="gearRemove" class="control glyphicon glyphicon-minus-sign"></span>
 					</div>
 					<div class="val">
 						<div class="valCaption">Отсечка, об</div>
-						<input class="obFinish valValue" type="number" value="8500" />
+						<input id="obFinish" class="valValue" type="number" value="" />
 					</div>
 					<div class="val">
 						<div class="valCaption">Главная пара</div>
-						<input class="gearMain valValue" type="number" value="4.27" />
+						<input id="gearMain" class="valValue" type="number" value="" />
 					</div>
 					<div class="val">
 						<div class="valCaption">Количество передач</div>
-						<input class="gearCols valValue" type="number" value="6" />
+						<input id="gearCols" class="valValue" type="number" value="" />
 					</div>
 					<table>
 						<tr>
@@ -156,69 +100,55 @@
 							<th>Передаточное число</th>
 						</tr>
 					</table>
-					<div class="gearTable">
-						<table>
+					<div id="gearTable">
+						<!--table> // for example
 							<tr>
 								<td class="first">1</td>
 								<td><input row="0" class="gear" type="number" value="2.667" /></td>
 							</tr>
-							<tr>
-								<td class="first">2</td>
-								<td><input row="1" class="gear" type="number" value="1.933" /></td>
-							</tr>
-							<tr>
-								<td class="first">3</td>
-								<td><input row="2" class="gear" type="number" value="1.538" /></td>
-							</tr>
-							<tr>
-								<td class="first">4</td>
-								<td>1.316</td>
-							</tr>
-							<tr>
-								<td class="first">5</td>
-								<td>1.143</td>
-							</tr>
-							<tr>
-								<td>6</td>
-								<td>0.9</td>
-							</tr>
-						</table>
+						</table-->
 					</div>
 					<div class="title">Колесо</div>
 					<div class="hr"></div>
 					<div class="controlPanel">
-						<input class="wheelName caption" type="text" engineID="" modif="false" value="719 ряд Саблин 4,27" />
-						<span class="wheelNew control glyphicon glyphicon-plus-sign"></span>
-						<span class="wheelSave control glyphicon glyphicon-export"></span>
-						<span class="wheelOpen control glyphicon glyphicon-import"></span>
-						<span class="wheelRemove control glyphicon glyphicon-minus-sign"></span>
+						<input id="wheelName" class="caption" type="text" engineID="" modif="false" value="" />
+						<span id="wheelNew" class="control glyphicon glyphicon-plus-sign"></span>
+						<span id="wheelSave" class="control glyphicon glyphicon-export"></span>
+						<span id="wheelOpen" class="control glyphicon glyphicon-import"></span>
+						<span id="wheelRemove" class="control glyphicon glyphicon-minus-sign"></span>
 					</div>
 					<div class="val">
 						<div class="valCaption">Ширина шины, мм</div>
-						<input class="wheelWidth valValue" type="number" value="185" />
+						<input id="wheelWidth" class="valValue" type="number" value="" />
 					</div>
 					<div class="val">
 						<div class="valCaption">Высота профиля, %</div>
-						<input class="wheelHeight valValue" type="number" value="75" />
+						<input id="wheelHeight" class="valValue" type="number" value="" />
 					</div>
 					<div class="val">
 						<div class="valCaption">Диск, дюйм</div>
-						<input class="wheelDisk valValue" type="number" value="14" />
+						<input id="wheelDisk" class="valValue" type="number" value="" />
 					</div>
 					<table></table>
 					<div class="title">Переключение</div>
 					<div class="hr"></div>
-					<div class="val">
-						<div class="valCaptionBold">1->2 8500</div>
-						<div class="valValue">4->5 8500</div>
-					</div>
-					<div class="val">
-						<div class="valCaptionBold">2->3 8500</div>
-						<div class="valValue">5->6 8500</div>
-					</div>
-					<div class="val">
-						<div class="valCaptionBold">3->4 8500</div>
-						<div class="valValue"></div>
+					<div id="resTable">
+						<div class="val">
+							<span id="gearNext1" class="valCaptionBold">1->2 8500</span>
+							<span id="gearNext2" class="valCaptionRight">4->5 8500</span>
+						</div>
+						<div class="val">
+							<span id="gearNext3" class="valCaptionBold">2->3 8500</span>
+							<span id="gearNext4" class="valCaptionRight">5->6 8500</span>
+						</div>
+						<div class="val">
+							<span id="gearNext5" class="valCaptionBold">3->4 8500</span>
+							<span id="gearNext6" class="valValue"></span>
+						</div>
+						<div class="val">
+							<span id="gearNext7" class="valCaptionBold">3->4 8500</span>
+							<span id="gearNext8" class="valValue"></span>
+						</div>
 					</div>
 				</div>
 				<svg id="out_above">
@@ -226,7 +156,7 @@
 				</svg>
 				<span id="tabTitleOut" class="tabTitle">1</span>
 			</div>
-			<div class="col col-sm-4">
+			<div class="col col-lg-6 rightCol">
 				<div id="engineDraw"></div>
 				<div id="gearsDraw"></div>
 			</div>

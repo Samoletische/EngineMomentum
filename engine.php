@@ -7,6 +7,9 @@ if ($res == "") {
 	mysqli_query($db, "SET NAMES utf8");
 	if (isset($_POST["command"])) {
 		switch ($_POST["command"]) {
+			case "getEngines":
+				$res = getEngines();
+				break;
 			case "getLastEngine":
 				$res = getLastEngine();
 				break;
@@ -37,60 +40,209 @@ if ($res == "") {
 	}
 }
 
-echo $res;
+header('Content-type: application/json');
+echo json_encode($res);
+
+$db->close();
 //------------------------------------------------------
-
-// ------- Common DB functions start -------
-
-function getFreeID($table) {
-
-    global $db;
-
-	//throw new Exception("SELECT id FROM ".$table." GROUP BY id ORDER BY id");
-    $query = mysqli_query($db, "SELECT id FROM ".$table." GROUP BY id ORDER BY id");
-    if (!$query)
-    	return 0;
-
-    $id = 1;
-    while ($row = mysqli_fetch_array($query)) {
-        if ($id != $row["id"])
-            break;
-        $id++;
-    }
-
-    return $id;
-
-} // getFreeID
-//------------------------------------------------------
-
-function insertLastParam($field, $param) {
-
-    global $db;
-
-    $query = mysqli_query($db, "SELECT COUNT(id) AS Count FROM lastParams WHERE id=0");
-    if (!$query)
-        return false;
-
-    if ($row = mysqli_fetch_array($query))
-        if ($row["Count"] == 0) {
-            $query = mysqli_query($db, "INSERT INTO lastParams(id, ".$field.") VALUES(0, ".$param.")");
-            if (!$query)
-                return false;
-        }
-        else {
-            $query = mysqli_query($db, "UPDATE lastParams SET ".$field."=".$param." WHERE id=0");
-            if (!$query)
-                return false;
-        }
-
-        return true;
-
-} // insertLastParam
-//------------------------------------------------------
-
-// ------- Common DB functions end -------
 
 // ------- Common interface start -------
+
+function getEngines() {
+
+	global $db;
+
+	$result = [ "result" => "ok" ];
+	$result["sheets"] = Array();
+
+	try {
+		$queryString = "CREATE TEMPORARY TABLE lp
+			SELECT
+				lastParams.id AS id,
+				engines.id AS engineID,
+				engines.title AS engineTitle,
+				gears.id AS gearID,
+				gears.title AS gearTitle,
+				gears.mainGear AS mainGear,
+				gears.obFinish AS obFinish,
+				wheels.id AS wheelID,
+				wheels.title AS wheelTitle,
+				lastParams.active AS active
+			FROM
+				lastParams
+				LEFT JOIN engines ON lastParams.engineID=engines.id
+				LEFT JOIN gears ON lastParams.gearID=gears.id
+				LEFT JOIN wheels ON lastParams.wheelID=wheels.id
+			ORDER BY
+				id
+			;
+
+			SELECT
+				lp.*,
+				wh.width AS wheelWidth,
+				wh.height AS wheelHeight,
+				wh.disk AS wheelDisk
+			FROM
+				lp
+				LEFT JOIN wheels AS wh ON wh.id=lp.WheelID
+			;
+
+			SELECT
+			 	lp.id AS id,
+				moms.engineID AS engineID,
+				moms.oborots AS ob,
+				moms.momentum AS mom
+			FROM
+				lp
+				INNER JOIN enginesMomentum AS moms ON moms.engineID = lp.engineID
+			ORDER BY
+				id, engineID, ob
+			;
+
+			SELECT
+			 	lp.id AS id,
+				gs.gearID AS gearID,
+				gs.gearNumber AS num,
+				gs.gearValue AS gear
+			FROM
+				lp
+				INNER JOIN gearsGears AS gs ON gs.gearID = lp.gearID
+			ORDER BY
+				id, gearID, num";
+
+		$query = $db->multi_query($queryString);
+
+    if (!$query)
+    	throw new Exception("[getAllEngines] error: ".$db->error());
+
+		if (!$db->next_result())
+			throw new Exception("[getAllEngines] error: ".$db->error());
+
+		$res = $db->store_result();
+		if (!$res)
+			throw new Exception("[getAllEngines] error: ".$db->error());
+
+		// sheets
+		$active = 0;
+		while ($row = $res->fetch_array()) {
+
+			$result["sheets"][] = Array();
+			$sheet = count($result["sheets"]) - 1;
+			$result["sheets"][$sheet]["engine"] = Array();
+			$result["sheets"][$sheet]["engine"]["id"] = $row["engineID"];
+			$result["sheets"][$sheet]["engine"]["title"] = $row["engineTitle"];
+
+			$result["sheets"][$sheet]["gear"] = Array();
+			$result["sheets"][$sheet]["gear"]["id"] = $row["gearID"];
+			$result["sheets"][$sheet]["gear"]["title"] = $row["gearTitle"];
+			$result["sheets"][$sheet]["gear"]["gearMain"] = $row["mainGear"];
+			$result["sheets"][$sheet]["gear"]["obFinish"] = $row["obFinish"];
+
+			$result["sheets"][$sheet]["wheel"] = Array();
+			$result["sheets"][$sheet]["wheel"]["id"] = $row["wheelID"];
+			$result["sheets"][$sheet]["wheel"]["title"] = $row["wheelTitle"];
+			$result["sheets"][$sheet]["wheel"]["width"] = $row["wheelWidth"];
+			$result["sheets"][$sheet]["wheel"]["height"] = $row["wheelHeight"];
+			$result["sheets"][$sheet]["wheel"]["disk"] = $row["wheelDisk"];
+
+			if ($row["active"] == 1)
+				$result["active"] = $row["id"];
+
+		}
+
+		if (!$db->next_result())
+			throw new Exception("[getAllEngines] error: ".$db->error());
+
+		$res = $db->store_result();
+		if (!$res)
+			throw new Exception("[getAllEngines] error: ".$db->error());
+
+		// engine
+		$obFrom = 0;
+    $obTo = 0;
+		$lastID = -1;
+		$first = true;
+		$sheet = 0;
+		while ($row = $res->fetch_array()) {
+
+			if ($row["id"] != $lastID) {
+				if ($lastID != -1) {
+					$result["sheets"][$sheet]["engine"]["obFrom"] = $obFrom;
+					$result["sheets"][$sheet]["engine"]["obTo"] = $obTo;
+					$result["sheets"][$sheet]["engine"]["obCols"] = $cols;
+				}
+				$first = true;
+				$lastID = $row["id"];
+				$sheet = $lastID;
+			}
+
+			if ($first) {
+				$first = false;
+				$obFrom = $row["ob"];
+				$result["sheets"][$sheet]["engine"]["obs"] = "";
+				$result["sheets"][$sheet]["engine"]["moms"] = "";
+				$cols = 0;
+			}
+
+			$result["sheets"][$sheet]["engine"]["obs"] == "" ? $result["sheets"][$sheet]["engine"]["obs"] = $row["ob"] : $result["sheets"][$sheet]["engine"]["obs"] .= "\t".$row["ob"];
+			$result["sheets"][$sheet]["engine"]["moms"] == "" ? $result["sheets"][$sheet]["engine"]["moms"] = $row["mom"] : $result["sheets"][$sheet]["engine"]["moms"] .= "\t".$row["mom"];
+
+			$obTo = $row["ob"];
+			$cols++;
+
+		}
+		if ($lastID != -1) {
+			$result["sheets"][$sheet]["engine"]["obFrom"] = $obFrom;
+			$result["sheets"][$sheet]["engine"]["obTo"] = $obTo;
+			$result["sheets"][$sheet]["engine"]["obCols"] = $cols;
+		}
+
+		if (!$db->next_result())
+			throw new Exception("[getAllEngines] error: ".$db->error());
+
+		$res = $db->store_result();
+		if (!$res)
+			throw new Exception("[getAllEngines] error: ".$db->error());
+
+		// gear
+		$lastID = -1;
+		$first = true;
+		$sheet = 0;
+		while ($row = $res->fetch_array()) {
+
+			if ($row["id"] != $lastID) {
+				if ($lastID != -1)
+					$result["sheets"][$sheet]["gear"]["gearCols"] = $cols;
+				$first = true;
+				$lastID = $row["id"];
+				$sheet = $lastID;
+			}
+
+			if ($first) {
+				$first = false;
+				$result["sheets"][$sheet]["gear"]["gears"] = "";
+				$cols = 0;
+			}
+
+			$result["sheets"][$sheet]["gear"]["gears"] == "" ? $result["sheets"][$sheet]["gear"]["gears"] = $row["gear"] : $result["sheets"][$sheet]["gear"]["gears"] .= ";".$row["gear"];
+
+			$cols++;
+
+		}
+		if ($lastID != -1)
+			$result["sheets"][$sheet]["gear"]["gearCols"] = $cols;
+
+	}
+	catch (Exception $e) {
+		$result["result"] = "error";
+		$result["message"] = $e->getMessage();
+		return $result;
+	}
+
+	return $result;
+
+} // getAllEngines
+//------------------------------------------------------
 
 function getDropDown($table, $number) {
 
@@ -99,7 +251,7 @@ function getDropDown($table, $number) {
 
 	try {
 		//throw new Exception("SELECT id, title FROM ".$table." GROUP BY id, title");
-		$query = mysqli_query($db, "SELECT id, title FROM ".$table." GROUP BY id, title");
+		$query = mysqli_query("SELECT id, title FROM ".$table." GROUP BY id, title");
 
 		if (!$query)
 			throw new Exception("(011) Не могу работать с базой");
