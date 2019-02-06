@@ -29,7 +29,7 @@ body {
 	display: flex;
 	justify-content: left;
 	margin: 10px;
-	align-items: center;
+	/*align-items: center;*/
 }
 
 #sheet {
@@ -203,13 +203,58 @@ path {
 	/*border: 1px solid grey;*/
 }
 
-#in_under1 {
+#plus_above {
+	position: absolute;
+	left: 6px;
+	top: 18px;
+	width: 23px;
+	height: 26px;
+	fill: #fff343;
+	/*border: 1px solid navy;*/
+}
+
+#plus_above path {
+	cursor: pointer;
+}
+
+#tabPlus {
+	position: absolute;
+	left: 10px;
+	top: 21px;
+	cursor: pointer;
+}
+
+.in_under {
 	position: absolute;
 	left: 0px;
 	top: 55px;
 	width: 18px;
 	height: 110px;
 	fill: #4c7300;
+}
+
+.in_above {
+	position: absolute;
+	left: 0px;
+	top: 60px;
+	width: 40px;
+	height: 100px;
+	fill: #81c000;
+	cursor: pointer;
+}
+
+.tabTitle {
+	position: absolute;
+	left: 10px;
+	top: 92px;
+	cursor: pointer;
+}
+
+.tabMinus {
+	position: absolute;
+	left: 10px;
+	top: 135px;
+	cursor: pointer;
 }
 
 #leftPanel {
@@ -241,58 +286,6 @@ path {
 	border: 0px;
     background-color: inherit;
     width: 80px;
-}
-
-#plus_above {
-	position: absolute;
-	left: 6px;
-	top: 18px;
-	width: 23px;
-	height: 26px;
-	fill: #fff343;
-	/*border: 1px solid navy;*/
-}
-
-#plus_above path {
-	cursor: pointer;
-}
-
-#tabPlus {
-	position: absolute;
-	left: 10px;
-	top: 21px;
-	cursor: pointer;
-}
-
-.tabMinus {
-	position: absolute;
-	left: 10px;
-	top: 135px;
-	cursor: pointer;
-}
-
-#in_above1 {
-	position: absolute;
-	left: 0px;
-	top: 60px;
-	width: 40px;
-	height: 100px;
-	fill: #81c000;
-	cursor: pointer;
-}
-
-.tabTitle {
-	position: absolute;
-	left: 10px;
-	top: 92px;
-	cursor: pointer;
-}
-
-#tabIn1 {
-	position: absolute;
-	left: 10px;
-	top: 140px;
-	cursor: pointer;
 }
 
 /* right panel */
@@ -329,6 +322,8 @@ path {
 	left: 295px;
 	top: 698px;
 	cursor: pointer;
+	font-size: 18pt;
+	color: #fff;
 }
 
 #gearTable {

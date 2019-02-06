@@ -8,9 +8,10 @@ var crossMethod = 0; // 0-linear, 1-polynomial
 var svgExists = false;
 var drawWidth, drawHeight;
 var engineDraw, gearsDraw;
-var colors = ["#E040FB", "#940910", "#A50A20", "#B60B30", "#C70C41", "#D80D52", "#E91E63"];
+var colors = ["#81c000", "#01a6ff", "#ff4001", "#a801ff", "#02ccc0", "#fff343"];
 
 // old vals
+// var colors = ["#E040FB", "#940910", "#A50A20", "#B60B30", "#C70C41", "#D80D52", "#E91E63"];
 // var colors2 = ["#E040FB", "#0018A9", "#1029BA", "#203ACB", "#314BDC", "#425CED", "#536DFE"];
 // var obFrom, obTo, obCols, gearCols, gearMain, gearCols2, gearMain2, rank;
 // var obFinish, obFinish2;
@@ -228,79 +229,27 @@ function initialize() {
 	console.log("getEngines");
 	getEngines();
 
-	/*wheelWidth = 185;
-	$("#wheelWidth").val(wheelWidth);
-	wheelHeight = 70;
-	$("#wheelHeight").val(wheelHeight);
-	wheelDisk = 14;
-	$("#wheelDisk").val(wheelDisk);
-
-	wheelWidth2 = 185;
-	$("#wheelWidth2").val(wheelWidth2);
-	wheelHeight2 = 75;
-	$("#wheelHeight2").val(wheelHeight2);
-	wheelDisk2 = 14;
-	$("#wheelDisk2").val(wheelDisk2);
-
-	getLastEngine();
-
-	getLastGear(1);
-	getLastGear(2);
-//	gearNumbers = [2.92, 2.05, 1.56, 1.31, 1.13];
-//	gearNumbers2 = [2.92, 1.81, 1.28, 0.97, 0.78];
-
-	engine = new Engine();
-
-	drawWidth = $("#engineDraw").width();
-	drawHeight = 388;
-	if (SVG.supported) {
-		engineDraw = SVG("engineDraw").size("100%", drawHeight);
-		gearsDraw = SVG("gearsDraw").size("100%", drawHeight);
-		svgExists = true;
-	}
-	else
-	  alert('SVG не поддерживается. Графики рисоваться не будут.');
-
-	refreshResult();*/
-
 } // initialize
 //------------------------------------------------------
 
 // ------- Engine start -------
 
-function getEngines(num = -1) {
+function getEngines() {
 
 	$.post("engine.php", "command=getEngines", function(data) {
 		if (data.result == "ok") {
 			console.log(data);
 
-			data.sheets.forEach(function(val, key, arr){
+			clearTabs();
+
+			data.sheets.forEach(function(val, key, arr) {
+				createTab(key);
 				engines[key] = new Engine(data.sheets[key]);
 			});
 
 			activeSheet = data.active;
 
-			// show active sheet
-
-			$("#engineName")
-				.attr("engineID", engines[activeSheet].engineID)
-				.attr("modif", "false")
-				.val(engines[activeSheet].engineTitle);
-
-			$("#gearName")
-				.attr("engineID", engines[activeSheet].gearID)
-				.attr("modif", "false")
-				.val(engines[activeSheet].gearTitle);
-
-			$("#wheelName")
-				.attr("engineID", engines[activeSheet].wheelID)
-				.attr("modif", "false")
-				.val(engines[activeSheet].wheelTitle);
-
-			//console.log("engineLoadApply");
-			engineLoadApply();
-			gearLoadApply();
-			wheelLoadApply();
+			showActiveSheet();
 
 			console.log("refreshResult from getEngines");
 			refreshResult();
@@ -687,6 +636,73 @@ function removeRecord() {
 
 // ------- Common elements start -------
 
+function showActiveSheet() {
+
+	$("#engineName")
+		.attr("engineID", engines[activeSheet].engineID)
+		.attr("modif", "false")
+		.val(engines[activeSheet].engineTitle);
+
+	$("#gearName")
+		.attr("engineID", engines[activeSheet].gearID)
+		.attr("modif", "false")
+		.val(engines[activeSheet].gearTitle);
+
+	$("#wheelName")
+		.attr("engineID", engines[activeSheet].wheelID)
+		.attr("modif", "false")
+		.val(engines[activeSheet].wheelTitle);
+
+	//console.log("engineLoadApply");
+	engineLoadApply();
+	gearLoadApply();
+	wheelLoadApply();
+
+} // showActiveSheet
+//------------------------------------------------------
+
+function clearTabs() {
+
+	$("svg.in_under, svg.in_above, span.tabTitle, span.tabMinus").each(function() {
+		$(this).remove();
+	});
+
+} // clearTabs
+//------------------------------------------------------
+
+function createTab(index) {
+
+	var distance = 130;
+	var start = 80;
+
+	html = "<svg class='in_under' tab='" + index + "'><path d='M 17 0 L 17 109 L 0 104 L 0 5 L 17 0'></path></svg>";
+	html += "<svg class='in_above' tab='" + index + "'><path d='M 0 0 L 29 0 L 39 49 L 29 99 L 0 99 L 0 0'></path></svg>";
+	html += "<span class='tabTitle' tab='" + index + "'>" + (index + 1) + "</span>";
+	html += "<span class='tabMinus glyphicon glyphicon-minus-sign' tab='" + index + "'></span>";
+
+	$("div.leftCol").append(html);
+	$("svg.in_under[tab='" + index + "']")
+		.css("top", (start + distance * index).toString() + "px")
+		.css("fill", LightenDarkenColor(colors[index], -80));
+	$("svg.in_above[tab='" + index + "']")
+		.css("top", (start + 5 + distance * index).toString() + "px")
+		.css("fill", colors[index]);
+	$("span.tabTitle[tab='" + index + "']").css("top", (start + 37 + distance * index).toString() + "px");
+	$("span.tabMinus[tab='" + index + "']").css("top", (start + 80 + distance * index).toString() + "px");
+
+	$("svg.in_under, svg.in_above, span.tabTitle, span.tabMinus").click(function() {
+		activeSheet = $(this).attr("tab");
+
+		showActiveSheet();
+
+		$("#out_under").css("fill", $("svg.in_under[tab='" + activeSheet + "']").css("fill"));
+		$("#out_above").css("fill", $("svg.in_above[tab='" + activeSheet + "']").css("fill"));
+		$("#tabTitleOut").text($("span.tabTitle[tab='" + activeSheet + "']").text());
+	});
+
+} // createTab
+//------------------------------------------------------
+
 function refreshResultOnlyGear() {
 
 	engines.forEach(function(val, key, arr) {
@@ -798,7 +814,9 @@ function drawMomentum() {
 	// data
 	//console.log("drawMomentum data");
 	engines.forEach(function(val, key, arr) {
-		val.drawMomentum(obFromMin, obToMax, momMax, colors[key]);
+		color = LightenDarkenColor(colors[key], -20);
+		//console.log(color);
+		val.drawMomentum(obFromMin, obToMax, momMax, color);
 	});
 
 } // drawMomentum
@@ -823,7 +841,7 @@ function drawGears() {
 		obColsMax = Math.max(val.obCols, obColsMax);
 	});
 
-	console.log("obGearsMin="+obGearsMin+",obGearsMax="+obGearsMax+",momGearsMin="+momGearsMin+",momGearsMax="+momGearsMax);
+	//console.log("obGearsMin="+obGearsMin+",obGearsMax="+obGearsMax+",momGearsMin="+momGearsMin+",momGearsMax="+momGearsMax);
 	var obCurr, momCurr;
 	var obStep = parseFloat((obGearsMax - obGearsMin) / (obColsMax - 1));
 	var momStep = parseFloat((momGearsMax - momGearsMin) / (obColsMax - 1));
@@ -857,7 +875,7 @@ function drawGears() {
 			color = colorOther;
 		gearsDraw.line(x, 20, x, drawHeight - 35).fill("none").stroke({color: color, width: 1});
 
-		console.log(x);
+		//console.log(x);
 		obCurr += obStep;
 
 	}
@@ -886,7 +904,9 @@ function drawGears() {
 
 	// data
 	engines.forEach(function(val, key, arr) {
-		val.drawGears(obGearsMin, obGearsMax, momGearsMin, momGearsMax, colors[key]);
+		color = LightenDarkenColor(colors[key], -20);
+		//console.log(color);
+		val.drawGears(obGearsMin, obGearsMax, momGearsMin, momGearsMax, color);
 	});
 
 } // drawGears
@@ -895,6 +915,48 @@ function drawGears() {
 function drawResult(data) {
 
 } // drawResult
+//------------------------------------------------------
+
+function LightenDarkenColor(col, amt) {
+
+	var usePound = false;
+
+	if (col[0] == "#") {
+			col = col.slice(1);
+			usePound = true;
+	}
+
+	var num = parseInt(col,16);
+
+	var r = (num >> 16) + amt;
+
+	if (r > 255) r = 255;
+	else if  (r < 0) r = 0;
+	else r = r << 16;
+
+	var b = ((num >> 8) & 0x00FF) + amt;
+
+	if (b > 255) b = 255;
+	else if  (b < 0) b = 0;
+	else b = b << 8;
+
+	var g = (num & 0x0000FF) + amt;
+
+	if (g > 255) g = 255;
+	else if (g < 0) g = 0;
+
+	result = (g | b | r).toString(16);
+
+	if(result.length == 2)
+		result = (usePound?"#":"") + "0000" + result;
+	else if (result.length == 4)
+		result = (usePound?"#":"") + "00" + result;
+	else
+		result = (usePound?"#":"") + result;
+
+	return result;
+
+} // LightenDarkenColor
 //------------------------------------------------------
 
 function roundForInterpol(value, obTo) {
@@ -1401,26 +1463,29 @@ function Engine(data) {
 			//console.log("engineDraw size - " + $("#engineDraw").width() + " : " + drawHeight);
 			//console.log("max of mom - " + this.momMax);
 			x = Math.round((drawWidth - 80) / (obToMax - obFromMin) * (this.ob[c] - obFromMin) + 50);
-			y = Math.round(drawHeight - 150 - (drawHeight - 150) / momMax * this.mom[c] + 100);
+			y = Math.round(drawHeight - 100 - (drawHeight - 100) / momMax * this.mom[c] + 50);
 			coords += " " + x + " " + y;
 			//console.log(coords);
 		}
 
-		engineDraw.polyline(coords).fill("none").stroke({color: colors[0], width: 1});
+		engineDraw.polyline(coords).fill("none").stroke({color: color, width: 2});
 
 		// finish
 		x = this.ob[this.finishRank];
 		y = fn(x, this.ob, this.mom, this.rank);
 		x = Math.round((drawWidth - 80) / (obToMax - obFromMin) * (x - obFromMin) + 50);
-		y = Math.round(drawHeight - 150 - (drawHeight - 150) / momMax * y + 100);
+		y = Math.round(drawHeight - 100 - (drawHeight - 100) / momMax * y + 50);
 		engineDraw.line(x, y - 10, x, y + 10).fill("none").stroke({color: color, width: 2});
 
 	} // drawMomentum
 
-	this.drawGears = function(obFromMin, obToMax, momMax, color) {
+	this.drawGears = function(obGearsMin, obGearsMax, momGearsMin, momGearsMax, color) {
 
-		for (var c = 0; c < this.gearCols; c++)
-			this.gears[c].drawGear(obFromMin, obToMax, momMax, color);
+		for (var c = 0; c < this.gearCols; c++) {
+			//console.log(color);
+			color = LightenDarkenColor(color, 0 - 2 * (c + 1));
+			this.gears[c].drawGear(obGearsMin, obGearsMax, momGearsMin, momGearsMax, color);
+		}
 
 	} // drawGears
 
@@ -1524,13 +1589,13 @@ function Gear(num, parent) {
 				continue;
 			//console.log("min=" + this.parent.obGearsMin + "; max=" + this.parent.obGearsMax);
 			//console.log("max of mom - " + this.momMax);
-			x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (this.ob[c] - obGearsMin) + 40);
+			x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (this.ob[c] - obGearsMin) + 50);
 			y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (this.mom[c] - momGearsMin) + 40);
 			coords += " " + x + " " + y;
 			//console.log(coords);
 		}
 
-		gearsDraw.polyline(coords).fill("none").stroke({color: color, width: 1});
+		gearsDraw.polyline(coords).fill("none").stroke({color: color, width: 2});
 
 	} // drawGear
 
