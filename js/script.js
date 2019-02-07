@@ -10,20 +10,6 @@ var drawWidth, drawHeight;
 var engineDraw, gearsDraw;
 var colors = ["#81c000", "#01a6ff", "#ff4001", "#a801ff", "#02ccc0", "#fff343"];
 
-// old vals
-// var colors = ["#E040FB", "#940910", "#A50A20", "#B60B30", "#C70C41", "#D80D52", "#E91E63"];
-// var colors2 = ["#E040FB", "#0018A9", "#1029BA", "#203ACB", "#314BDC", "#425CED", "#536DFE"];
-// var obFrom, obTo, obCols, gearCols, gearMain, gearCols2, gearMain2, rank;
-// var obFinish, obFinish2;
-// var wheelWidth, wheelHeight, wheelDisk;
-// var wheelWidth2, wheelHeight2, wheelDisk2;
-
-// var obs = [];
-// var moms = [];
-// var gearNumbers = [];
-// var gearNumbers2 = [];
-// var engine;
-
 $(function() {
 
 	initialize();
@@ -75,10 +61,10 @@ $(function() {
 	// ------- engine modal end -------
 
 	// ------- gear modal start -------
-	$(".gearNew").click(function() {
+	$("#gearNew").click(function() {
 		var gearNumber = $(this).attr("gearNumber");
 
-		if ($(".gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
+		if ($("#gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
 			$("#newThing")
 				.attr("thing", "gearsNew")
 				.attr("number", gearNumber)
@@ -88,10 +74,10 @@ $(function() {
 		else
 			gearsNew(gearNumber);
 	});
-	$(".gearOpen").click(function() {
+	$("#gearOpen").click(function() {
 		var gearNumber = $(this).attr("gearNumber");
 
-		if ($(".gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
+		if ($("#gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
 			$("#newThing")
 				.attr("thing", "gearLoad")
 				.attr("gearNumber", gearNumber)
@@ -101,15 +87,15 @@ $(function() {
 		else
 			gearLoad(gearNumber);
 	});
-	$(".gearSave").click(function() {
+	$("#gearSave").click(function() {
 		gearSave($(this).attr("gearNumber"));
 	});
-	$(".gearRemove").click(function() {
+	$("#gearRemove").click(function() {
 		var gearNumber = $(this).attr("gearNumber");
 
-		if ($(".gearName[gearNumber='" + gearNumber + "']").attr("gearID") != "") {
+		if ($("#gearName[gearNumber='" + gearNumber + "']").attr("gearID") != "") {
 			$("#removingThing")
-				.text($(".gearName[gearNumber='" + gearNumber + "']").val())
+				.text($("#gearName[gearNumber='" + gearNumber + "']").val())
 				.attr("table", "gears")
 				.attr("recordID", $(".gearName[gearNumber='" + gearNumber + "']").attr("gearID"))
 				.attr("number", gearNumber);
@@ -121,7 +107,7 @@ $(function() {
 
 		if (gearLoadApply($("#gearInput").val().split("\n"), gearNumber)) {
 			$("#gearsLoad").modal("hide");
-			$(".gearName[gearNumber='" + gearNumber + "']").attr("modif", "true");
+			$("#gearName[gearNumber='" + gearNumber + "']").attr("modif", "true");
 		}
 		else
 			alert("Введены некорректные данные коробки передач.");
@@ -143,24 +129,24 @@ $(function() {
 	// ------- engine elements start -------
 	$("#obFrom").change(function() {
 		$("#engineName").attr("modif", "true");
-		obFrom = parseFloat($(this).val());
+		engines[activeSheet].obFrom = parseFloat($(this).val());
 		createObTable();
 		console.log("refreshResult from obFrom change");
 		refreshResult();
 	});
 	$("#obTo").change(function() {
 		$("#engineName").attr("modif", "true");
-		obTo = parseFloat($(this).val());
+		engines[activeSheet].obTo = parseFloat($(this).val());
 		createObTable();
 		console.log("refreshResult from obTo change");
 		refreshResult();
 	});
 	$("#obCols").change(function() {
 		$("#engineName").attr("modif", "true");
-		obCols = $(this).val();
-		if (obCols < 4) {
+		engines[activeSheet].obCols = $(this).val();
+		if (engines[activeSheet].obCols < 4) {
 			$(this).val(4);
-			obCols = 4;
+			engines[activeSheet].obCols = 4;
 			alert("Количество известных точек должно быть не меньше четырех!")
 		}
 		createObTable();
@@ -171,21 +157,21 @@ $(function() {
 
 	// ------- gears elements start -------
 	$("#gearCols").change(function() {
-		$(".gearName[gearNumber='1']").attr("modif", "true");
-		gearCols = parseInt($(this).val());
+		$("#gearName[gearNumber='1']").attr("modif", "true");
+		engines[activeSheet].gearCols = parseInt($(this).val());
 		createGearTable(1);
 		console.log("refreshResult from gearCols change");
 		refreshResult();
 	});
 	$("#gearMain").change(function() {
-		$(".gearName[gearNumber='1']").attr("modif", "true");
-		gearMain = parseFloat($(this).val());
+		$("#gearName[gearNumber='1']").attr("modif", "true");
+		engines[activeSheet].gearMain = parseFloat($(this).val());
 		console.log("refreshResult from gearMain change");
 		refreshResult();
 	});
 	$("#obFinish").change(function() {
-		$(".gearName[gearNumber='1']").attr("modif", "true");
-		obFinish = parseFloat($(this).val());
+		$("#gearName[gearNumber='1']").attr("modif", "true");
+		engines[activeSheet].obFinish = parseFloat($(this).val());
 		console.log("refreshResult from obFinish change");
 		refreshResult();
 	});
@@ -193,17 +179,17 @@ $(function() {
 
 	// ------- wheels elements start -------
 	$("#wheelWidth").change(function() {
-		wheelWidth = parseFloat($(this).val());
+		engines[activeSheet].wheelWidth = parseFloat($(this).val());
 		console.log("refreshResult from wheelWidth change");
 		refreshResult();
 	});
 	$("#wheelHeight").change(function() {
-		wheelHeight = parseFloat($(this).val());
+		engines[activeSheet].wheelHeight = parseFloat($(this).val());
 		console.log("refreshResult from wheelHeight change");
 		refreshResult();
 	});
 	$("#wheelDisk").change(function() {
-		wheelDisk = parseFloat($(this).val());
+		engines[activeSheet].wheelDisk = parseFloat($(this).val());
 		//console.log("change wheelDisk");
 		console.log("refreshResult from wheelDisk change");
 		refreshResult();
@@ -252,7 +238,7 @@ function getEngines() {
 			showActiveSheet();
 
 			console.log("refreshResult from getEngines");
-			refreshResult();
+			refreshResult(true);
 
 		}
 		else {
@@ -260,7 +246,7 @@ function getEngines() {
 		}
 	});
 
-}
+} // getEngines
 //------------------------------------------------------
 
 function enginesNew() {
@@ -269,12 +255,14 @@ function enginesNew() {
 		.val("")
 		.attr("engineID", "")
 		.attr("modif", "false");
-	obFrom = 0;
-	$("#obFrom").val(obFrom);
-	obTo = 0;
-	$("#obTo").val(obTo);
-	obCols = 0;
-	$("#obCols").val(obCols);
+	engines[activeSheet].obFrom = 0;
+	$("#obFrom").val(0);
+	engines[activeSheet].obTo = 0;
+	$("#obTo").val(0);
+	engines[activeSheet].obCols = 0;
+	$("#obCols").val(0);
+	engines[activeSheet].engineTitle = "";
+	engines[activeSheet].moms.length = 0;
 
 	createObTable();
 	console.log("refreshResult from enginesNew");
@@ -657,6 +645,7 @@ function showActiveSheet() {
 	engineLoadApply();
 	gearLoadApply();
 	wheelLoadApply();
+	drawResult(engines[activeSheet].findCross());
 
 } // showActiveSheet
 //------------------------------------------------------
@@ -703,26 +692,39 @@ function createTab(index) {
 } // createTab
 //------------------------------------------------------
 
-function refreshResultOnlyGear() {
+function refreshResultOnlyGear(all = false) {
 
-	engines.forEach(function(val, key, arr) {
-		val.gearInitialize();
-		drawResult(val.findCross());
-	});
+	if (all) {
+		engines.forEach(function(val, key, arr) {
+			val.gearInitialize();
+		});
+	}
+	else {
+		engines[activeSheet].gearInitialize();
+	}
+
+	drawResult(engines[activeSheet].findCross());
 	drawGears();
 
 } // refreshResultOnlyGear
 //------------------------------------------------------
 
-function refreshResult() {
+function refreshResult(all = false) {
 
-	//console.log("refreshResult");
-	engines.forEach(function(val, key, arr) {
-	  val.initialize();
-		val.interpol();
-		val.gearInitialize();
-		drawResult(val.findCross());
-	});
+	if (all) {
+		engines.forEach(function(val, key, arr) {
+			val.initialize();
+			val.interpol();
+			val.gearInitialize();
+		});
+	}
+	else {
+		engines[activeSheet].initialize();
+		engines[activeSheet].interpol();
+		engines[activeSheet].gearInitialize();
+	}
+
+	drawResult(engines[activeSheet].findCross());
 	drawMomentum();
 	drawGears();
 
@@ -740,25 +742,29 @@ function drawMomentum() {
 	var colorAxe = "#333";
 	var colorOther = "#999";
 	var color = colorAxe;
-	var obFromMin = engines[0].obFrom;
+	var obFromMin = engines[0].obFrom ? engines[0].obFrom : 100000;
 	var obToMax = engines[0].obTo;
 	var momMax = engines[0].momMax;
 	var obColsMax = engines[0].obCols;
-	var mayReturn = false;
+	// var mayReturn = false;
 
 	engines.forEach(function(val, key, arr) {
-		if (val.momMax == 0.0) {
-			mayReturn = true;
-			return;
-		}
-		obFromMin = Math.min(val.obFrom, obFromMin);
-		obToMax = Math.max(val.obTo, obToMax);
-		momMax = Math.max(val.momMax, momMax);
-		obColsMax = Math.max(val.obCols, obColsMax);
+		// if (val.momMax == 0.0) {
+		// 	mayReturn = true;
+		// 	return;
+		// }
+		if (val.obFrom)
+			obFromMin = Math.min(val.obFrom, obFromMin);
+		if (val.obTo)
+			obToMax = Math.max(val.obTo, obToMax);
+		if (val.momMax)
+			momMax = Math.max(val.momMax, momMax);
+		if (val.obCols)
+			obColsMax = Math.max(val.obCols, obColsMax);
 	});
-	//console.log("obFromMin="+obFromMin+",obToMax="+obToMax+",momMax="+momMax+",obColsMax="+obColsMax);
-	if (mayReturn)
-		return;
+	console.log("obFromMin="+obFromMin+",obToMax="+obToMax+",momMax="+momMax+",obColsMax="+obColsMax);
+	// if (mayReturn)
+	// 	return;
 	var obStep = parseFloat((obToMax - obFromMin) / (obColsMax - 1.0));
 	var momStep = parseFloat(momMax / (obColsMax - 1.0));
 
@@ -812,10 +818,10 @@ function drawMomentum() {
 	engineDraw.text("Обороты, об./мин.").move(drawWidth - 150, drawHeight - 20).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
 
 	// data
-	//console.log("drawMomentum data");
+	//console.log("drawMomentum engines.length=" + engines.length);
 	engines.forEach(function(val, key, arr) {
 		color = LightenDarkenColor(colors[key], -20);
-		//console.log(color);
+		//console.log("draw key=" + key);
 		val.drawMomentum(obFromMin, obToMax, momMax, color);
 	});
 
@@ -827,21 +833,23 @@ function drawGears() {
 	if (!svgExists)
 		return;
 
-	var obGearsMin = engines[0].obGearsMin;
+	var obGearsMin = engines[0].obGearsMin != -1 ? engines[0].obGearsMin : 100000;
 	var obGearsMax = engines[0].obGearsMax;
-	var momGearsMin = engines[0].momGearsMin;
+	var momGearsMin = engines[0].momGearsMin != -1 ? engines[0].momGearsMin : 100000;;
 	var momGearsMax = engines[0].momGearsMax;
 	var obColsMax = engines[0].obCols;
 
 	engines.forEach(function(val, key, arr) {
-		obGearsMin = Math.min(val.obGearsMin, obGearsMin);
+		if (val.obGearsMin != -1)
+			obGearsMin = Math.min(val.obGearsMin, obGearsMin);
 		obGearsMax = Math.max(val.obGearsMax, obGearsMax);
-		momGearsMin = Math.min(val.momGearsMin, momGearsMin);
+		if (val.momGearsMin != -1)
+			momGearsMin = Math.min(val.momGearsMin, momGearsMin);
 		momGearsMax = Math.max(val.momGearsMax, momGearsMax);
 		obColsMax = Math.max(val.obCols, obColsMax);
 	});
 
-	//console.log("obGearsMin="+obGearsMin+",obGearsMax="+obGearsMax+",momGearsMin="+momGearsMin+",momGearsMax="+momGearsMax);
+	console.log("obGearsMin="+obGearsMin+",obGearsMax="+obGearsMax+",momGearsMin="+momGearsMin+",momGearsMax="+momGearsMax);
 	var obCurr, momCurr;
 	var obStep = parseFloat((obGearsMax - obGearsMin) / (obColsMax - 1));
 	var momStep = parseFloat((momGearsMax - momGearsMin) / (obColsMax - 1));
@@ -853,8 +861,8 @@ function drawGears() {
 
 	clearGearsDraw();
 
-	if ((this.momMax == 0.0) || (!momGearsMax) || (momGearsMax == -1))
-		return;
+	// if (!this.momMax || !momGearsMax || (momGearsMax == -1))
+	// 	return;
 
 	//x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (this.ob[c] - obGearsMin) + 50);
 	//y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (this.mom[c] - momGearsMin) + 50);
@@ -914,6 +922,24 @@ function drawGears() {
 
 function drawResult(data) {
 
+	var html = "";
+	var first = true;
+
+	data.forEach(function(val, key, arr) {
+		val = (val == -1) ? "нет" : val;
+		if (first) {
+			html += "<div class='val'>";
+			html += "<span class='valCaptionBold'>" + (key + 1) + "->" + (key + 2) + " = " + val + "</span>";
+		}
+		else {
+			html += "<span class='valCaptionRight'>" + (key + 1) + "->" + (key + 2) + " = " + val + "</span>";
+			html += "</div>";
+		}
+		first = !first;
+	});
+
+	$("#resTable").html(html);
+
 } // drawResult
 //------------------------------------------------------
 
@@ -970,13 +996,14 @@ function roundForInterpol(value, obTo) {
 function createObTable() {
 
 	//console.log("obCols: " + engines[activeSheet].obCols);
-	if ((engines[activeSheet].obCols < 5) || (engines[activeSheet].obTo <= engines[activeSheet].obFrom)) {
+	if ((engines[activeSheet].obCols < 4) || (engines[activeSheet].obTo <= engines[activeSheet].obFrom)) {
 		$("#engineTable").html("");
 		engines[activeSheet].obs.length = 0;
     engines[activeSheet].moms.length = 0;
 		return;
 	}
 
+	console.log("createObTable");
 	var html = "<table>";
 	var header = "";
 	var body = "";
@@ -993,8 +1020,8 @@ function createObTable() {
 		engines[activeSheet].obs[c] = roundForInterpol(obCurr, engines[activeSheet].obTo);
 		if (!engines[activeSheet].moms[c])
 			engines[activeSheet].moms[c] = 1;
-		html += "<tr><td class='first' id='ob" + c + "'>" + engines[activeSheet].obs[c] + "</td>";
-		html += "<td><input id='mom" + c + "' class='mom' type='number' value='" + engines[activeSheet].moms[c] + "'></td></tr>";
+		html += "<tr><td class='first' col='" + c + "'>" + engines[activeSheet].obs[c] + "</td>";
+		html += "<td><input col='" + c + "' class='mom' type='number' value='" + engines[activeSheet].moms[c] + "'></td></tr>";
 		//console.log(obCurr + " - " + engines[activeSheet].obs[c] + " - " + engines[activeSheet].moms[c]);
 		obCurr += obStep;
 	}
@@ -1005,6 +1032,9 @@ function createObTable() {
 	$("#engineTable").html(html);
 
 	$("input.mom").change(function() {
+		var el = $(this);
+		var col = parseInt(el.attr("col"));
+		engines[activeSheet].moms[col] = parseFloat(el.val());
 		$("#engineName").attr("modif", "true");
 		console.log("refreshResult from input.mom");
 		refreshResult();
@@ -1031,17 +1061,20 @@ function createGearTable() {
 	for (gearCurr = 0; gearCurr < engines[activeSheet].gearCols; gearCurr++) {
 		if (!engines[activeSheet].gearNumbers[gearCurr])
 			engines[activeSheet].gearNumbers[gearCurr] = 1;
-		html += "<tr><td class='first'>" + (gearCurr + 1) + "</td><td><input id='gearNumber" + gearCurr + "' class='gear' type='number' value='" + engines[activeSheet].gearNumbers[gearCurr] + "' /></td></tr>";
+		html += "<tr><td class='first'>" + (gearCurr + 1) + "</td><td><input gear='" + gearCurr + "' class='gear' type='number' value='" + engines[activeSheet].gearNumbers[gearCurr] + "' /></td></tr>";
 		//console.log(gearCurr + " - " + engines[activeSheet].gearNumbers[gearCurr]);
 	}
 	html += "</table>";
 
 	$("#gearTable").html(html);
 
-	$("input.gearNumber").change(function() {
-		$(".gearName[gearNumber='" + num + "']").attr("modif", "true");
+	$("input.gear").change(function() {
+		var el = $(this);
+		var gear = parseInt(el.attr("gear"));
+		engines[activeSheet].gearNumbers[gear] = parseFloat(el.val());
+		$("#gearName").attr("modif", "true");
 		console.log("refreshResult from input.gearNumber");
-		refreshResult();
+		refreshResultOnlyGear();
 	});
 
 } // createGearTable
@@ -1051,7 +1084,7 @@ function clearEngineDraw() {
 
 	//console.log("clearEngineDraw");
 	//engineDraw.rect(drawWidth, drawHeight).fill("#ddddff");
-	engineDraw.rect(drawWidth, drawHeight).fill("none");
+	engineDraw.rect(drawWidth, drawHeight).fill("#b5b4c6");
 
 } // clearEngineDraw
 //------------------------------------------------------
@@ -1059,7 +1092,7 @@ function clearEngineDraw() {
 function clearGearsDraw() {
 
 	//gearsDraw.rect(drawWidth, drawHeight).fill("#ddffdd");
-	gearsDraw.rect(drawWidth, drawHeight).fill("none");
+	gearsDraw.rect(drawWidth, drawHeight).fill("#b5b4c6");
 
 } // clearGearsDraw
 //------------------------------------------------------
@@ -1148,7 +1181,7 @@ function interpolSpline3(ob, mom, secondIndex, rank, obCols) { // interpolation 
 function findCrossingGears(gearCols, gears, wheelDiametr, gM, finishRank, gN) {
 
 	var lastC;
-	var sResult = "";
+	var sResult = [];
 	var oborot;
 
 	// find point between which exists cross
@@ -1235,14 +1268,7 @@ function findCrossingGears(gearCols, gears, wheelDiametr, gM, finishRank, gN) {
 			}
 		}
 
-		if (oborot != -1) {
-			sResult += sResult == "" ? "" : "<br />";
-			sResult += "С " + k + " передачи на " + (k + 1) + " передачу следует переключаться при " + oborot + " оборотах двигателя";
-		}
-		else {
-			sResult += sResult == "" ? "" : "<br />";
-			sResult += "Между " + k + " передачей и " + (k + 1) + " передачей нет ни пересечений, ни вообще общих интервалов оборотов двигателя";
-		}
+		sResult[k-1] = oborot;
 
 	}
 
@@ -1379,7 +1405,10 @@ function Engine(data) {
 	this.getRank = function() {
 
 		//console.log("start get rank");
-		return Math.round((this.obTo - this.obFrom) / interpolStep);
+		if (this.obTo < this.obFrom)
+			return 0;
+		else
+			return Math.round((this.obTo - this.obFrom) / interpolStep);
 		//console.log("end get rank=" + rank);
 
 	} // getRank
@@ -1404,6 +1433,9 @@ function Engine(data) {
 		obC = obCurr;
 		//console.log("rank = " + this.rank);
 		for (k = 0; k <= this.rank; k++) {
+
+			if (!this.moms[c])
+				break;
 
 			if ((obCurr > oF) && (!rankExists)) {
 				this.finishRank = k - 1;
@@ -1458,17 +1490,19 @@ function Engine(data) {
 
 		// data
 		for (var c = 0; c <= this.rank; c++) {
-			if (this.mom[c] == 0.0)
+			if (!this.mom[c])
 				continue;
 			//console.log("engineDraw size - " + $("#engineDraw").width() + " : " + drawHeight);
 			//console.log("max of mom - " + this.momMax);
 			x = Math.round((drawWidth - 80) / (obToMax - obFromMin) * (this.ob[c] - obFromMin) + 50);
 			y = Math.round(drawHeight - 100 - (drawHeight - 100) / momMax * this.mom[c] + 50);
-			coords += " " + x + " " + y;
+			if (x && y)
+				coords += " " + x + " " + y;
 			//console.log(coords);
 		}
 
-		engineDraw.polyline(coords).fill("none").stroke({color: color, width: 2});
+		if (coords != "")
+			engineDraw.polyline(coords).fill("none").stroke({color: color, width: 2});
 
 		// finish
 		x = this.ob[this.finishRank];
@@ -1525,6 +1559,9 @@ function Gear(num, parent) {
 
     c = 0;
 		for (k = 0; k <= this.parent.rank; k++) {
+
+			if (!this.parent.ob[k])
+				break;
 
 			this.ob[k] = this.parent.ob[k] / gN[this.gearNumber] / gM * 60.0 * 3.14 * wD / 1000.0; // x
 
@@ -1585,7 +1622,7 @@ function Gear(num, parent) {
 		// data
 		//console.log("start drawing gear #" + this.gearNumber);
 		for (var c = 0; c <= finishRank; c++) {
-			if (this.mom[c] == 0.0)
+			if (!this.mom[c])
 				continue;
 			//console.log("min=" + this.parent.obGearsMin + "; max=" + this.parent.obGearsMax);
 			//console.log("max of mom - " + this.momMax);

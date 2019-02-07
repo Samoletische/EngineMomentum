@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta charset="UTF-8">
+	<link rel="shortcut icon" type="image/ico" href="img/engine.ico" />
 	<title>Двигатель</title>
 	<link rel="stylesheet" href="css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<link rel="stylesheet" href="css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
@@ -22,14 +22,14 @@
 					<path d="M 0 0 L 22 0 L 22 19 L 11 25 L 0 19 L 0 0"></path>
 				</svg>
 				<span id="tabPlus" class="glyphicon glyphicon-plus-sign"></span>
-				<svg class="in_under" tab="0">
+				<!--svg class="in_under" tab="0">
 					<path d="M 17 0 L 17 109 L 0 104 L 0 5 L 17 0"></path>
 				</svg>
 				<svg class="in_above" tab="0">
 					<path d="M 0 0 L 29 0 L 39 49 L 29 99 L 0 99 L 0 0"></path>
 				</svg>
 				<span class="tabTitle" tab="0">1</span>
-				<span class="tabMinus glyphicon glyphicon-minus-sign" tab="0"></span>
+				<span class="tabMinus glyphicon glyphicon-minus-sign" tab="0"></span-->
 				<div id="leftPanel">
 					<div class="title">Двигатель</div>
 					<div class="hr"></div>
@@ -80,7 +80,7 @@
 					<div class="title">Коробка передач</div>
 					<div class="hr"></div>
 					<div class="controlPanel">
-						<input id="gearName" class="caption" type="text" engineID="" modif="false" value="" />
+						<input id="gearName" class="caption" type="text" modif="false" value="" />
 						<span id="gearNew" class="control glyphicon glyphicon-plus-sign"></span>
 						<span id="gearSave" class="control glyphicon glyphicon-export"></span>
 						<span id="gearOpen" class="control glyphicon glyphicon-import"></span>
@@ -137,7 +137,7 @@
 					<div class="title">Переключение</div>
 					<div class="hr"></div>
 					<div id="resTable">
-						<div class="val">
+						<!--div class="val">
 							<span id="gearNext1" class="valCaptionBold">1->2 8500</span>
 							<span id="gearNext2" class="valCaptionRight">4->5 8500</span>
 						</div>
@@ -152,7 +152,7 @@
 						<div class="val">
 							<span id="gearNext7" class="valCaptionBold">3->4 8500</span>
 							<span id="gearNext8" class="valValue"></span>
-						</div>
+						</div-->
 					</div>
 				</div>
 			</div>
@@ -162,133 +162,6 @@
 			</div>
 		</div>
 	</div>
-	<!--div class="row">
-		<div class="col-sm-12 bg-success">
-			<span class="header">Параметры двигателя</span>
-			<input id="engineName" type="text" engineID="" modif="false" value="" />
-			<span id="engineNew" class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
-			<span id="engineOpen" class="glyphicon glyphicon-open" aria-hidden="true"></span>
-			<span id="engineSave" class="glyphicon glyphicon-save" aria-hidden="true"></span>
-			<span id="engineRemove" class="glyphicon glyphicon-minus-sign" aria-hidden="true"></span>
-		</div>
-	</div>
-	<div class="row">
-		<div class="paramCaption col-sm-12">
-			<div class="row">
-				<div class="paramCaption col-sm-3">Диапазон оборотов, об.</div>
-				<div class="paramValue col-sm-2">
-					от <input id="obFrom" type="number" value="">
-					до <input id="obTo" type="number" value="">
-				</div>
-				<div class="paramCaption col-sm-2">Количество значений</div>
-				<div class="paramValue col-sm-2"><input id="obCols" type="number" value=""></div>
-			</div>
-		</div>
-	</div>
-	<div class="row">
-		<div id="obTable" class="col-sm-12"></div>
-	</div>
-	<div class="row">
-		<div class="col-sm-12 bg-success">
-			<span class="header">Параметры коробок передач</span>
-		</div>
-	</div>
-	<div class="row">
-		<div class="gearBox col-sm-6">
-			<div class="row">
-				<div class="col-sm-12 bg-warning">
-					<span class="header">Коробка № 1</span>
-					<input class="gearName" gearNumber="1" type="text" gearID="" modif="false" value="" />
-					<span class="gearNew glyphicon glyphicon-plus-sign" aria-hidden="true" gearNumber="1"></span>
-					<span class="gearOpen glyphicon glyphicon-open" aria-hidden="true" gearNumber="1"></span>
-					<span class="gearSave glyphicon glyphicon-save" aria-hidden="true" gearNumber="1"></span>
-					<span class="gearRemove glyphicon glyphicon-minus-sign" aria-hidden="true" gearNumber="1"></span>
-				</div>
-			</div>
-			<div class="row">
-				<div class="paramCaption col-sm-2">Главная пара</div>
-				<div class="paramValue col-sm-2"><input id="gearMain" type="number" value=""></div>
-				<div class="paramCaption col-sm-2">Количество передач</div>
-				<div class="paramValue col-sm-2"><input id="gearCols" type="number" value=""></div>
-				<div class="paramCaption col-sm-2">Отсечка, об.</div>
-				<div class="paramValue col-sm-2"><input id="obFinish" type="number" value=""></div>
-			</div>
-			<div class="row">
-				<div id="gearTable" class="col-sm-12 gearTable"></div>
-			</div>
-		</div>
-		<div class="gearBox col-sm-6">
-			<div class="row">
-				<div class="col-sm-12 bg-warning">
-					<span class="header">Коробка № 2</span>
-					<input class="gearName" gearNumber="2" type="text" gearID="" modif="false" value="" />
-					<span class="gearNew glyphicon glyphicon-plus-sign" aria-hidden="true" gearNumber="2"></span>
-					<span class="gearOpen glyphicon glyphicon-open" aria-hidden="true" gearNumber="2"></span>
-					<span class="gearSave glyphicon glyphicon-save" aria-hidden="true" gearNumber="2"></span>
-					<span class="gearRemove glyphicon glyphicon-minus-sign" aria-hidden="true" gearNumber="2"></span>
-				</div>
-			</div>
-			<div class="row">
-				<div class="paramCaption col-sm-2">Главная пара</div>
-				<div class="paramValue col-sm-2"><input id="gearMain2" type="number" value=""></div>
-				<div class="paramCaption col-sm-2">Количество передач</div>
-				<div class="paramValue col-sm-2"><input id="gearCols2" type="number" value=""></div>
-				<div class="paramCaption col-sm-2">Отсечка, об.</div>
-				<div class="paramValue col-sm-2"><input id="obFinish2" type="number" value=""></div>
-			</div>
-			<div class="row">
-				<div id="gearTable2" class="col-sm-12 gearTable"></div>
-			</div>
-		</div>
-	</div>
-	<div class="row">
-		<div class="col-xs-12 bg-success header"><h4>Параметры колес</h4></div>
-	</div>
-	<div class="row">
-		<div class="wheelParams col-sm-6">
-			<div class="row">
-				<div class="col-sm-12 bg-warning header"><h5>Колесо № 1</h5></div>
-			</div>
-			<div class="row">
-				<div class="paramCaption col-md-2">Ширина шины, мм</div>
-				<div class="paramValue col-md-2"><input id="wheelWidth" type="number" value=""></div>
-				<div class="paramCaption col-md-2">Высота профиля, %</div>
-				<div class="paramValue col-md-2"><input id="wheelHeight" type="number" value=""></div>
-				<div class="paramCaption col-md-2">Диск, дюйм</div>
-				<div class="paramValue col-md-2"><input id="wheelDisk" type="number" value=""></div>
-			</div>
-		</div>
-		<div class="wheelParams col-sm-6">
-			<div class="row">
-				<div class="col-sm-12 bg-warning header"><h5>Колесо № 2</h5></div>
-			</div>
-			<div class="row">
-				<div class="paramCaption col-md-2">Ширина шины, мм</div>
-				<div class="paramValue col-md-2"><input id="wheelWidth2" type="number" value=""></div>
-				<div class="paramCaption col-md-2">Высота профиля, %</div>
-				<div class="paramValue col-md-2"><input id="wheelHeight2" type="number" value=""></div>
-				<div class="paramCaption col-md-2">Диск, дюйм</div>
-				<div class="paramValue col-md-2"><input id="wheelDisk2" type="number" value=""></div>
-			</div>
-		</div>
-	</div>
-	<hr>
-	<div class="row">
-		<div class="col-md-6 paramCaption">Результаты по коробке и колесу № 1</div>
-		<div class="col-md-6 paramCaption">Результаты по коробке и колесу № 2</div>
-	</div>
-	<div class="row">
-		<div id="resTable1" class="col-md-6"></div>
-		<div id="resTable2" class="col-md-6"></div>
-	</div>
-	<div class="row">
-		<div class="col-md-6">
-			<div id="engineDraw"></div>
-		</div>
-		<div class="col-md-6">
-			<div id="gearsDraw"></div>
-		</div>
-	</div-->
 </div>
 
 <!-- modals -->
