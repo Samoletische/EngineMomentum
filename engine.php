@@ -236,7 +236,6 @@ function getEngines() {
 	catch (Exception $e) {
 		$result["result"] = "error";
 		$result["message"] = $e->getMessage();
-		return $result;
 	}
 
 	return $result;
@@ -304,55 +303,62 @@ function removeRecord($table, $id, $number) {
 
 function saveEngine($id, $title, $data) {
 
-    global $db;
+	global $db;
 
-    try {
+	$result = [ "result" => "ok" ];
 
-        $recordsExists = false;
+  try {
 
-        if ($id != "") {
-            $query = mysqli_query($db, "SELECT COUNT(oborots) AS Count FROM engines WHERE id='".$id."'");
-            if (!$query)
-                throw new Exception("(002) Не могу работать с базой");
+		$recordsExists = false;
 
-            if ($row = mysqli_fetch_array($query))
-                $recordsExists = $row["Count"] != 0;
-        }
-        else
-            $id = getFreeID("engines");
+    if ($id != "") {
+    	$query = $db->query("SELECT COUNT(oborots) AS Count FROM enginesMomentum WHERE engineID='".$id."'");
+      if (!$query)
+        throw new Exception("[saveEngine] error: ".$db->error());
 
-        if ($id == 0)
-            throw new Exception("(006) Не могу работать с базой");
-
-        if ($recordsExists) {
-            $query = mysqli_query($db, "DELETE FROM engines WHERE id='".$id."'");
-            if (!$query)
-                throw new Exception("(003) Не могу работать с базой");
-        }
-
-        $data = explode(";", $data);
-        if (count($data) != 2)
-            throw new Exception("(004) Не верные данные для записи в базе");
-
-        $obs = explode(",", $data[0]);
-        $moms = explode(",", $data[1]);
-
-        for ($c = 0; $c < count($obs); $c++) {
-        	//throw new Exception("INSERT INTO engines(id, title, oborots, momentum, dateSave) VALUES(".$id.", '".$title."', ".$obs[$c].", ".$moms[$c].", '".date("Y-m-d H:i:s")."')");
-            $query = mysqli_query($db, "INSERT INTO engines(id, title, oborots, momentum, dateSave) VALUES(".$id.", '".$title."', ".$obs[$c].", ".$moms[$c].", '".date("Y-m-d H:i:s")."')");
-            if (!$query)
-                throw new Exception("(005) Не могу работать с базой");
-        }
-
-        if (!insertLastParam("engineID", $id))
-            throw new Exception("(007) Не могу работать с базой");
-
+      if ($row = $query->fetch_array())
+        $recordsExists = $row["Count"] != 0;
     }
-    catch (Exception $e) {
-        return ".-=-".$e;
-    }
+    else
+      $id = getFreeID("engines");
 
-    return "ok-=-".$id;
+    if ($id == 0)
+      throw new Exception("[saveEngine] error: ".$db->error());
+
+		$date = date("Y-m-d H:i:s");
+    if ($recordsExists)
+			$queryStr = "UPDATE engines SET title='".$title."', changeDate='".$date."' WHERE id='".$id."';
+				DELETE FROM enginesMomentum WHERE engineID='".$id."';";
+		else
+			$queryStr = "INSERT INTO engines(id, title, changeDate)
+				VALUES('".$id."', '".$title."', '".$date."');";
+
+    $data = explode(";", $data);
+    if (count($data) != 2)
+      throw new Exception("[saveEngine] error: ".$db->error());
+
+    $obs = explode(",", $data[0]);
+    $moms = explode(",", $data[1]);
+
+    for ($c = 0; $c < count($obs); $c++)
+			$queryStr .= "INSERT INTO enginesMomentum(engineID, oborots, momentum, changeDate)
+				VALUES('".$id."', '".$obs[$c]."', '".$moms[$c]."', '".$date."');";
+
+		$queryStr .= "UPDATE lastParams SET engineID='".$id."' WHERE active=1";
+		// $result["message"] = $queryStr;
+		$query = $db->multi_query($queryStr);
+		if (!$query)
+			throw new Exception("[saveEngine] error: ".$db->error());
+
+    $result["id"] = $id;
+
+  }
+  catch (Exception $e) {
+		$result["result"] = "error";
+		$result["message"] = $e->getMessage();
+	}
+
+	return $result;
 
 } // saveEngine
 //------------------------------------------------------

@@ -19,7 +19,6 @@ $(function() {
 		if ($("#engineName").attr("modif") == "true") {
 			$("#newThing")
 				.attr("thing", "enginesNew")
-				.attr("number", "")
 				.html("Создать новые параметры двигателя.");
 			$("#newConfirm").modal();
 		}
@@ -30,7 +29,6 @@ $(function() {
 		if ($("#engineName").attr("modif") == "true") {
 			$("#newThing")
 				.attr("thing", "engineLoad")
-				.attr("number", "")
 				.html("Загрузить параметры двигателя из базы.");
 			$("#newConfirm").modal();
 		}
@@ -67,7 +65,6 @@ $(function() {
 		if ($("#gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
 			$("#newThing")
 				.attr("thing", "gearsNew")
-				.attr("number", gearNumber)
 				.html("Создать новые параметры коробки передач.");
 			$("#newConfirm").modal();
 		}
@@ -98,7 +95,6 @@ $(function() {
 				.text($("#gearName[gearNumber='" + gearNumber + "']").val())
 				.attr("table", "gears")
 				.attr("recordID", $(".gearName[gearNumber='" + gearNumber + "']").attr("gearID"))
-				.attr("number", gearNumber);
 			$("#removingConfirm").modal();
 		}
 	});
@@ -119,10 +115,7 @@ $(function() {
 	$("#ConfirmRemove").click(removeRecord);
 	$("#ConfirmNew").click(function() {
 		$("#newConfirm").modal("hide");
-		if ($("#newThing").attr("number") == "")
-			eval($("#newThing").attr("thing") + "();");
-		else
-			eval($("#newThing").attr("thing") + "(" + $("#newThing").attr("number") + ");");
+		eval($("#newThing").attr("thing") + "();");
 	});
 	// ------- common modals end -------
 
@@ -241,9 +234,8 @@ function getEngines() {
 			refreshResult(true);
 
 		}
-		else {
-			console.log(data.message);
-		}
+		else
+			alert(data.message);
 	});
 
 } // getEngines
@@ -349,20 +341,19 @@ function engineLoadApply(data = -1) {
 
 function engineSave() {
 
-    var command = "command=saveEngine&id=" + $("#engineName").attr("engineID") + "&title=" + $("#engineName").val() + "&data=" + obs.join(",") + ";" + moms.join(",");
+    var command = "command=saveEngine&id=" + $("#engineName").attr("engineID") + "&title=" + $("#engineName").val() + "&data=" + engines[activeSheet].obs.join(",") + ";" + engines[activeSheet].moms.join(",");
     //alert("save - " + command);
     $.post("engine.php", command, function(data) {
-        //alert(data);
-        //console.log(data);
-        var dat = data.split("-=-");
-        if (dat[0] == "ok") {
-            $("#engineName")
-            	.attr("engineID", dat[1])
-            	.attr("modif", "false");
-            alert("Параметры двигателя успешно сохранены");
-        }
-        else
-            alert(dat[1]);
+				if (data.result == "ok") {
+					console.log(data);
+
+					$("#engineName")
+	           	.attr("engineID", data.id)
+	            .attr("modif", "false");
+					alert("Параметры двигателя успешно сохранены");
+				}
+				else
+					alert(data.message);
     });
 
 } // engineSave
@@ -590,10 +581,7 @@ function fillDropDown(table, number = -1) {
 				var el = $(this);
 
 				$("#" + table + "Load").modal("hide");
-				if (el.attr("number"))
-					eval("get" + table + "(" + el.attr(table + "ID") + ", " + el.attr("number") + ");");
-				else
-					eval("get" + table + "(" + el.attr(table + "ID") + ");");
+				eval("get" + table + "(" + el.attr(table + "ID") + ");");
 			});
 		}
 		else
@@ -606,11 +594,11 @@ function fillDropDown(table, number = -1) {
 function removeRecord() {
 
 	$("#removingConfirm").modal("hide");
-	$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&number=" + $("#removingThing").attr("number") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
+	$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
 		var dat = data.split("-=-");
 
 		if (dat[0] == "ok") {
-			eval($("#removingThing").attr("table") + "New(" + $("#removingThing").attr("number") + ");");
+			// eval($("#removingThing").attr("table") + "New(" + $("#removingThing").attr("number") + ");");
 			alert("Запись успешно удалена из базы");
 		}
 		else
@@ -762,7 +750,7 @@ function drawMomentum() {
 		if (val.obCols)
 			obColsMax = Math.max(val.obCols, obColsMax);
 	});
-	console.log("obFromMin="+obFromMin+",obToMax="+obToMax+",momMax="+momMax+",obColsMax="+obColsMax);
+	//console.log("obFromMin="+obFromMin+",obToMax="+obToMax+",momMax="+momMax+",obColsMax="+obColsMax);
 	// if (mayReturn)
 	// 	return;
 	var obStep = parseFloat((obToMax - obFromMin) / (obColsMax - 1.0));
@@ -849,7 +837,7 @@ function drawGears() {
 		obColsMax = Math.max(val.obCols, obColsMax);
 	});
 
-	console.log("obGearsMin="+obGearsMin+",obGearsMax="+obGearsMax+",momGearsMin="+momGearsMin+",momGearsMax="+momGearsMax);
+	//console.log("obGearsMin="+obGearsMin+",obGearsMax="+obGearsMax+",momGearsMin="+momGearsMin+",momGearsMax="+momGearsMax);
 	var obCurr, momCurr;
 	var obStep = parseFloat((obGearsMax - obGearsMin) / (obColsMax - 1));
 	var momStep = parseFloat((momGearsMax - momGearsMin) / (obColsMax - 1));
@@ -1003,7 +991,7 @@ function createObTable() {
 		return;
 	}
 
-	console.log("createObTable");
+	//console.log("createObTable");
 	var html = "<table>";
 	var header = "";
 	var body = "";

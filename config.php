@@ -31,23 +31,11 @@ function insertLastParam($field, $param) {
 
     global $db;
 
-    $query = $db->query("SELECT COUNT(id) AS Count FROM lastParams WHERE id=0");
+    $query = $db->query("UPDATE lastParams SET ".$field."='".$param."' WHERE active=1");
     if (!$query)
         return false;
 
-    if ($row = $query->fetch_array())
-        if ($row["Count"] == 0) {
-            $query = $db->query("INSERT INTO lastParams(id, ".$field.") VALUES(0, ".$param.")");
-            if (!$query)
-                return false;
-        }
-        else {
-            $query = $db->query("UPDATE lastParams SET ".$field."=".$param." WHERE id=0");
-            if (!$query)
-                return false;
-        }
-
-        return true;
+    return true;
 
 } // insertLastParam
 //------------------------------------------------------
