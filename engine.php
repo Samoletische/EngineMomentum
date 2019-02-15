@@ -10,29 +10,29 @@ if ($res == "") {
 			case "getEngines":
 				$res = getEngines();
 				break;
-			case "getLastEngine":
-				$res = getLastEngine();
-				break;
+			// case "getLastEngine":
+			// 	$res = getLastEngine();
+			// 	break;
 			case "saveEngine":
 				$res = saveEngine($_POST["id"], $_POST["title"], $_POST["data"]);
 				break;
 			case "getEngine":
 				$res = getEngine($_POST["id"]);
-            	break;
-            case "getLastGear":
-				$res = getLastGear($_POST["number"]);
-				break;
+        break;
+      // case "getLastGear":
+			// 	$res = getLastGear($_POST["number"]);
+			// 	break;
 			case "saveGear":
 				$res = saveGear($_POST["id"], $_POST["title"], $_POST["data"], $_POST["number"]);
 				break;
 			case "getGear":
 				$res = getGear($_POST["id"], $_POST["number"]);
 				break;
-            case "removeRecord":
-				$res = removeRecord($_POST["table"], $_POST["id"], $_POST["number"]);
+      case "removeRecord":
+				$res = removeRecord($_POST["table"], $_POST["id"]);
 				break;
-            case "getDropDown":
-            	$res = getDropDown($_POST["table"], $_POST["number"]);
+      case "getDropDown":
+      	$res = getDropDown($_POST["table"]);
 				break;
 			default :
 				$res = "unknown command";
@@ -243,56 +243,54 @@ function getEngines() {
 } // getAllEngines
 //------------------------------------------------------
 
-function getDropDown($table, $number) {
+function getDropDown($table) {
 
 	global $db;
-	$html = "";
 
-	try {
-		//throw new Exception("SELECT id, title FROM ".$table." GROUP BY id, title");
-		$query = mysqli_query("SELECT id, title FROM ".$table." GROUP BY id, title");
+	$result = [ "result" => "ok", "dropdown" => "" ];
 
-		if (!$query)
-			throw new Exception("(011) Не могу работать с базой");
+	$query = $db->query("SELECT id, title FROM ".$table);
 
-		while ($row = mysqli_fetch_array($query))
-			if ($number == -1)
-				$html .= "<li><a class='".$table."Load' ".$table."ID='".$row["id"]."' href='#'>".$row["title"]."</a></li>";
-			else
-				$html .= "<li><a class='".$table."Load' ".$table."ID='".$row["id"]."' number='".$number."' href='#'>".$row["title"]."</a></li>";
-    }
-	catch (Exception $e) {
-		return ".-=-".$e;
+	if (!$query) {
+		$result["result"] = "error";
+		$result["message"] = "[saveEngine] error: ".$db->error();
+		return $result;
 	}
 
-	return "ok-=-".$html;
+	while ($row = $query->fetch_array())
+		$result["dropdown"] .= "<li><a class='".$table."Load' ".$table."ID='".$row["id"]."' href='#'>".$row["title"]."</a></li>";
+
+	return $result;
 
 } // getDropDown
 //------------------------------------------------------
 
-function removeRecord($table, $id, $number) {
+function removeRecord($table, $id) {
 
 	global $db;
 
-	try {
-		$query = mysqli_query($db, "DELETE FROM ".$table." WHERE id=".$id);
-		if (!$query)
-			throw new Exception("(013) Не могу работать с базой");
+	$result = [ "result" => "ok" ];
 
-		if ($number == "") {
-			if (!insertLastParam("engineID", 0))
-				throw new Exception("(024) Не могу работать с базой");
-		}
-		else {
-			if (!insertLastParam("gearID".$number, 0))
-            				throw new Exception("(025) Не могу работать с базой");
-		}
+	$queryStr = "DELETE FROM ".$table." WHERE id='".$id."';";
+	if ($table == "engines") {
+		$queryStr .= "DELETE FROM enginesMomentum WHERE engineID='".$id."';
+			UPDATE lastParams SET engineID=0 WHERE active=1";
 	}
-	catch (Exception $e) {
-		return ".-=-".$e;
+	if ($table == "gears") {
+		$queryStr .= "DELETE FROM gearsGears WHERE gearID='".$id."';
+			UPDATE lastParams SET gearID=0 WHERE active=1";
+	}
+	else
+		$queryStr .= "UPDATE lastParams SET wheelID=0 WHERE active=1";
+
+	$query = $db->multi_query($queryStr);
+	if (!$query) {
+		$result["result"] = "error";
+		$result["message"] = "[removeRecord] error: ".$db->error();
+		return $result;
 	}
 
-	return "ok-=-";
+	return $result;
 
 } // removeRecord
 //------------------------------------------------------
@@ -307,56 +305,57 @@ function saveEngine($id, $title, $data) {
 
 	$result = [ "result" => "ok" ];
 
-  try {
+  $recordsExists = false;
 
-		$recordsExists = false;
+  if ($id != "") {
+  	$query = $db->query("SELECT COUNT(oborots) AS Count FROM enginesMomentum WHERE engineID='".$id."'");
+    if (!$query) {
+			$result["result"] = "error";
+			$result["message"] = "[saveEngine] error: ".$db->error();
+			return $result;
+		}
 
-    if ($id != "") {
-    	$query = $db->query("SELECT COUNT(oborots) AS Count FROM enginesMomentum WHERE engineID='".$id."'");
-      if (!$query)
-        throw new Exception("[saveEngine] error: ".$db->error());
-
-      if ($row = $query->fetch_array())
-        $recordsExists = $row["Count"] != 0;
-    }
-    else
-      $id = getFreeID("engines");
-
-    if ($id == 0)
-      throw new Exception("[saveEngine] error: ".$db->error());
-
-		$date = date("Y-m-d H:i:s");
-    if ($recordsExists)
-			$queryStr = "UPDATE engines SET title='".$title."', changeDate='".$date."' WHERE id='".$id."';
-				DELETE FROM enginesMomentum WHERE engineID='".$id."';";
-		else
-			$queryStr = "INSERT INTO engines(id, title, changeDate)
-				VALUES('".$id."', '".$title."', '".$date."');";
-
-    $data = explode(";", $data);
-    if (count($data) != 2)
-      throw new Exception("[saveEngine] error: ".$db->error());
-
-    $obs = explode(",", $data[0]);
-    $moms = explode(",", $data[1]);
-
-    for ($c = 0; $c < count($obs); $c++)
-			$queryStr .= "INSERT INTO enginesMomentum(engineID, oborots, momentum, changeDate)
-				VALUES('".$id."', '".$obs[$c]."', '".$moms[$c]."', '".$date."');";
-
-		$queryStr .= "UPDATE lastParams SET engineID='".$id."' WHERE active=1";
-		// $result["message"] = $queryStr;
-		$query = $db->multi_query($queryStr);
-		if (!$query)
-			throw new Exception("[saveEngine] error: ".$db->error());
-
-    $result["id"] = $id;
-
+    if ($row = $query->fetch_array())
+      $recordsExists = $row["Count"] != 0;
   }
-  catch (Exception $e) {
+  else
+    $id = getFreeID("engines");
+
+  if ($id == 0) {
 		$result["result"] = "error";
-		$result["message"] = $e->getMessage();
+		$result["message"] = "[saveEngine] error: no free id in table 'engines'";
+		return $result;
 	}
+
+	$date = date("Y-m-d H:i:s");
+  if ($recordsExists)
+		$queryStr = "UPDATE engines SET title='".$title."', changeDate='".$date."' WHERE id='".$id."';
+			DELETE FROM enginesMomentum WHERE engineID='".$id."';";
+	else
+		$queryStr = "INSERT INTO engines(id, title, changeDate)
+			VALUES('".$id."', '".$title."', '".$date."');";
+
+  $data = explode(";", $data);
+  if (count($data) != 2)
+    throw new Exception("[saveEngine] error: ".$db->error());
+
+  $obs = explode(",", $data[0]);
+  $moms = explode(",", $data[1]);
+
+  for ($c = 0; $c < count($obs); $c++)
+		$queryStr .= "INSERT INTO enginesMomentum(engineID, oborots, momentum, changeDate)
+			VALUES('".$id."', '".$obs[$c]."', '".$moms[$c]."', '".$date."');";
+
+	$queryStr .= "UPDATE lastParams SET engineID='".$id."' WHERE active=1";
+	// $result["message"] = $queryStr;
+	$query = $db->multi_query($queryStr);
+	if (!$query) {
+		$result["result"] = "error";
+		$result["message"] = "[saveEngine] error: ".$db->error();
+		return $result;
+	}
+
+  $result["id"] = $id;
 
 	return $result;
 
@@ -399,30 +398,48 @@ function getLastEngine() {
 function getEngine($engineID) {
 
 	global $db;
-	$obs = "";
-	$moms = "";
-	$title = "";
 
-	try {
-		//throw new Exception("SELECT title, oborots, momentum FROM engines WHERE id=".$engineID);
-		$query = mysqli_query($db, "SELECT title, oborots, momentum FROM engines WHERE id=".$engineID);
-		if (!$query)
-			throw new Exception("(012) Не могу работать с базой");
+	$result = [ "result" => "ok", "title" => "", "obFrom" => 100000, "obTo" => 0, "obs" => "", "moms" => "" ];
 
-		while ($row = mysqli_fetch_array($query)) {
-			$obs == "" ? $obs = $row["oborots"] : $obs .= "\t".$row["oborots"];
-			$moms == "" ? $moms = $row["momentum"] : $moms .= "\t".$row["momentum"];
-			$title = $row["title"];
+	$query = $db->multi_query("SELECT
+			engines.title,
+			enginesMomentum.oborots,
+			enginesMomentum.momentum
+		FROM
+			engines
+			INNER JOIN enginesMomentum ON engines.id=enginesMomentum.engineID
+		WHERE
+			engines.id='".$engineID."'
+		;
+
+		UPDATE lastParams SET engineID='".$engineID."' WHERE active=1");
+	if (!$query) {
+		$result["result"] = "error";
+		$result["message"] = "[loadEngine] error: ".$db->error();
+		return $result;
+	}
+
+	$res = $db->store_result();
+	if (!$res) {
+		$result["result"] = "error";
+		$result["message"] = "[loadEngine] error: ".$db->error();
+		return $result;
+	}
+
+	$first = true;
+	while ($row = $res->fetch_array()) {
+		$result["obFrom"] = min($result["obFrom"], $row["oborots"]);
+		$result["obTo"] = max($result["obTo"], $row["oborots"]);
+
+		$result["obs"] == "" ? $result["obs"] = $row["oborots"] : $result["obs"] .= "\t".$row["oborots"];
+		$result["moms"] == "" ? $result["moms"] = $row["momentum"] : $result["moms"] .= "\t".$row["momentum"];
+		if ($first) {
+			$first = false;
+			$result["title"] = $row["title"];
 		}
-
-		if (!insertLastParam("engineID", $engineID))
-			throw new Exception("(014) Не могу работать с базой");
-	}
-	catch (Exception $e) {
-		return ".-=-".$e;
 	}
 
-	return "ok-=-".$engineID."-=-".$title."-=-".$obs."-=-".$moms;
+	return $result;
 
 } // getEngine
 //------------------------------------------------------

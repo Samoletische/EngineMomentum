@@ -124,14 +124,14 @@ $(function() {
 		$("#engineName").attr("modif", "true");
 		engines[activeSheet].obFrom = parseFloat($(this).val());
 		createObTable();
-		console.log("refreshResult from obFrom change");
+		//console.log("refreshResult from obFrom change");
 		refreshResult();
 	});
 	$("#obTo").change(function() {
 		$("#engineName").attr("modif", "true");
 		engines[activeSheet].obTo = parseFloat($(this).val());
 		createObTable();
-		console.log("refreshResult from obTo change");
+		//console.log("refreshResult from obTo change");
 		refreshResult();
 	});
 	$("#obCols").change(function() {
@@ -143,7 +143,7 @@ $(function() {
 			alert("Количество известных точек должно быть не меньше четырех!")
 		}
 		createObTable();
-		console.log("refreshResult from obCols change");
+		//console.log("refreshResult from obCols change");
 		refreshResult();
 	});
 	// ------- engine elements end -------
@@ -153,19 +153,19 @@ $(function() {
 		$("#gearName[gearNumber='1']").attr("modif", "true");
 		engines[activeSheet].gearCols = parseInt($(this).val());
 		createGearTable(1);
-		console.log("refreshResult from gearCols change");
+		//console.log("refreshResult from gearCols change");
 		refreshResult();
 	});
 	$("#gearMain").change(function() {
 		$("#gearName[gearNumber='1']").attr("modif", "true");
 		engines[activeSheet].gearMain = parseFloat($(this).val());
-		console.log("refreshResult from gearMain change");
+		//console.log("refreshResult from gearMain change");
 		refreshResult();
 	});
 	$("#obFinish").change(function() {
 		$("#gearName[gearNumber='1']").attr("modif", "true");
 		engines[activeSheet].obFinish = parseFloat($(this).val());
-		console.log("refreshResult from obFinish change");
+		//console.log("refreshResult from obFinish change");
 		refreshResult();
 	});
 	// ------- gears elements end -------
@@ -173,18 +173,18 @@ $(function() {
 	// ------- wheels elements start -------
 	$("#wheelWidth").change(function() {
 		engines[activeSheet].wheelWidth = parseFloat($(this).val());
-		console.log("refreshResult from wheelWidth change");
+		//console.log("refreshResult from wheelWidth change");
 		refreshResult();
 	});
 	$("#wheelHeight").change(function() {
 		engines[activeSheet].wheelHeight = parseFloat($(this).val());
-		console.log("refreshResult from wheelHeight change");
+		//console.log("refreshResult from wheelHeight change");
 		refreshResult();
 	});
 	$("#wheelDisk").change(function() {
 		engines[activeSheet].wheelDisk = parseFloat($(this).val());
 		//console.log("change wheelDisk");
-		console.log("refreshResult from wheelDisk change");
+		//console.log("refreshResult from wheelDisk change");
 		refreshResult();
 	});
 	// ------- wheels elements end -------
@@ -205,44 +205,16 @@ function initialize() {
 	  alert('Не поддерживается рисование графиков');
 
 	interpolStep = 50;
-	console.log("getEngines");
+	//console.log("getEngines");
 	getEngines();
 
 } // initialize
 //------------------------------------------------------
 
 // ------- Engine start -------
-
-function getEngines() {
-
-	$.post("engine.php", "command=getEngines", function(data) {
-		if (data.result == "ok") {
-			console.log(data);
-
-			clearTabs();
-
-			data.sheets.forEach(function(val, key, arr) {
-				createTab(key);
-				engines[key] = new Engine(data.sheets[key]);
-			});
-
-			activeSheet = data.active;
-
-			showActiveSheet();
-
-			console.log("refreshResult from getEngines");
-			refreshResult(true);
-
-		}
-		else
-			alert(data.message);
-	});
-
-} // getEngines
-//------------------------------------------------------
-
 function enginesNew() {
 
+	//console.log("enginesNew");
 	$("#engineName")
 		.val("")
 		.attr("engineID", "")
@@ -253,11 +225,12 @@ function enginesNew() {
 	$("#obTo").val(0);
 	engines[activeSheet].obCols = 0;
 	$("#obCols").val(0);
+	engines[activeSheet].engineID = 0;
 	engines[activeSheet].engineTitle = "";
 	engines[activeSheet].moms.length = 0;
 
 	createObTable();
-	console.log("refreshResult from enginesNew");
+	//console.log("refreshResult from enginesNew");
 	refreshResult();
 
 } // enginesNew
@@ -265,31 +238,52 @@ function enginesNew() {
 
 function getengines(id) {
 
-    $.post("engine.php", "command=getEngine&id=" + id, function(data) {
-        //alert(data);
-        var dat = data.split("-=-");
+  $.post("engine.php", "command=getEngine&id=" + id, function(data) {
 
-        if (dat[0] == "ok") {
-            if (dat[3] != "") {
+		if (data.result == "ok") {
+			//console.log(data);
+      $("#engineName")
+      	.attr("engineID", id)
+      	.val(data.title);
 
-                $("#engineName")
-                	.attr("engineID", dat[1])
-                	.val(dat[2]);
+			engines[activeSheet].engineID = id;
+			engines[activeSheet].engineTitle = data.title;
+			engines[activeSheet].obFrom = data.obFrom;
+			engines[activeSheet].obTo = data.obTo;
 
-                var d = new Array(2);
-                d[0] = dat[3]; // obs
-                d[1] = dat[4]; // moms
-                engineLoadApply(d);
-
-            }
-            else
-				alert(dat[1]);
-        }
-        else
-            alert(dat[1]);
-    });
+      var d = new Array(2);
+      d[0] = data.obs;
+      d[1] = data.moms;
+      engineLoadApply(d);
+    }
+    else
+			alert(data.message);
+  });
 
 } // getengines
+//------------------------------------------------------
+
+function engineSave() {
+
+  var command = "command=saveEngine&id=" + $("#engineName").attr("engineID") + "&title=" + $("#engineName").val() + "&data=" + engines[activeSheet].obs.join(",") + ";" + engines[activeSheet].moms.join(",");
+  $.post("engine.php", command, function(data) {
+
+		if (data.result == "ok") {
+			//console.log(data);
+			engines[activeSheet].engineID = data.id;
+			engines[activeSheet].engineTitle = $("#engineName").val();
+
+			$("#engineName")
+       	.attr("engineID", data.id)
+        .attr("modif", "false");
+
+			alert("Параметры двигателя успешно сохранены");
+		}
+		else
+			alert(data.message);
+	});
+
+} // engineSave
 //------------------------------------------------------
 
 function engineLoad() {
@@ -304,106 +298,44 @@ function engineLoad() {
 
 function engineLoadApply(data = -1) {
 
-		if (data != -1) {
-			console("engineLoadApply from Excel");
-	    var subData;
+	if (data != -1) {
+		//console.log("engineLoadApply from Excel");
+		//console.log(data);
+	  var subData;
 
-	    if (data.length != 2)
-	        return false;
+	  if (data.length != 2)
+			return false;
 
-	    subData = data[0].split("\t");
-	    engines[activeSheet].obs = new Array(subData.length);
-	    for (var c = 0; c < engines[activeSheet].obs.length; c++)
-	        engines[activeSheet].obs[c] = parseInt(subData[c]);
+		subData = data[0].split("\t");
+	  engines[activeSheet].obs = new Array(subData.length);
+	  for (var c = 0; c < subData.length; c++)
+			engines[activeSheet].obs[c] = parseInt(subData[c]);
 
-	    subData = data[1].split("\t");
-	    engines[activeSheet].moms = new Array(subData.length);
-	    for (var c = 0; c < engines[activeSheet].moms.length; c++)
-	        engines[activeSheet].moms[c] = parseFloat(subData[c]);
+		subData = data[1].split("\t");
+	  engines[activeSheet].moms = new Array(subData.length);
+	  for (var c = 0; c < subData.length; c++)
+	  	engines[activeSheet].moms[c] = parseFloat(subData[c]);
 
-	    engines[activeSheet].obCols = obs.length;
-		}
+	  engines[activeSheet].obCols = subData.length;
+	}
 
-		//console.log("obCols=" + engines[activeSheet].obCols);
-    $("#obCols").val(engines[activeSheet].obCols);
-    $("#obFrom").val(engines[activeSheet].obFrom);
-    $("#obTo").val(engines[activeSheet].obTo);
+	//console.log("obCols=" + engines[activeSheet].obCols);
+  $("#obCols").val(engines[activeSheet].obCols);
+  $("#obFrom").val(engines[activeSheet].obFrom);
+  $("#obTo").val(engines[activeSheet].obTo);
 
-		//console.log("createObTable");
-    createObTable();
-		if (data != -1) {
-			console.log("refreshResult from engineLoadApply");
-	    refreshResult();
-		}
+	//console.log("createObTable");
+  createObTable();
+	if (data != -1) {
+		//console.log("refreshResult from engineLoadApply");
+    refreshResult();
+	}
 
 } // engineLoadApply
 //------------------------------------------------------
-
-function engineSave() {
-
-    var command = "command=saveEngine&id=" + $("#engineName").attr("engineID") + "&title=" + $("#engineName").val() + "&data=" + engines[activeSheet].obs.join(",") + ";" + engines[activeSheet].moms.join(",");
-    //alert("save - " + command);
-    $.post("engine.php", command, function(data) {
-				if (data.result == "ok") {
-					console.log(data);
-
-					$("#engineName")
-	           	.attr("engineID", data.id)
-	            .attr("modif", "false");
-					alert("Параметры двигателя успешно сохранены");
-				}
-				else
-					alert(data.message);
-    });
-
-} // engineSave
-//------------------------------------------------------
-
 // ------- Engine end -------
 
 // ------- Gears start -------
-
-function getLastGear(gearNumber) {
-
-    $.post("engine.php", "command=getLastGear&number=" + gearNumber, function(data) {
-        //alert(data);
-        //console.log(data);
-        var dat = data.split("-=-");
-
-        if (dat[0] == "ok") {
-            if ((dat.length > 2) && (dat[3] != "")) {
-
-                $(".gearName[gearNumber='" + gearNumber + "']")
-                	.attr("gearID", dat[1])
-                	.attr("modif", "false")
-                	.val(dat[2]);
-
-//                var gNumbers = dat[5].split(";");
-//				var d = new Array(gNumbers.length + 2);
-//
-//				d[0] = dat[3]; // obFinish
-//				d[1] = dat[4]; // gearMain
-//				// gearNumbers
-//				for (var c = 0; c < gNumbers.length; c++)
-//					d[c+2] = gNumbers[c];
-
-                gearLoadApply(dat[3].split(";"), gearNumber);
-
-            }
-            else {
-
-				//alert(dat[1]);
-                gearsNew(gearNumber);
-
-            }
-        }
-        else
-            alert(dat[1]);
-    });
-
-} // getLastGear
-//------------------------------------------------------
-
 function gearsNew(gearNumber) {
 
 	$(".gearName[gearNumber='" + gearNumber + "']")
@@ -428,7 +360,7 @@ function gearsNew(gearNumber) {
     }
 
 	createGearTable(gearNumber);
-	console.log("refreshResult from gearsNew");
+	//console.log("refreshResult from gearsNew");
 	refreshResult();
 
 } // gearsNew
@@ -469,6 +401,32 @@ function getgears(id, gearNumber) {
 } // getgears
 //------------------------------------------------------
 
+function gearSave(gearNumber) {
+
+	var gearID = $(".gearName[gearNumber='" + gearNumber + "']").attr("gearID");
+	var gearTitle = $(".gearName[gearNumber='" + gearNumber + "']").val();
+	var obFinishCurr = gearNumber == 1 ? obFinish : obFinish2;
+	var gearMainCurr = gearNumber == 1 ? gearMain : gearMain2;
+	var gearNumbersCurr = gearNumber == 1 ? gearNumbers : gearNumbers2;
+    var command = "command=saveGear&id=" + gearID + "&title=" + gearTitle + "&number=" + gearNumber + "&data=" + obFinishCurr + ";" + gearMainCurr + ";" + gearNumbersCurr.join(";");
+    //alert("save - " + command);
+    $.post("engine.php", command, function(data) {
+        //alert(data);
+        //console.log(data);
+        var dat = data.split("-=-");
+        if (dat[0] == "ok") {
+            $(".gearName[gearNumber='" + gearNumber + "']")
+            	.attr("gearID", dat[1])
+            	.attr("modif", "false");
+            alert("Параметры коробки передач успешно сохранены");
+        }
+        else
+            alert(dat[1]);
+    });
+
+} // gearSave
+//------------------------------------------------------
+
 function gearLoad(gearNumber) {
 
 	//alert("gearsLoad");
@@ -502,43 +460,15 @@ function gearLoadApply(data = -1) {
 
   createGearTable();
   if (data != -1) {
-		console.log("refreshResult from gearLoadApply");
+		//console.log("refreshResult from gearLoadApply");
 		refreshResult();
 	}
 
 } // gearLoadApply
 //------------------------------------------------------
-
-function gearSave(gearNumber) {
-
-	var gearID = $(".gearName[gearNumber='" + gearNumber + "']").attr("gearID");
-	var gearTitle = $(".gearName[gearNumber='" + gearNumber + "']").val();
-	var obFinishCurr = gearNumber == 1 ? obFinish : obFinish2;
-	var gearMainCurr = gearNumber == 1 ? gearMain : gearMain2;
-	var gearNumbersCurr = gearNumber == 1 ? gearNumbers : gearNumbers2;
-    var command = "command=saveGear&id=" + gearID + "&title=" + gearTitle + "&number=" + gearNumber + "&data=" + obFinishCurr + ";" + gearMainCurr + ";" + gearNumbersCurr.join(";");
-    //alert("save - " + command);
-    $.post("engine.php", command, function(data) {
-        //alert(data);
-        //console.log(data);
-        var dat = data.split("-=-");
-        if (dat[0] == "ok") {
-            $(".gearName[gearNumber='" + gearNumber + "']")
-            	.attr("gearID", dat[1])
-            	.attr("modif", "false");
-            alert("Параметры коробки передач успешно сохранены");
-        }
-        else
-            alert(dat[1]);
-    });
-
-} // gearSave
-//------------------------------------------------------
-
 // ------- Gears end -------
 
 // ------- Wheel start -------
-
 function wheelLoadApply(data = -1) {
 
 	if (data != -1) {
@@ -558,25 +488,51 @@ function wheelLoadApply(data = -1) {
   $("#wheelDisk").val(engines[activeSheet].wheelDisk);
 
 	if (data != -1) {
-		console.log("refreshResult from wheelLoadApply");
+		//console.log("refreshResult from wheelLoadApply");
 	  refreshResult();
 	}
 
 }
 //------------------------------------------------------
-
 // ------- Wheel end -------
 
 // ------- Common DB start -------
-function fillDropDown(table, number = -1) {
+function getEngines() {
 
-	var command = "command=getDropDown&table=" + table + "&number=" + number;
+	$.post("engine.php", "command=getEngines", function(data) {
+		if (data.result == "ok") {
+			//console.log(data);
+
+			clearTabs();
+
+			data.sheets.forEach(function(val, key, arr) {
+				createTab(key);
+				engines[key] = new Engine(data.sheets[key]);
+			});
+
+			activeSheet = data.active;
+
+			showActiveSheet();
+
+			//console.log("refreshResult from getEngines");
+			refreshResult(true);
+
+		}
+		else
+			alert(data.message);
+	});
+
+} // getEngines
+//------------------------------------------------------
+
+function fillDropDown(table) {
+
+	var command = "command=getDropDown&table=" + table;
 	$.post("engine.php", command, function(data) {
-		//alert(data);
-		var dat = data.split("-=-");
 
-        if (dat[0] == "ok") {
-			$("#" + table + "DropDown").html(dat[1]);
+		//console.log(data);
+		if (data.result == "ok") {
+			$("#" + table + "DropDown").html(data.dropdown);
 			$("." + table + "Load").click(function() {
 				var el = $(this);
 
@@ -585,7 +541,7 @@ function fillDropDown(table, number = -1) {
 			});
 		}
 		else
-			alert(dat[1]);
+			alert(data.message);
 	});
 
 } // fillDropDown
@@ -595,23 +551,21 @@ function removeRecord() {
 
 	$("#removingConfirm").modal("hide");
 	$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
-		var dat = data.split("-=-");
 
-		if (dat[0] == "ok") {
-			// eval($("#removingThing").attr("table") + "New(" + $("#removingThing").attr("number") + ");");
+		if (data.result == "ok") {
+			//console.log(data);
+			eval($("#removingThing").attr("table") + "New();");
 			alert("Запись успешно удалена из базы");
 		}
 		else
-			alert(dat[1]);
+			alert(data.message);
 	});
 
 } // removeRecord
 //------------------------------------------------------
-
 // ------- Common DB end -------
 
 // ------- Common elements start -------
-
 function showActiveSheet() {
 
 	$("#engineName")
@@ -718,6 +672,151 @@ function refreshResult(all = false) {
 
 } // refreshResult
 //------------------------------------------------------
+
+function LightenDarkenColor(col, amt) {
+
+	var usePound = false;
+
+	if (col[0] == "#") {
+			col = col.slice(1);
+			usePound = true;
+	}
+
+	var num = parseInt(col,16);
+
+	var r = (num >> 16) + amt;
+
+	if (r > 255) r = 255;
+	else if  (r < 0) r = 0;
+	else r = r << 16;
+
+	var b = ((num >> 8) & 0x00FF) + amt;
+
+	if (b > 255) b = 255;
+	else if  (b < 0) b = 0;
+	else b = b << 8;
+
+	var g = (num & 0x0000FF) + amt;
+
+	if (g > 255) g = 255;
+	else if (g < 0) g = 0;
+
+	result = (g | b | r).toString(16);
+
+	if(result.length == 2)
+		result = (usePound?"#":"") + "0000" + result;
+	else if (result.length == 4)
+		result = (usePound?"#":"") + "00" + result;
+	else
+		result = (usePound?"#":"") + result;
+
+	return result;
+
+} // LightenDarkenColor
+//------------------------------------------------------
+
+function createObTable() {
+
+	//console.log("obCols: " + engines[activeSheet].obCols);
+	if ((engines[activeSheet].obCols < 4) || (engines[activeSheet].obTo <= engines[activeSheet].obFrom)) {
+		$("#engineTable").html("");
+		engines[activeSheet].obs.length = 0;
+    engines[activeSheet].moms.length = 0;
+		return;
+	}
+
+	//console.log("createObTable");
+	var html = "<table>";
+	var header = "";
+	var body = "";
+	var obStep = parseFloat((engines[activeSheet].obTo - engines[activeSheet].obFrom) / (engines[activeSheet].obCols - 1.0));
+	//console.log(obStep);
+	var obCurr;
+	var c;
+
+	engines[activeSheet].obs.length = engines[activeSheet].obCols;
+	engines[activeSheet].moms.length = engines[activeSheet].obCols;
+
+	obCurr = engines[activeSheet].obFrom;
+	for (c = 0; c < engines[activeSheet].obCols; c++) {
+		engines[activeSheet].obs[c] = roundForInterpol(obCurr, engines[activeSheet].obTo);
+		if (!engines[activeSheet].moms[c])
+			engines[activeSheet].moms[c] = 1;
+		html += "<tr><td class='first' col='" + c + "'>" + engines[activeSheet].obs[c] + "</td>";
+		html += "<td><input col='" + c + "' class='mom' type='number' value='" + engines[activeSheet].moms[c] + "'></td></tr>";
+		//console.log(obCurr + " - " + engines[activeSheet].obs[c] + " - " + engines[activeSheet].moms[c]);
+		obCurr += obStep;
+	}
+
+	html += "</table>";
+
+	//console.log("createObTable HTML: " + html);
+	$("#engineTable").html(html);
+
+	$("input.mom").change(function() {
+		var el = $(this);
+		var col = parseInt(el.attr("col"));
+		engines[activeSheet].moms[col] = parseFloat(el.val());
+		$("#engineName").attr("modif", "true");
+		//console.log("refreshResult from input.mom");
+		refreshResult();
+	});
+
+} // createObTable
+//------------------------------------------------------
+
+function createGearTable() {
+
+	if (engines[activeSheet].gearCols == 0) {
+		$("#gearTable").html("");
+		engines[activeSheet].gearNumbers.length = 0;
+		return;
+	}
+
+	var html = "<table>";
+	var header = "";
+	var body = "";
+	var gearCurr = 0;
+
+	engines[activeSheet].gearNumbers.length = engines[activeSheet].gearCols;
+
+	for (gearCurr = 0; gearCurr < engines[activeSheet].gearCols; gearCurr++) {
+		if (!engines[activeSheet].gearNumbers[gearCurr])
+			engines[activeSheet].gearNumbers[gearCurr] = 1;
+		html += "<tr><td class='first'>" + (gearCurr + 1) + "</td><td><input gear='" + gearCurr + "' class='gear' type='number' value='" + engines[activeSheet].gearNumbers[gearCurr] + "' /></td></tr>";
+		//console.log(gearCurr + " - " + engines[activeSheet].gearNumbers[gearCurr]);
+	}
+	html += "</table>";
+
+	$("#gearTable").html(html);
+
+	$("input.gear").change(function() {
+		var el = $(this);
+		var gear = parseInt(el.attr("gear"));
+		engines[activeSheet].gearNumbers[gear] = parseFloat(el.val());
+		$("#gearName").attr("modif", "true");
+		//console.log("refreshResult from input.gearNumber");
+		refreshResultOnlyGear();
+	});
+
+} // createGearTable
+//------------------------------------------------------
+
+function clearEngineDraw() {
+
+	//console.log("clearEngineDraw");
+	//engineDraw.rect(drawWidth, drawHeight).fill("#ddddff");
+	engineDraw.rect(drawWidth, drawHeight).fill("#b5b4c6");
+
+} // clearEngineDraw
+//------------------------------------------------------
+
+function clearGearsDraw() {
+
+	//gearsDraw.rect(drawWidth, drawHeight).fill("#ddffdd");
+	gearsDraw.rect(drawWidth, drawHeight).fill("#b5b4c6");
+
+} // clearGearsDraw
 
 function drawMomentum() {
 
@@ -930,49 +1029,10 @@ function drawResult(data) {
 
 } // drawResult
 //------------------------------------------------------
-
-function LightenDarkenColor(col, amt) {
-
-	var usePound = false;
-
-	if (col[0] == "#") {
-			col = col.slice(1);
-			usePound = true;
-	}
-
-	var num = parseInt(col,16);
-
-	var r = (num >> 16) + amt;
-
-	if (r > 255) r = 255;
-	else if  (r < 0) r = 0;
-	else r = r << 16;
-
-	var b = ((num >> 8) & 0x00FF) + amt;
-
-	if (b > 255) b = 255;
-	else if  (b < 0) b = 0;
-	else b = b << 8;
-
-	var g = (num & 0x0000FF) + amt;
-
-	if (g > 255) g = 255;
-	else if (g < 0) g = 0;
-
-	result = (g | b | r).toString(16);
-
-	if(result.length == 2)
-		result = (usePound?"#":"") + "0000" + result;
-	else if (result.length == 4)
-		result = (usePound?"#":"") + "00" + result;
-	else
-		result = (usePound?"#":"") + result;
-
-	return result;
-
-} // LightenDarkenColor
 //------------------------------------------------------
+// ------- Common elements end -------
 
+// ------- Mathematics start -------
 function roundForInterpol(value, obTo) {
 
 	var result = Math.round(value / interpolStep) * interpolStep;
@@ -980,114 +1040,6 @@ function roundForInterpol(value, obTo) {
 
 } // roundForInterpol
 //------------------------------------------------------
-
-function createObTable() {
-
-	//console.log("obCols: " + engines[activeSheet].obCols);
-	if ((engines[activeSheet].obCols < 4) || (engines[activeSheet].obTo <= engines[activeSheet].obFrom)) {
-		$("#engineTable").html("");
-		engines[activeSheet].obs.length = 0;
-    engines[activeSheet].moms.length = 0;
-		return;
-	}
-
-	//console.log("createObTable");
-	var html = "<table>";
-	var header = "";
-	var body = "";
-	var obStep = parseFloat((engines[activeSheet].obTo - engines[activeSheet].obFrom) / (engines[activeSheet].obCols - 1.0));
-	//console.log(obStep);
-	var obCurr;
-	var c;
-
-	engines[activeSheet].obs.length = engines[activeSheet].obCols;
-	engines[activeSheet].moms.length = engines[activeSheet].obCols;
-
-	obCurr = engines[activeSheet].obFrom;
-	for (c = 0; c < engines[activeSheet].obCols; c++) {
-		engines[activeSheet].obs[c] = roundForInterpol(obCurr, engines[activeSheet].obTo);
-		if (!engines[activeSheet].moms[c])
-			engines[activeSheet].moms[c] = 1;
-		html += "<tr><td class='first' col='" + c + "'>" + engines[activeSheet].obs[c] + "</td>";
-		html += "<td><input col='" + c + "' class='mom' type='number' value='" + engines[activeSheet].moms[c] + "'></td></tr>";
-		//console.log(obCurr + " - " + engines[activeSheet].obs[c] + " - " + engines[activeSheet].moms[c]);
-		obCurr += obStep;
-	}
-
-	html += "</table>";
-
-	//console.log("createObTable HTML: " + html);
-	$("#engineTable").html(html);
-
-	$("input.mom").change(function() {
-		var el = $(this);
-		var col = parseInt(el.attr("col"));
-		engines[activeSheet].moms[col] = parseFloat(el.val());
-		$("#engineName").attr("modif", "true");
-		console.log("refreshResult from input.mom");
-		refreshResult();
-	});
-
-} // createObTable
-//------------------------------------------------------
-
-function createGearTable() {
-
-	if (engines[activeSheet].gearCols == 0) {
-		$("#gearTable").html("");
-		engines[activeSheet].gearNumbers.length = 0;
-		return;
-	}
-
-	var html = "<table>";
-	var header = "";
-	var body = "";
-	var gearCurr = 0;
-
-	engines[activeSheet].gearNumbers.length = engines[activeSheet].gearCols;
-
-	for (gearCurr = 0; gearCurr < engines[activeSheet].gearCols; gearCurr++) {
-		if (!engines[activeSheet].gearNumbers[gearCurr])
-			engines[activeSheet].gearNumbers[gearCurr] = 1;
-		html += "<tr><td class='first'>" + (gearCurr + 1) + "</td><td><input gear='" + gearCurr + "' class='gear' type='number' value='" + engines[activeSheet].gearNumbers[gearCurr] + "' /></td></tr>";
-		//console.log(gearCurr + " - " + engines[activeSheet].gearNumbers[gearCurr]);
-	}
-	html += "</table>";
-
-	$("#gearTable").html(html);
-
-	$("input.gear").change(function() {
-		var el = $(this);
-		var gear = parseInt(el.attr("gear"));
-		engines[activeSheet].gearNumbers[gear] = parseFloat(el.val());
-		$("#gearName").attr("modif", "true");
-		console.log("refreshResult from input.gearNumber");
-		refreshResultOnlyGear();
-	});
-
-} // createGearTable
-//------------------------------------------------------
-
-function clearEngineDraw() {
-
-	//console.log("clearEngineDraw");
-	//engineDraw.rect(drawWidth, drawHeight).fill("#ddddff");
-	engineDraw.rect(drawWidth, drawHeight).fill("#b5b4c6");
-
-} // clearEngineDraw
-//------------------------------------------------------
-
-function clearGearsDraw() {
-
-	//gearsDraw.rect(drawWidth, drawHeight).fill("#ddffdd");
-	gearsDraw.rect(drawWidth, drawHeight).fill("#b5b4c6");
-
-} // clearGearsDraw
-//------------------------------------------------------
-
-// ------- Common elements end -------
-
-// ------- Mathematics start -------
 
 function interpolSpline3(ob, mom, secondIndex, rank, obCols) { // interpolation of 3 power spline
 
@@ -1315,11 +1267,9 @@ function fn(x, mx, my, rank) {
 
 } // fn
 //------------------------------------------------------
-
 // ------- Mathematics end -------
 
 // ------- Objects start -------
-
 function Engine(data) {
 
 	//console.log("start create engine");
@@ -1626,5 +1576,4 @@ function Gear(num, parent) {
 
 } // Gear
 //------------------------------------------------------
-
 // ------- Objects end -------
