@@ -115,7 +115,8 @@
 					<div class="title">Колесо</div>
 					<div class="hr"></div>
 					<div class="controlPanel">
-						<input id="wheelName" class="caption" type="text" engineID="" modif="false" value="" />
+						<!--input id="wheelName" class="caption" type="text" engineID="" modif="false" value="" /-->
+						<div id="wheelName" class="caption" engineID="" modif="false"></div>
 						<span id="wheelNew" class="control glyphicon glyphicon-plus-sign"></span>
 						<span id="wheelSave" class="control glyphicon glyphicon-export"></span>
 						<span id="wheelOpen" class="control glyphicon glyphicon-import"></span>
@@ -213,11 +214,40 @@
 				<hr>
 				<h4>Загрузка из Excel</h4>
 				Вставьте сюда данные из Excel (первая строка - отсечка; вторая строка - главная пара; остальные строки - передаточные числа передач по-порядку):
-				<textarea id="gearInput" gearNumber="1" rows="6"></textarea>
+				<textarea id="gearInput" rows="6"></textarea>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
 				<button id="gearLoadApply" type="button" class="btn btn-primary">Загрузить</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="wheelsLoad" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Загрузка данных колеса</h4>
+			</div>
+			<div class="modal-body">
+				<div class="dropdown">
+					<h4>Загрузка из базы</h4>
+					<button id="dropdownMenuWheel" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+						Сохранённые параметры колёс
+						<span class="caret"></span>
+					</button>
+					<ul id="wheelsDropDown" class="dropdown-menu" aria-labelledby="dropdownMenuWheel"></ul>
+				</div>
+				<hr>
+				<h4>Загрузка из Excel</h4>
+				Вставьте сюда данные из Excel (первая строка - ширина покрышки, мм; вторая строка - высота профиля, %; третья строка - диаметр диска, дм):
+				<textarea id="wheelInput" rows="6"></textarea>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
+				<button id="wheelLoadApply" type="button" class="btn btn-primary">Загрузить</button>
 			</div>
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->

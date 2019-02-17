@@ -41,9 +41,7 @@ $(function() {
 			$("#removingThing")
 				.text($("#engineName").val())
 				.attr("table", "engines")
-				.attr("recordID", $("#engineName")
-				.attr("engineID"))
-				.attr("gearNumber", "");
+				.attr("recordID", $("#engineName").attr("engineID"));
 			$("#removingConfirm").modal();
 		}
 	});
@@ -55,63 +53,92 @@ $(function() {
         else
             alert("Введены некорректные данные зависимости момента двигателя от оборотов.");
 	});
-	$(".dropdown-toggle").dropdown();
 	// ------- engine modal end -------
 
 	// ------- gear modal start -------
 	$("#gearNew").click(function() {
-		var gearNumber = $(this).attr("gearNumber");
-
-		if ($("#gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
+		if ($("#gearName").attr("modif") == "true") {
 			$("#newThing")
 				.attr("thing", "gearsNew")
 				.html("Создать новые параметры коробки передач.");
 			$("#newConfirm").modal();
 		}
 		else
-			gearsNew(gearNumber);
+			gearsNew();
 	});
 	$("#gearOpen").click(function() {
-		var gearNumber = $(this).attr("gearNumber");
-
-		if ($("#gearName[gearNumber='" + gearNumber + "']").attr("modif") == "true") {
+		if ($("#gearName").attr("modif") == "true") {
 			$("#newThing")
 				.attr("thing", "gearLoad")
-				.attr("gearNumber", gearNumber)
 				.html("Загрузить параметры коробки передач из базы.");
 			$("#newConfirm").modal();
 		}
 		else
-			gearLoad(gearNumber);
+			gearLoad();
 	});
-	$("#gearSave").click(function() {
-		gearSave($(this).attr("gearNumber"));
-	});
+	$("#gearSave").click(gearSave);
 	$("#gearRemove").click(function() {
-		var gearNumber = $(this).attr("gearNumber");
-
-		if ($("#gearName[gearNumber='" + gearNumber + "']").attr("gearID") != "") {
+		if ($("#gearName").attr("gearID") != "") {
 			$("#removingThing")
-				.text($("#gearName[gearNumber='" + gearNumber + "']").val())
+				.text($("#gearName").val())
 				.attr("table", "gears")
-				.attr("recordID", $(".gearName[gearNumber='" + gearNumber + "']").attr("gearID"))
+				.attr("recordID", $("#gearName").attr("gearID"))
 			$("#removingConfirm").modal();
 		}
 	});
 	$("#gearLoadApply").click(function() {
-		var gearNumber = $("#gearInput").attr("gearNumber");
-
-		if (gearLoadApply($("#gearInput").val().split("\n"), gearNumber)) {
+		if (gearLoadApply($("#gearInput").val().split("\n"))) {
 			$("#gearsLoad").modal("hide");
-			$("#gearName[gearNumber='" + gearNumber + "']").attr("modif", "true");
+			$("#gearName").attr("modif", "true");
 		}
 		else
 			alert("Введены некорректные данные коробки передач.");
 	});
-	$(".dropdown-toggle").dropdown();
 	// ------- gear modal end -------
 
+	// ------- wheel modal start -------
+	$("#wheelNew").click(function() {
+		if ($("#wheelName").attr("modif") == "true") {
+			$("#newThing")
+				.attr("thing", "wheelsNew")
+				.html("Создать новые параметры колеса.");
+			$("#newConfirm").modal();
+		}
+		else
+			wheelsNew();
+	});
+	$("#wheelOpen").click(function() {
+		if ($("#wheelName").attr("modif") == "true") {
+			$("#newThing")
+				.attr("thing", "wheelLoad")
+				.html("Загрузить параметры колеса из базы.");
+			$("#newConfirm").modal();
+		}
+		else
+			wheelLoad();
+	});
+	$("#wheelSave").click(wheelSave);
+	$("#wheelRemove").click(function() {
+		if ($("#wheelName").attr("wheelID") != "") {
+			$("#removingThing")
+				.text($("#wheelName").text())
+				.attr("table", "wheels")
+				.attr("recordID", $("#wheelName").attr("wheelID"))
+			$("#removingConfirm").modal();
+		}
+	});
+	$("#wheelLoadApply").click(function() {
+		if (wheelLoadApply($("#wheelInput").val().split("\n"))) {
+			$("#wheelsLoad").modal("hide");
+			$("#wheelName").attr("modif", "true");
+		}
+		else
+			alert("Введены некорректные данные колеса.");
+	});
+	// ------- wheel modal end -------
+
 	// ------- common modals start -------
+	$(".dropdown-toggle").dropdown();
 	$("#ConfirmRemove").click(removeRecord);
 	$("#ConfirmNew").click(function() {
 		$("#newConfirm").modal("hide");
@@ -150,23 +177,23 @@ $(function() {
 
 	// ------- gears elements start -------
 	$("#gearCols").change(function() {
-		$("#gearName[gearNumber='1']").attr("modif", "true");
+		$("#gearName").attr("modif", "true");
 		engines[activeSheet].gearCols = parseInt($(this).val());
 		createGearTable(1);
 		//console.log("refreshResult from gearCols change");
-		refreshResult();
+		refreshResultOnlyGear();
 	});
 	$("#gearMain").change(function() {
-		$("#gearName[gearNumber='1']").attr("modif", "true");
+		$("#gearName").attr("modif", "true");
 		engines[activeSheet].gearMain = parseFloat($(this).val());
 		//console.log("refreshResult from gearMain change");
-		refreshResult();
+		refreshResultOnlyGear();
 	});
 	$("#obFinish").change(function() {
-		$("#gearName[gearNumber='1']").attr("modif", "true");
+		$("#gearName").attr("modif", "true");
 		engines[activeSheet].obFinish = parseFloat($(this).val());
 		//console.log("refreshResult from obFinish change");
-		refreshResult();
+		refreshResultOnlyGear();
 	});
 	// ------- gears elements end -------
 
@@ -174,17 +201,20 @@ $(function() {
 	$("#wheelWidth").change(function() {
 		engines[activeSheet].wheelWidth = parseFloat($(this).val());
 		//console.log("refreshResult from wheelWidth change");
+		makeWheelTitle();
 		refreshResult();
 	});
 	$("#wheelHeight").change(function() {
 		engines[activeSheet].wheelHeight = parseFloat($(this).val());
 		//console.log("refreshResult from wheelHeight change");
+		makeWheelTitle();
 		refreshResult();
 	});
 	$("#wheelDisk").change(function() {
 		engines[activeSheet].wheelDisk = parseFloat($(this).val());
 		//console.log("change wheelDisk");
 		//console.log("refreshResult from wheelDisk change");
+		makeWheelTitle();
 		refreshResult();
 	});
 	// ------- wheels elements end -------
@@ -254,6 +284,11 @@ function getengines(id) {
       var d = new Array(2);
       d[0] = data.obs;
       d[1] = data.moms;
+			subData = d[0].split("\t");
+		  engines[activeSheet].obCols = subData.length;
+			engines[activeSheet].obs = new Array(subData.length);
+			engines[activeSheet].moms = new Array(subData.length);
+
       engineLoadApply(d);
     }
     else
@@ -307,16 +342,12 @@ function engineLoadApply(data = -1) {
 			return false;
 
 		subData = data[0].split("\t");
-	  engines[activeSheet].obs = new Array(subData.length);
 	  for (var c = 0; c < subData.length; c++)
 			engines[activeSheet].obs[c] = parseInt(subData[c]);
 
 		subData = data[1].split("\t");
-	  engines[activeSheet].moms = new Array(subData.length);
 	  for (var c = 0; c < subData.length; c++)
 	  	engines[activeSheet].moms[c] = parseFloat(subData[c]);
-
-	  engines[activeSheet].obCols = subData.length;
 	}
 
 	//console.log("obCols=" + engines[activeSheet].obCols);
@@ -336,106 +367,88 @@ function engineLoadApply(data = -1) {
 // ------- Engine end -------
 
 // ------- Gears start -------
-function gearsNew(gearNumber) {
+function gearsNew() {
 
-	$(".gearName[gearNumber='" + gearNumber + "']")
+	$("#gearName")
 		.val("")
 		.attr("gearID", "")
 		.attr("modif", "false");
-	if (gearNumber == 1) {
-		gearMain = 1;
-		$("#gearMain").val(gearMain);
-		gearCols = 0;
-		$("#gearCols").val(gearCols);
-		obFinish = obTo ? obTo : 0;
-		$("#obFinish").val(obFinish);
-	}
-	else {
-		gearMain2 = 1;
-    	$("#gearMain2").val(gearMain2);
-    	gearCols2 = 0;
-    	$("#gearCols2").val(gearCols2);
-    	obFinish2 = obTo ? obTo : 0;
-    	$("#obFinish2").val(obFinish2);
-    }
+	engines[activeSheet].gearMain = 1;
+	$("#gearMain").val(1);
+	engines[activeSheet].gearCols = 0;
+	$("#gearCols").val(0);
+	engines[activeSheet].obFinish = engines[activeSheet].obTo ? engines[activeSheet].obTo : 0;
+	$("#obFinish").val(engines[activeSheet].obFinish);
+	engines[activeSheet].gearID = 0;
+	engines[activeSheet].gearTitle = "";
+	engines[activeSheet].gearNumbers.length = 0;
 
-	createGearTable(gearNumber);
+	createGearTable();
 	//console.log("refreshResult from gearsNew");
 	refreshResult();
 
 } // gearsNew
 //------------------------------------------------------
 
-function getgears(id, gearNumber) {
+function getgears(id) {
 
-    $.post("engine.php", "command=getGear&id=" + id + "&number=" + gearNumber, function(data) {
-        //alert(data);
-        var dat = data.split("-=-");
+  $.post("engine.php", "command=getGear&id=" + id, function(data) {
 
-        if (dat[0] == "ok") {
-            if (dat[3] != "") {
+		if (data.result == "ok") {
+			console.log(data);
+      $("#gearName")
+        .attr("gearID", id)
+        .val(data.title);
 
-                $(".gearName[gearNumber='" + gearNumber + "']")
-                	.attr("gearID", dat[1])
-                	.val(dat[2]);
+			engines[activeSheet].gearID = id;
+			engines[activeSheet].gearTitle = data.title;
+			engines[activeSheet].mainGear = data.mainGear;
+			engines[activeSheet].obFinish = data.obFinish;
 
-//				var gNumbers = dat[5].split(";");
-//                var d = new Array(gNumbers.length + 2);
-//
-//                d[0] = dat[3]; // obFinish
-//                d[1] = dat[4]; // gearMain
-//                // gearNumbers
-//                for (var c = 0; c < gNumbers.length; c++)
-//                	d[c+2] = gNumbers[c];
+			var gears = data.gears.split(";");
+			engines[activeSheet].gearCols = gears[0] == "" ? 0 : gears.length;
+			engines[activeSheet].gearNumbers = new Array(gears.length);
 
-                gearLoadApply(dat[3].split(";"), gearNumber);
-
-            }
-            else
-				alert(dat[1]);
-        }
-        else
-            alert(dat[1]);
-    });
+			console.log("gearLoadApply from getgears")
+      gearLoadApply(gears);
+    }
+    else
+    	alert(data.message);
+  });
 
 } // getgears
 //------------------------------------------------------
 
-function gearSave(gearNumber) {
+function gearSave() {
 
-	var gearID = $(".gearName[gearNumber='" + gearNumber + "']").attr("gearID");
-	var gearTitle = $(".gearName[gearNumber='" + gearNumber + "']").val();
-	var obFinishCurr = gearNumber == 1 ? obFinish : obFinish2;
-	var gearMainCurr = gearNumber == 1 ? gearMain : gearMain2;
-	var gearNumbersCurr = gearNumber == 1 ? gearNumbers : gearNumbers2;
-    var command = "command=saveGear&id=" + gearID + "&title=" + gearTitle + "&number=" + gearNumber + "&data=" + obFinishCurr + ";" + gearMainCurr + ";" + gearNumbersCurr.join(";");
-    //alert("save - " + command);
-    $.post("engine.php", command, function(data) {
-        //alert(data);
-        //console.log(data);
-        var dat = data.split("-=-");
-        if (dat[0] == "ok") {
-            $(".gearName[gearNumber='" + gearNumber + "']")
-            	.attr("gearID", dat[1])
-            	.attr("modif", "false");
-            alert("Параметры коробки передач успешно сохранены");
-        }
-        else
-            alert(dat[1]);
-    });
+	var command = "command=saveGear&id=" + $("#gearName").attr("gearID") + "&title=" + $("#gearName").val() + "&data=" + $("#gearMain").val() + ";" + $("#obFinish").val() + ";" + engines[activeSheet].gearNumbers.join(";");
+  console.log("save - " + command);
+  $.post("engine.php", command, function(data) {
+
+		if (data.result == "ok") {
+			console.log(data);
+			engines[activeSheet].gearID = data.id;
+			engines[activeSheet].gearTitle = $("#gearName").val();
+
+      $("#gearName")
+        .attr("gearID", data.id)
+        .attr("modif", "false");
+      alert("Параметры коробки передач успешно сохранены");
+    }
+    else
+      alert(data.message);
+  });
 
 } // gearSave
 //------------------------------------------------------
 
-function gearLoad(gearNumber) {
+function gearLoad() {
 
 	//alert("gearsLoad");
-	fillDropDown("gears", gearNumber);
-	$("#gearInput")
-		.val("")
-		.attr("gearNumber", gearNumber);
+	fillDropDown("gears");
+	$("#gearInput").val("");
 	$("#gearsLoad").modal();
-	$(".gearName[gearNumber='" + gearNumber + "']").attr("modif", "false");
+	$("#gearName").attr("modif", "false");
 
 } // gearLoad
 //------------------------------------------------------
@@ -443,15 +456,9 @@ function gearLoad(gearNumber) {
 function gearLoadApply(data = -1) {
 
 	if (data != -1) {
-    if (data.length < 3)
-      return false;
 		//console.log("gearNumber=" + gearNumber);
-    engines[activeSheet].obFinish = parseInt(data[0].replace(",", "."));
-    engines[activeSheet].gearMain = parseFloat(data[1].replace(",", "."));
-    engines[activeSheet].gearCols = parseInt(data.length - 2);
-    engines[activeSheet].gearNumbers = new Array(engines[activeSheet].gearCols);
-    for (var c = 2; c < data.length; c++)
-    	engines[activeSheet].gearNumbers[c-2] = parseFloat(data[c].replace(",", "."));
+    for (var c = 0; c < data.length; c++)
+    	engines[activeSheet].gearNumbers[c] = parseFloat(data[c].replace(",", ".")).toFixed(3);
 	}
 
 	$("#gearMain").val(engines[activeSheet].gearMain);
@@ -460,8 +467,8 @@ function gearLoadApply(data = -1) {
 
   createGearTable();
   if (data != -1) {
-		//console.log("refreshResult from gearLoadApply");
-		refreshResult();
+		console.log("refreshResult from gearLoadApply");
+		refreshResultOnlyGear();
 	}
 
 } // gearLoadApply
@@ -469,15 +476,98 @@ function gearLoadApply(data = -1) {
 // ------- Gears end -------
 
 // ------- Wheel start -------
+function wheelsNew() {
+
+	$("#wheelName")
+		.text("")
+		.attr("wheelID", "")
+		.attr("modif", "false");
+	engines[activeSheet].wheelWidth = 0;
+	$("#wheelWidth").val(0);
+	engines[activeSheet].wheelHeight = 0;
+	$("#wheelHeight").val(0);
+	engines[activeSheet].wheelDisk = 0;
+	$("#wheelDisk").val(0);
+	engines[activeSheet].wheelID = 0;
+	engines[activeSheet].wheelTitle = "";
+
+	//console.log("refreshResult from gearsNew");
+	refreshResult();
+
+} // wheelsNew
+//------------------------------------------------------
+
+function getwheels(id) {
+
+  $.post("engine.php", "command=getWheel&id=" + id, function(data) {
+
+		if (data.result == "ok") {
+			console.log(data);
+      $("#wheelName")
+        .attr("wheelID", id)
+        .text(data.title);
+
+			engines[activeSheet].wheelID = id;
+			engines[activeSheet].wheelTitle = data.title;
+			engines[activeSheet].wheelWidth = data.width;
+			$("#wheelWidth").val(data.width);
+			engines[activeSheet].wheelHeight = data.height;
+			$("#wheelHeight").val(data.height);
+			engines[activeSheet].wheelDisk = data.disk;
+			$("#wheelDisk").val(data.disk);
+
+			wheelLoadApply();
+			refreshResult();
+    }
+    else
+    	alert(data.message);
+  });
+
+} // getwheel
+//------------------------------------------------------
+
+function wheelSave() {
+
+	var command = "command=saveWheel&id=" + $("#wheelName").attr("wheelID") + "&title=" + $("#wheelName").text() + "&width=" + $("#wheelWidth").val() + "&height=" + $("#wheelHeight").val() + "&disk=" + $("#wheelDisk").val();
+  console.log("save - " + command);
+  $.post("engine.php", command, function(data) {
+
+		if (data.result == "ok") {
+			console.log(data);
+			engines[activeSheet].wheelID = data.id;
+
+      $("#wheelName")
+        .attr("gearID", data.id)
+        .attr("modif", "false");
+      alert("Параметры колеса успешно сохранены");
+    }
+    else
+      alert(data.message);
+  });
+
+} // wheelSave
+//------------------------------------------------------
+
+function wheelLoad() {
+
+	//alert("gearsLoad");
+	fillDropDown("wheels");
+	$("#wheelInput").val("");
+	$("#wheelsLoad").modal();
+	$("#wheelName").attr("modif", "false");
+
+} // wheelLoad
+//------------------------------------------------------
+
 function wheelLoadApply(data = -1) {
 
 	if (data != -1) {
-    // if (data.length < 3)
-    //   return false;
+    if (data.length < 3)
+       return false;
 		// //console.log("gearNumber=" + gearNumber);
-    // engines[activeSheet].obFinish = parseInt(data[0].replace(",", "."));
-    // engines[activeSheet].gearMain = parseFloat(data[1].replace(",", "."));
-    // engines[activeSheet].gearCols = parseInt(data.length - 2);
+    engines[activeSheet].wheelWidth = parseFloat(data[0].replace(",", "."));
+    engines[activeSheet].wheelHeight = parseFloat(data[1].replace(",", "."));
+    engines[activeSheet].wheelDisk = parseFloat(data[2].replace(",", "."));
     // engines[activeSheet].gearNumbers = new Array(engines[activeSheet].gearCols);
     // for (var c = 2; c < data.length; c++)
     // 	engines[activeSheet].gearNumbers[c-2] = parseFloat(data[c].replace(",", "."));
@@ -492,7 +582,18 @@ function wheelLoadApply(data = -1) {
 	  refreshResult();
 	}
 
-}
+} // wheelLoadApply
+//------------------------------------------------------
+
+function makeWheelTitle() {
+
+	if (engines[activeSheet].wheelWidth == 0 && engines[activeSheet].wheelHeight == 0 && engines[activeSheet].wheelDisk == 0)
+		$("#wheelName").text("");
+	else
+		$("#wheelName").text(engines[activeSheet].wheelWidth + "/" + engines[activeSheet].wheelHeight + " R" + engines[activeSheet].wheelDisk);
+	engines[activeSheet].wheelTitle = $("#wheelName").text();
+
+} // makeWheelTitle
 //------------------------------------------------------
 // ------- Wheel end -------
 
@@ -501,7 +602,7 @@ function getEngines() {
 
 	$.post("engine.php", "command=getEngines", function(data) {
 		if (data.result == "ok") {
-			//console.log(data);
+			console.log(data);
 
 			clearTabs();
 
@@ -550,38 +651,73 @@ function fillDropDown(table) {
 function removeRecord() {
 
 	$("#removingConfirm").modal("hide");
-	$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
+	if ($("#removingThing").attr("table") == "tab") {
+		engines.splice(activeSheet, 1);
+		if (activeSheet == 0)
+			activeSheet = 1;
 
-		if (data.result == "ok") {
-			//console.log(data);
-			eval($("#removingThing").attr("table") + "New();");
-			alert("Запись успешно удалена из базы");
-		}
-		else
+		var data = new Array(engines.length);
+		engines.forEach(function(val, key, arr) {
+			data[key] = val.engineID + "," + val.gearID + "," + val.wheelID;
+		});
+		$.post("engine.php", "command=setLastParams&data=" + data.join(";") + "&active=" + activeSheet, function(data) {
+
+			if (data.result == "ok")
+				showActiveSheet();
+			else
+				alert(data.message);
+		});
+	}
+	else {
+		$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
+
+			if (data.result == "ok") {
+				//console.log(data);
+				eval($("#removingThing").attr("table") + "New();");
+				alert("Запись успешно удалена из базы");
+			}
+			else
+				alert(data.message);
+		});
+	}
+
+} // removeRecord
+//------------------------------------------------------
+
+function saveActiveSheet() {
+
+	$.post("engine.php", "command=setLastParams&data=&id=" + activeSheet, function(data) {
+		//console.log(data);
+		if (data.result == "error")
 			alert(data.message);
 	});
 
-} // removeRecord
+}
 //------------------------------------------------------
 // ------- Common DB end -------
 
 // ------- Common elements start -------
 function showActiveSheet() {
 
+	console.log(activeSheet);
 	$("#engineName")
 		.attr("engineID", engines[activeSheet].engineID)
 		.attr("modif", "false")
 		.val(engines[activeSheet].engineTitle);
 
 	$("#gearName")
-		.attr("engineID", engines[activeSheet].gearID)
+		.attr("gearID", engines[activeSheet].gearID)
 		.attr("modif", "false")
 		.val(engines[activeSheet].gearTitle);
 
 	$("#wheelName")
-		.attr("engineID", engines[activeSheet].wheelID)
+		.attr("wheelID", engines[activeSheet].wheelID)
 		.attr("modif", "false")
-		.val(engines[activeSheet].wheelTitle);
+		.text(engines[activeSheet].wheelTitle);
+
+	$("#out_under").css("fill", $("svg.in_under[tab='" + activeSheet + "']").css("fill"));
+	$("#out_above").css("fill", $("svg.in_above[tab='" + activeSheet + "']").css("fill"));
+	$("#tabTitleOut").text($("span.tabTitle[tab='" + activeSheet + "']").text());
 
 	//console.log("engineLoadApply");
 	engineLoadApply();
@@ -621,14 +757,23 @@ function createTab(index) {
 	$("span.tabTitle[tab='" + index + "']").css("top", (start + 37 + distance * index).toString() + "px");
 	$("span.tabMinus[tab='" + index + "']").css("top", (start + 80 + distance * index).toString() + "px");
 
-	$("svg.in_under, svg.in_above, span.tabTitle, span.tabMinus").click(function() {
+	$("svg.in_under[tab='" + index + "'], svg.in_above[tab='" + index + "'], span.tabTitle[tab='" + index + "']").click(function() {
 		activeSheet = $(this).attr("tab");
 
+		saveActiveSheet();
 		showActiveSheet();
+	});
 
-		$("#out_under").css("fill", $("svg.in_under[tab='" + activeSheet + "']").css("fill"));
-		$("#out_above").css("fill", $("svg.in_above[tab='" + activeSheet + "']").css("fill"));
-		$("#tabTitleOut").text($("span.tabTitle[tab='" + activeSheet + "']").text());
+	$("span.tabMinus[tab='" + index + "']").click(function() {
+		return;
+		console.log("delete sheet " + activeSheet);
+		if (engines.length == 1)
+			return;
+		$("#removingThing")
+			.text("Страница " + (activeSheet + 1))
+			.attr("table", "tab")
+			.attr("recordID", activeSheet);
+		$("#removingConfirm").modal();
 	});
 
 } // createTab
@@ -638,10 +783,19 @@ function refreshResultOnlyGear(all = false) {
 
 	if (all) {
 		engines.forEach(function(val, key, arr) {
+			for (c = 0; c < val.gearCols; c++) {
+				//console.log("new gear" + c);
+				val.gears[c] = new Gear(c, val);
+			}
 			val.gearInitialize();
 		});
 	}
 	else {
+		for (c = 0; c < engines[activeSheet].gearCols; c++) {
+			//console.log("new gear" + c);
+			engines[activeSheet].gears[c] = new Gear(c, engines[activeSheet]);
+		}
+		//console.log("ranks" + engines[activeSheet].rank + " - " + engines[activeSheet].finishRank);
 		engines[activeSheet].gearInitialize();
 	}
 
@@ -656,12 +810,16 @@ function refreshResult(all = false) {
 	if (all) {
 		engines.forEach(function(val, key, arr) {
 			val.initialize();
+			//console.log("ranks" + val.rank + " - " + val.finishRank);
 			val.interpol();
 			val.gearInitialize();
 		});
 	}
 	else {
+		console.log(engines[activeSheet].wheelDiametr);
 		engines[activeSheet].initialize();
+		console.log(engines[activeSheet].wheelDiametr);
+		//console.log("ranks" + engines[activeSheet].rank + " - " + engines[activeSheet].finishRank);
 		engines[activeSheet].interpol();
 		engines[activeSheet].gearInitialize();
 	}
@@ -1000,7 +1158,8 @@ function drawGears() {
 	// data
 	engines.forEach(function(val, key, arr) {
 		color = LightenDarkenColor(colors[key], -20);
-		//console.log(color);
+		//console.log("draw engine " + key + " color = " + color + " ranks - " + val.rank + " - " + val.finishRank);
+		console.log(obGearsMin + " - " + obGearsMax + " - " + momGearsMin + " - " + momGearsMax);
 		val.drawGears(obGearsMin, obGearsMax, momGearsMin, momGearsMax, color);
 	});
 
@@ -1297,7 +1456,7 @@ function Engine(data) {
 	// other properties
 	this.obs = [];
 	this.moms = [];
-	this.gearNumber = [];
+	this.gearNumbers = [];
 	this.gears = [];
 
 	// methods
@@ -1319,7 +1478,7 @@ function Engine(data) {
 		subData = gears.split(";");
 		this.gearNumbers = new Array(this.gearCols);
     for (var c = 0; c < this.gearCols; c++)
-        this.gearNumbers[c] = parseFloat(subData[c]);
+        this.gearNumbers[c] = parseFloat(subData[c]).toFixed(3);
 	} // getMoms
 
 	this.getWheelDiametr = function() {
@@ -1336,7 +1495,7 @@ function Engine(data) {
 		//console.log("rank=" + rank);
 		//console.log(this.gearCols);
 		for (var c = 0; c < this.gearCols; c++)
-			this.gears[c] = new Gear(c, this, 1);
+			this.gears[c] = new Gear(c, this);
 
 	} // createGears
 
@@ -1416,8 +1575,8 @@ function Engine(data) {
 
   this.gearInitialize = function() {
 
-      for (var c = 0; c < this.gearCols; c++)
-         this.gears[c].initialize(1);
+		for (var c = 0; c < this.gearCols; c++)
+    	this.gears[c].initialize();
 
   } // gearInitialize
 
@@ -1453,9 +1612,11 @@ function Engine(data) {
 
 	this.drawGears = function(obGearsMin, obGearsMax, momGearsMin, momGearsMax, color) {
 
+		//console.log("gearCols for draw = " + this.gearCols + " ranks - " + this.rank + " - " + this.finishRank);
 		for (var c = 0; c < this.gearCols; c++) {
 			//console.log(color);
 			color = LightenDarkenColor(color, 0 - 2 * (c + 1));
+			//console.log(obGearsMin + " - " + obGearsMax + " - " + momGearsMin + " - " + momGearsMax);
 			this.gears[c].drawGear(obGearsMin, obGearsMax, momGearsMin, momGearsMax, color);
 		}
 
@@ -1493,12 +1654,16 @@ function Gear(num, parent) {
     var obGearsMax = this.parent.obGearsMax;
     var momGearsMin = this.parent.momGearsMin;
     var momGearsMax = this.parent.momGearsMax;
+		// var obGearsMin = -1;
+    // var obGearsMax = -1;
+    // var momGearsMin = -1;
+    // var momGearsMax = -1;
     var wD = this.parent.wheelDiametr;
 
     c = 0;
 		for (k = 0; k <= this.parent.rank; k++) {
 
-			if (!this.parent.ob[k])
+			if (!this.parent.ob[k] || !wD)
 				break;
 
 			this.ob[k] = this.parent.ob[k] / gN[this.gearNumber] / gM * 60.0 * 3.14 * wD / 1000.0; // x
@@ -1557,12 +1722,14 @@ function Gear(num, parent) {
 		if (!svgExists)
 			return;
 
+		//console.log(obGearsMin + " - " + obGearsMax + " - " + momGearsMin + " - " + momGearsMax);
 		// data
 		//console.log("start drawing gear #" + this.gearNumber);
+		//console.log("finishRank " + finishRank + " rank=" + this.parent.rank);
 		for (var c = 0; c <= finishRank; c++) {
 			if (!this.mom[c])
 				continue;
-			//console.log("min=" + this.parent.obGearsMin + "; max=" + this.parent.obGearsMax);
+
 			//console.log("max of mom - " + this.momMax);
 			x = Math.round((drawWidth - 70) / (obGearsMax - obGearsMin) * (this.ob[c] - obGearsMin) + 50);
 			y = Math.round(drawHeight - 80 - (drawHeight - 70) / (momGearsMax - momGearsMin) * (this.mom[c] - momGearsMin) + 40);
@@ -1570,6 +1737,7 @@ function Gear(num, parent) {
 			//console.log(coords);
 		}
 
+		//console.log(coords);
 		gearsDraw.polyline(coords).fill("none").stroke({color: color, width: 2});
 
 	} // drawGear

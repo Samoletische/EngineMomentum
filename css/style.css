@@ -348,7 +348,7 @@ path {
 
 /* dialogs */
 
-#engineInput {
+#engineInput, #gearInput, #wheelInput {
     border: 1px solid #999;
     border-radius: 8px;
     width: 100%;

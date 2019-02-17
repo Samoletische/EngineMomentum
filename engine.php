@@ -10,29 +10,32 @@ if ($res == "") {
 			case "getEngines":
 				$res = getEngines();
 				break;
-			// case "getLastEngine":
-			// 	$res = getLastEngine();
-			// 	break;
+			case "removeRecord":
+				$res = removeRecord($_POST["table"], $_POST["id"]);
+				break;
+      case "getDropDown":
+      	$res = getDropDown($_POST["table"]);
+				break;
+			case "setLastParams":
+      	$res = setLastParams($_POST["data"], $_POST["id"]);
+				break;
 			case "saveEngine":
 				$res = saveEngine($_POST["id"], $_POST["title"], $_POST["data"]);
 				break;
 			case "getEngine":
 				$res = getEngine($_POST["id"]);
         break;
-      // case "getLastGear":
-			// 	$res = getLastGear($_POST["number"]);
-			// 	break;
-			case "saveGear":
-				$res = saveGear($_POST["id"], $_POST["title"], $_POST["data"], $_POST["number"]);
+      case "saveGear":
+				$res = saveGear($_POST["id"], $_POST["title"], $_POST["data"]);
 				break;
 			case "getGear":
-				$res = getGear($_POST["id"], $_POST["number"]);
+				$res = getGear($_POST["id"]);
 				break;
-      case "removeRecord":
-				$res = removeRecord($_POST["table"], $_POST["id"]);
+			case "saveWheel":
+				$res = saveWheel($_POST["id"], $_POST["title"], $_POST["width"], $_POST["height"], $_POST["disk"]);
 				break;
-      case "getDropDown":
-      	$res = getDropDown($_POST["table"]);
+			case "getWheel":
+				$res = getWheel($_POST["id"]);
 				break;
 			default :
 				$res = "unknown command";
@@ -47,26 +50,24 @@ $db->close();
 //------------------------------------------------------
 
 // ------- Common interface start -------
-
 function getEngines() {
 
 	global $db;
 
-	$result = [ "result" => "ok" ];
-	$result["sheets"] = Array();
+	$result = [ "result" => "ok", "sheets" => Array() ];
 
 	try {
 		$queryString = "CREATE TEMPORARY TABLE lp
 			SELECT
 				lastParams.id AS id,
-				engines.id AS engineID,
-				engines.title AS engineTitle,
-				gears.id AS gearID,
-				gears.title AS gearTitle,
-				gears.mainGear AS mainGear,
-				gears.obFinish AS obFinish,
-				wheels.id AS wheelID,
-				wheels.title AS wheelTitle,
+				IFNULL(engines.id, 0) AS engineID,
+				IFNULL(engines.title, '') AS engineTitle,
+				IFNULL(gears.id, 0) AS gearID,
+				IFNULL(gears.title, '') AS gearTitle,
+				IFNULL(gears.mainGear, 1) AS mainGear,
+				IFNULL(gears.obFinish, 0) AS obFinish,
+				IFNULL(wheels.id, 0) AS wheelID,
+				IFNULL(wheels.title, '') AS wheelTitle,
 				lastParams.active AS active
 			FROM
 				lastParams
@@ -79,9 +80,9 @@ function getEngines() {
 
 			SELECT
 				lp.*,
-				wh.width AS wheelWidth,
-				wh.height AS wheelHeight,
-				wh.disk AS wheelDisk
+				IFNULL(wh.width, 0) AS wheelWidth,
+				IFNULL(wh.height, 0) AS wheelHeight,
+				IFNULL(wh.disk, 0) AS wheelDisk
 			FROM
 				lp
 				LEFT JOIN wheels AS wh ON wh.id=lp.WheelID
@@ -90,11 +91,11 @@ function getEngines() {
 			SELECT
 			 	lp.id AS id,
 				moms.engineID AS engineID,
-				moms.oborots AS ob,
-				moms.momentum AS mom
+				IFNULL(moms.oborots, 0) AS ob,
+				IFNULL(moms.momentum, 0) AS mom
 			FROM
 				lp
-				INNER JOIN enginesMomentum AS moms ON moms.engineID = lp.engineID
+				LEFT JOIN enginesMomentum AS moms ON moms.engineID = lp.engineID
 			ORDER BY
 				id, engineID, ob
 			;
@@ -102,11 +103,11 @@ function getEngines() {
 			SELECT
 			 	lp.id AS id,
 				gs.gearID AS gearID,
-				gs.gearNumber AS num,
-				gs.gearValue AS gear
+				IFNULL(gs.gearNumber, 0) AS num,
+				IFNULL(gs.gearValue, 0) AS gear
 			FROM
 				lp
-				INNER JOIN gearsGears AS gs ON gs.gearID = lp.gearID
+				LEFT JOIN gearsGears AS gs ON gs.gearID = lp.gearID
 			ORDER BY
 				id, gearID, num";
 
@@ -131,12 +132,17 @@ function getEngines() {
 			$result["sheets"][$sheet]["engine"] = Array();
 			$result["sheets"][$sheet]["engine"]["id"] = $row["engineID"];
 			$result["sheets"][$sheet]["engine"]["title"] = $row["engineTitle"];
+			$result["sheets"][$sheet]["engine"]["obCols"] = 0;
+			$result["sheets"][$sheet]["engine"]["obs"] = "";
+			$result["sheets"][$sheet]["engine"]["moms"] = "";
 
 			$result["sheets"][$sheet]["gear"] = Array();
 			$result["sheets"][$sheet]["gear"]["id"] = $row["gearID"];
 			$result["sheets"][$sheet]["gear"]["title"] = $row["gearTitle"];
 			$result["sheets"][$sheet]["gear"]["gearMain"] = $row["mainGear"];
 			$result["sheets"][$sheet]["gear"]["obFinish"] = $row["obFinish"];
+			$result["sheets"][$sheet]["gear"]["gearCols"] = 0;
+			$result["sheets"][$sheet]["gear"]["gears"] = "";
 
 			$result["sheets"][$sheet]["wheel"] = Array();
 			$result["sheets"][$sheet]["wheel"]["id"] = $row["wheelID"];
@@ -184,6 +190,9 @@ function getEngines() {
 				$cols = 0;
 			}
 
+			if ($row["ob"] == 0)
+				continue;
+
 			$result["sheets"][$sheet]["engine"]["obs"] == "" ? $result["sheets"][$sheet]["engine"]["obs"] = $row["ob"] : $result["sheets"][$sheet]["engine"]["obs"] .= "\t".$row["ob"];
 			$result["sheets"][$sheet]["engine"]["moms"] == "" ? $result["sheets"][$sheet]["engine"]["moms"] = $row["mom"] : $result["sheets"][$sheet]["engine"]["moms"] .= "\t".$row["mom"];
 
@@ -223,6 +232,9 @@ function getEngines() {
 				$result["sheets"][$sheet]["gear"]["gears"] = "";
 				$cols = 0;
 			}
+
+			if ($row["gear"] == 0)
+				continue;
 
 			$result["sheets"][$sheet]["gear"]["gears"] == "" ? $result["sheets"][$sheet]["gear"]["gears"] = $row["gear"] : $result["sheets"][$sheet]["gear"]["gears"] .= ";".$row["gear"];
 
@@ -295,10 +307,42 @@ function removeRecord($table, $id) {
 } // removeRecord
 //------------------------------------------------------
 
+function setLastParams($data, $id) {
+
+	global $db;
+
+	$result = [ "result" => "ok" ];
+
+	$queryStr = "";
+
+	if ($data != "") {
+		$queryStr .= "DELETE FROM lastParams;";
+		$rows = explode(";", $data);
+		for ($c = 0; $c < count($rows); $c++) {
+			$ids = explode(",", $rows[$c]);
+			// $queryStr .= "INSERT INTO lastParams(id, engineID, gearID, wheelID, active)
+			// 	VALUES('".$c"', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', 0);";
+		}
+	}
+
+	$queryStr .= "UPDATE lastParams SET active=0 WHERE id<>'".$id."';
+		UPDATE lastParams SET active=1 WHERE id='".$id."'";
+
+	$query = $db->multi_query($queryStr);
+
+	if(!$query) {
+		$result["result"] = "error";
+		$result["message"] = "[setLastParams] error: ".$db->error();
+		return $result;
+	}
+
+	return $result;
+
+}
+//------------------------------------------------------
 // ------- Common interface end -------
 
 // ------- Engine interface start -------
-
 function saveEngine($id, $title, $data) {
 
 	global $db;
@@ -308,7 +352,12 @@ function saveEngine($id, $title, $data) {
   $recordsExists = false;
 
   if ($id != "") {
-  	$query = $db->query("SELECT COUNT(oborots) AS Count FROM enginesMomentum WHERE engineID='".$id."'");
+  	$query = $db->query("SELECT
+				COUNT(enginesMomentum.oborots) AS Count
+			FROM
+				engines
+				LEFT JOIN	enginesMomentum ON engines.id=enginesMomentum.engineID
+			WHERE engines.id='".$id."'");
     if (!$query) {
 			$result["result"] = "error";
 			$result["message"] = "[saveEngine] error: ".$db->error();
@@ -336,8 +385,11 @@ function saveEngine($id, $title, $data) {
 			VALUES('".$id."', '".$title."', '".$date."');";
 
   $data = explode(";", $data);
-  if (count($data) != 2)
-    throw new Exception("[saveEngine] error: ".$db->error());
+  if (count($data) != 2) {
+  	$result["result"] = "error";
+		$result["message"] = "[saveEngine] error: not enough data for save engine";
+		return $result;
+	}
 
   $obs = explode(",", $data[0]);
   $moms = explode(",", $data[1]);
@@ -362,39 +414,6 @@ function saveEngine($id, $title, $data) {
 } // saveEngine
 //------------------------------------------------------
 
-function getLastEngine() {
-
-    global $db;
-    $engineID = 0;
-    $result = "";
-
-    try {
-        $query = mysqli_query($db, "SELECT engineID FROM lastParams WHERE id=0");
-        if (!$query)
-            throw new Exception("(008) Не могу работать с базой");
-
-        if ($row = mysqli_fetch_array($query))
-            $engineID = $row["engineID"];
-
-        if ($engineID < 1)
-            //throw new Exception("(009) Не найдены данные в базе");
-            return "ok-=-";
-
-        $result = getEngine($engineID);
-        if (substr($result, 0, 1) == ".")
-        	throw new Exception(substr($result, 4));
-
-        $result = substr($result, 5);
-    }
-    catch (Exception $e) {
-        return ".-=-".$e;
-    }
-
-    return "ok-=-".$result;
-
-} // getLastEngine
-//------------------------------------------------------
-
 function getEngine($engineID) {
 
 	global $db;
@@ -403,11 +422,11 @@ function getEngine($engineID) {
 
 	$query = $db->multi_query("SELECT
 			engines.title,
-			enginesMomentum.oborots,
-			enginesMomentum.momentum
+			IFNULL(enginesMomentum.oborots, 0) AS oborots,
+			IFNULL(enginesMomentum.momentum, 0) AS momentum
 		FROM
 			engines
-			INNER JOIN enginesMomentum ON engines.id=enginesMomentum.engineID
+			LEFT JOIN enginesMomentum ON engines.id=enginesMomentum.engineID
 		WHERE
 			engines.id='".$engineID."'
 		;
@@ -428,139 +447,236 @@ function getEngine($engineID) {
 
 	$first = true;
 	while ($row = $res->fetch_array()) {
+		if ($first) {
+			$first = false;
+			$result["title"] = $row["title"];
+		}
+		if ($row["oborots"] == 0)
+			continue;
+
 		$result["obFrom"] = min($result["obFrom"], $row["oborots"]);
 		$result["obTo"] = max($result["obTo"], $row["oborots"]);
 
 		$result["obs"] == "" ? $result["obs"] = $row["oborots"] : $result["obs"] .= "\t".$row["oborots"];
 		$result["moms"] == "" ? $result["moms"] = $row["momentum"] : $result["moms"] .= "\t".$row["momentum"];
-		if ($first) {
-			$first = false;
-			$result["title"] = $row["title"];
-		}
 	}
 
 	return $result;
 
 } // getEngine
 //------------------------------------------------------
-
 // ------- Engine interface end -------
 
 // ------- Gear interface start -------
+function saveGear($id, $title, $data) {
 
-function saveGear($id, $title, $data, $number) {
+  global $db;
 
-    global $db;
+	$result = [ "result" => "ok" ];
 
-    try {
+  $recordsExists = false;
 
-        $recordsExists = false;
+  if ($id != "") {
+  	$query = $db->query("SELECT
+				COUNT(gearsGears.gearValue) AS Count
+			FROM
+				gears
+				LEFT JOIN gearsGears ON gears.id=gearsGears.gearID
+			WHERE gears.id='".$id."'");
+    if (!$query) {
+			$result["result"] = "error";
+			$result["message"] = "[saveGear] error: ".$db->error();
+			return $result;
+		}
 
-        if ($id != "") {
-            $query = mysqli_query($db, "SELECT COUNT(value) AS Count FROM gears WHERE id='".$id."'");
-            if (!$query)
-                throw new Exception("(015) Не могу работать с базой");
+    if ($row = $query->fetch_array())
+      $recordsExists = $row["Count"] != 0;
+  }
+  else
+    $id = getFreeID("gears");
 
-            if ($row = mysqli_fetch_array($query))
-                $recordsExists = $row["Count"] != 0;
-        }
-        else
-            $id = getFreeID("gears");
+	if ($id == 0) {
+		$result["result"] = "error";
+		$result["message"] = "[saveGear] error: no free id in table 'gears'";
+		return $result;
+	}
 
-        if ($id == 0)
-            throw new Exception("(016) Не могу работать с базой");
+	$data = explode(";", $data);
+	if (count($data) < 3) {
+		$result["result"] = "error";
+		$result["message"] = "[saveGear] error: not enough data for save gear";
+		return $result;
+	}
 
-        if ($recordsExists) {
-            $query = mysqli_query($db, "DELETE FROM gears WHERE id='".$id."'");
-            if (!$query)
-                throw new Exception("(017) Не могу работать с базой");
-        }
+	$date = date("Y-m-d H:i:s");
+  if ($recordsExists)
+		$queryStr = "UPDATE gears SET title='".$title."', mainGear='".$data[0]."', obFinish='".$data[1]."', changeDate='".$date."' WHERE id='".$id."';
+			DELETE FROM gearsGears WHERE gearID='".$id."';";
+	else
+		$queryStr = "INSERT INTO gears(id, title, mainGear, obFinish, changeDate)
+			VALUES('".$id."', '".$title."', '".$data[0]."', '".$data[1]."', '".$date."');";
 
-        $data = explode(";", $data);
-        if (count($data) < 3)
-            throw new Exception("(018) Не верные данные для записи в базе");
+  for ($c = 2; $c < count($data); $c++)
+		$queryStr .= "INSERT INTO gearsGears(gearID, gearNumber, gearValue)
+			VALUES('".$id."', '".($c - 1)."', '".$data[$c]."');";
 
-        for ($c = 0; $c < count($data); $c++) {
-        	$type = $c < 2 ? $c : 2;
-        	//throw new Exception("INSERT INTO gears(id, title, value, type, dateSave) VALUES(".$id.", '".$title."', ".$data[$c].", ".$type.", '".date("Y-m-d H:i:s")."')");
-        	$query = mysqli_query($db, "INSERT INTO gears(id, title, value, type, dateSave) VALUES(".$id.", '".$title."', ".$data[$c].", ".$type.", '".date("Y-m-d H:i:s")."')");
-            if (!$query)
-                throw new Exception("(019) Не могу работать с базой");
-        }
+	$queryStr .= "UPDATE lastParams SET gearID='".$id."' WHERE active=1";
+	// $result["message"] = $queryStr;
+	$query = $db->multi_query($queryStr);
+	if (!$query) {
+		$result["result"] = "error";
+		$result["message"] = "[saveGear] error: ".$db->error();
+		return $result;
+	}
 
-        if (!insertLastParam("gearID".$number, $id))
-            throw new Exception("(020) Не могу работать с базой");
+  $result["id"] = $id;
 
-    }
-    catch (Exception $e) {
-        return ".-=-".$e;
-    }
-
-    return "ok-=-".$id;
+	return $result;
 
 } // saveGear
 //------------------------------------------------------
 
-function getLastGear($number) {
-
-    global $db;
-    $gearID = 0;
-    $result = "";
-
-    try {
-    	//throw new Exception("SELECT gearID".$number." AS gearID FROM lastParams WHERE id=0");
-        $query = mysqli_query($db, "SELECT gearID".$number." AS gearID FROM lastParams WHERE id=0");
-        if (!$query)
-            throw new Exception("(021) Не могу работать с базой");
-
-        if ($row = mysqli_fetch_array($query))
-            $gearID = $row["gearID"];
-
-		if ($gearID < 1)
-            return "ok-=-";
-
-        $result = getGear($gearID, $number);
-        if (substr($result, 0, 1) == ".")
-        	throw new Exception(substr($result, 4));
-
-        $result = substr($result, 5);
-    }
-    catch (Exception $e) {
-        return ".-=-".$e;
-    }
-
-    return "ok-=-".$result;
-
-} // getLastGear
-//------------------------------------------------------
-
-function getGear($gearID, $number) {
+function getGear($gearID) {
 
 	global $db;
-	$title = "";
-	$data = "";
 
-	try {
-		$query = mysqli_query($db, "SELECT title, value FROM gears WHERE id=".$gearID." ORDER BY type");
-		if (!$query)
-			throw new Exception("(022) Не могу работать с базой");
+	$result = [ "result" => "ok", "title" => "", "mainGear" => 0, "obFinish" => 0, "gears" => "" ];
 
-		while ($row = mysqli_fetch_array($query)) {
-			$data == "" ? $data = $row["value"] : $data .= ";".$row["value"];
-			$title = $row["title"];
+	$queryStr = "SELECT
+			gears.title,
+			gears.mainGear,
+			gears.obFinish,
+			IFNULL(gearsGears.gearValue, 0) AS gearValue
+		FROM
+			gears
+			LEFT JOIN gearsGears ON gears.id=gearsGears.gearID
+		WHERE
+			gears.id='".$gearID."'
+		ORDER BY
+			gearsGears.gearNumber
+		;
+
+		UPDATE lastParams SET gearID='".$gearID."' WHERE active=1";
+	$query = $db->multi_query($queryStr);
+	if (!$query) {
+		$result["result"] = "error";
+		$result["message"] = "[loadGear] error: ".$db->error();
+		return $result;
+	}
+
+	$res = $db->store_result();
+	if (!$res) {
+		$result["result"] = "error";
+		$result["message"] = "[loadGear] error: ".$db->error();
+		return $result;
+	}
+
+	$first = true;
+	while ($row = $res->fetch_array()) {
+		if ($first) {
+			$result["title"] = $row["title"];
+			$result["mainGear"] = $row["mainGear"];
+			$result["obFinish"] = $row["obFinish"];
 		}
-
-		if (!insertLastParam("gearID".$number, $gearID))
-			throw new Exception("(023) Не могу работать с базой");
-	}
-	catch (Exception $e) {
-		return ".-=-".$e;
+		if ($row["gearValue"] == 0)
+			continue;
+		$result["gears"] == "" ? $result["gears"] = $row["gearValue"] : $result["gears"] .= ";".$row["gearValue"];
 	}
 
-	return "ok-=-".$gearID."-=-".$title."-=-".$data;
+	return $result;
 
 } // getGear
 //------------------------------------------------------
-
 // ------- Gear interface end -------
+
+// ------- Wheel interface start -------
+function saveWheel($id, $title, $width, $height, $disk) {
+
+  global $db;
+
+	$result = [ "result" => "ok" ];
+
+	$recordsExists = false;
+
+  if ($id != "") {
+  	$query = $db->query("SELECT
+				COUNT(id) AS Count
+			FROM
+				wheels
+			WHERE id='".$id."'");
+    if (!$query) {
+			$result["result"] = "error";
+			$result["message"] = "[saveWheel] error: ".$db->error();
+			return $result;
+		}
+
+    if ($row = $query->fetch_array())
+      $recordsExists = $row["Count"] != 0;
+  }
+  else
+    $id = getFreeID("wheels");
+
+	if ($id == 0) {
+		$result["result"] = "error";
+		$result["message"] = "[saveWheel] error: no free id in table 'wheels'";
+		return $result;
+	}
+
+	$date = date("Y-m-d H:i:s");
+  if ($recordsExists)
+		$queryStr = "UPDATE wheels SET title='".$title."', width='".$width."', height='".$height."', disk='".$disk."', changeDate='".$date."' WHERE id='".$id."';";
+	else
+		$queryStr = "INSERT INTO wheels(id, title, width, height, disk, changeDate)
+			VALUES('".$id."', '".$title."', '".$width."', '".$height."', '".$disk."', '".$date."');";
+
+  $queryStr .= "UPDATE lastParams SET wheelID='".$id."' WHERE active=1";
+
+	$query = $db->multi_query($queryStr);
+	if (!$query) {
+		$result["result"] = "error";
+		$result["message"] = "[saveWheel] error: ".$db->error();
+		return $result;
+	}
+
+  $result["id"] = $id;
+
+	return $result;
+
+} // saveWheel
+//------------------------------------------------------
+
+function getWheel($wheelID) {
+
+	global $db;
+
+	$result = [ "result" => "ok", "title" => "", "width" => 0, "height" => 0, "disk" => "" ];
+
+	$queryStr = "SELECT title, width, height, disk FROM wheels WHERE id='".$wheelID."';
+		UPDATE lastParams SET wheelID='".$wheelID."' WHERE active=1";
+	$query = $db->multi_query($queryStr);
+	if (!$query) {
+		$result["result"] = "error";
+		$result["message"] = "[loadWheel] error: ".$db->error();
+		return $result;
+	}
+
+	$res = $db->store_result();
+	if (!$res) {
+		$result["result"] = "error";
+		$result["message"] = "[loadWheel] error: ".$db->error();
+		return $result;
+	}
+
+	if ($row = $res->fetch_array()) {
+		$result["title"] = $row["title"];
+		$result["width"] = $row["width"];
+		$result["height"] = $row["height"];
+		$result["disk"] = $row["disk"];
+	}
+
+	return $result;
+
+} // getWheel
+//------------------------------------------------------
+// ------- Wheel interface end -------
 ?>
