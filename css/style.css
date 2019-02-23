@@ -195,6 +195,20 @@ path {
 	height: 100%;
 }
 
+#svgPath {
+	position: absolute;
+	left: 18px;
+	top: 80px;
+	width: 600px;
+	height: 700px;
+	stroke: #81c000;
+	stroke-width: 99px;
+	stroke-opacity: 0.3;
+	z-index: 40;
+	pointer-events: none;
+	fill: none;
+}
+
 #plus_under {
 	position: absolute;
 	left: 6px;
@@ -242,7 +256,11 @@ path {
 	width: 40px;
 	height: 100px;
 	fill: #81c000;
+}
+
+.in_above path {
 	cursor: pointer;
+	z-index: 50;
 }
 
 .tabTitle {
@@ -250,6 +268,7 @@ path {
 	left: 10px;
 	top: 92px;
 	cursor: pointer;
+	z-index: 60;
 }
 
 .tabMinus {
@@ -257,6 +276,7 @@ path {
 	left: 10px;
 	top: 135px;
 	cursor: pointer;
+	z-index: 70;
 }
 
 #leftPanel {

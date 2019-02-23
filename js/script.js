@@ -219,6 +219,28 @@ $(function() {
 	});
 	// ------- wheels elements end -------
 
+	$("#plus_above, #tabPlus").click(function() {
+		console.log("plus");
+		if (engines.length >= 5)
+			return;
+
+		$.post("engine.php", "command=setLastParams&insert=1&data=0,0,0&active=" + engines.length, function(data) {
+			console.log(data);
+			if (data.result == "ok") {
+				activeSheet = engines.length;
+				sheet = { "engine": { "id": "0", "title": "", "obFrom": "0", "obTo": "0", "obCols": "0",	"obs": "", "moms": "" },
+					"gear": { "id": "0", "title": "", "gearMain": "1", "obFinish": "0", "gearCols": "0", "gears": "" },
+					"wheel": { "id": "0", "title": "", "width": "0", "height": "0", "disk": "0" }};
+				console.log(sheet);
+				engines[activeSheet] = new Engine(sheet);
+				createTab(activeSheet);
+				showActiveSheet();
+			}
+			else
+				alert(data.message);
+		});
+	});
+
 }); // start
 //------------------------------------------------------
 
@@ -668,7 +690,7 @@ function removeRecord() {
 				commandData[c++] = val.engineID + "," + val.gearID + "," + val.wheelID;
 		});
 		console.log("commandData=" + commandData.join(";"));
-		$.post("engine.php", "command=setLastParams&data=" + commandData.join(";") + "&active=" + newActiveSheet, function(data) {
+		$.post("engine.php", "command=setLastParams&insert=&data=" + commandData.join(";") + "&active=" + newActiveSheet, function(data) {
 			console.log(data);
 			if (data.result == "ok") {
 				console.log("engines befor:" + engines);
@@ -708,8 +730,8 @@ function removeRecord() {
 
 function saveActiveSheet() {
 
-	$.post("engine.php", "command=setLastParams&data=&id=" + activeSheet, function(data) {
-		//console.log(data);
+	$.post("engine.php", "command=setLastParams&insert=&data=&active=" + activeSheet, function(data) {
+		console.log(data);
 		if (data.result == "error")
 			alert(data.message);
 	});
@@ -737,11 +759,13 @@ function showActiveSheet() {
 		.attr("modif", "false")
 		.text(engines[activeSheet].wheelTitle);
 
+	$("#svgPath").css("stroke", $("svg.in_above[tab='" + activeSheet + "']").css("fill"));
 	$("#out_under").css("fill", $("svg.in_under[tab='" + activeSheet + "']").css("fill"));
 	$("#out_above").css("fill", $("svg.in_above[tab='" + activeSheet + "']").css("fill"));
 	$("#tabTitleOut").text($("span.tabTitle[tab='" + activeSheet + "']").text());
 
 	//console.log("engineLoadApply");
+	createSVGPath();
 	engineLoadApply();
 	gearLoadApply();
 	wheelLoadApply();
@@ -800,6 +824,19 @@ function createTab(index) {
 	});
 
 } // createTab
+//------------------------------------------------------
+
+function createSVGPath() {
+
+	var Y = $("svg.in_above[tab='" + activeSheet + "']").offset().top - 40.5;
+	var x = $("#gearNew").offset().left - 100;
+	var y = $("#out_above").offset().top - 90.5;
+	var X = $("#out_above").offset().left - 20;
+	var path = "M 0 " + Y + " L " + x + " " + Y + " A 50 50 0 0 1 " + (x + 50) + " " + (Y + 50) + " L " + (x + 50) + " " + y + " A 50 50 0 0 0 " + (x + 100) + " " + (y + 50) + " L " + X + " " + (y + 50);
+	console.log(path);
+	$("#svgPath").html("<path d='" + path + "'></path>");
+
+} // createSVGPath
 //------------------------------------------------------
 
 function refreshResultOnlyGear(all = false) {

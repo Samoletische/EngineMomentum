@@ -17,7 +17,7 @@ if ($res == "") {
       	$res = getDropDown($_POST["table"]);
 				break;
 			case "setLastParams":
-      	$res = setLastParams($_POST["data"], $_POST["active"]);
+      	$res = setLastParams($_POST["data"], $_POST["active"], $_POST["insert"]);
 				break;
 			case "saveEngine":
 				$res = saveEngine($_POST["id"], $_POST["title"], $_POST["data"]);
@@ -74,8 +74,6 @@ function getEngines() {
 				LEFT JOIN engines ON lastParams.engineID=engines.id
 				LEFT JOIN gears ON lastParams.gearID=gears.id
 				LEFT JOIN wheels ON lastParams.wheelID=wheels.id
-			ORDER BY
-				id
 			;
 
 			SELECT
@@ -86,6 +84,8 @@ function getEngines() {
 			FROM
 				lp
 				LEFT JOIN wheels AS wh ON wh.id=lp.WheelID
+			ORDER BY
+				lp.id
 			;
 
 			SELECT
@@ -307,7 +307,7 @@ function removeRecord($table, $id) {
 } // removeRecord
 //------------------------------------------------------
 
-function setLastParams($data, $id) {
+function setLastParams($data, $id, $insert) {
 
 	global $db;
 
@@ -315,18 +315,28 @@ function setLastParams($data, $id) {
 
 	$queryStr = "";
 
-	if ($data != "") {
-		$queryStr .= "DELETE FROM lastParams;";
-		$rows = explode(";", $data);
-		for ($c = 0; $c < count($rows); $c++) {
-			$ids = explode(",", $rows[$c]);
-			 $queryStr .= "INSERT INTO lastParams(id, engineID, gearID, wheelID, active)
-			 	VALUES('".$c."', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', 0);";
+	if ($data == "")
+		$queryStr .= "UPDATE lastParams SET active=0 WHERE id<>'".$id."';
+			UPDATE lastParams SET active=1 WHERE id='".$id."'";
+	else {
+		if ($insert == "1") {
+			$ids = explode(",", $data);
+			$queryStr .= "UPDATE lastParams SET active=0 WHERE id<>'".$id."';
+				INSERT INTO lastParams(id, engineID, gearID, wheelID, active)
+					VALUES('".$id."', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', 1);";
+		}
+		else {
+			$queryStr .= "DELETE FROM lastParams;";
+			$rows = explode(";", $data);
+			for ($c = 0; $c < count($rows); $c++) {
+				$ids = explode(",", $rows[$c]);
+				 $queryStr .= "INSERT INTO lastParams(id, engineID, gearID, wheelID, active)
+				 	VALUES('".$c."', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', 0);";
+			}
+			$queryStr .= "UPDATE lastParams SET active=0 WHERE id<>'".$id."';
+				UPDATE lastParams SET active=1 WHERE id='".$id."'";
 		}
 	}
-
-	$queryStr .= "UPDATE lastParams SET active=0 WHERE id<>'".$id."';
-		UPDATE lastParams SET active=1 WHERE id='".$id."'";
 
 	$query = $db->multi_query($queryStr);
 
@@ -353,7 +363,7 @@ function saveEngine($id, $title, $data) {
 	$existsData = false;
 
 
-  if ($id != "") {
+  if (($id != "") && ($id != "0")) {
   	$query = $db->query("SELECT
 				COUNT(engines.id) AS CountMain,
 				COUNT(enginesMomentum.oborots) AS CountData
@@ -484,7 +494,7 @@ function saveGear($id, $title, $data) {
   $existsMain = false;
 	$existsData = false;
 
-  if ($id != "") {
+  if (($id != "") && ($id != "0")) {
   	$query = $db->query("SELECT
 				COUNT(gears.id) AS CountMain,
 				COUNT(gearsGears.gearValue) AS CountData
@@ -611,7 +621,7 @@ function saveWheel($id, $title, $width, $height, $disk) {
 
 	$recordsExists = false;
 
-  if ($id != "") {
+  if (($id != "") && ($id != "0")) {
   	$query = $db->query("SELECT
 				COUNT(id) AS Count
 			FROM
