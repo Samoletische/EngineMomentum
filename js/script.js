@@ -651,19 +651,41 @@ function fillDropDown(table) {
 function removeRecord() {
 
 	$("#removingConfirm").modal("hide");
+	console.log($("#removingThing").attr("table"));
 	if ($("#removingThing").attr("table") == "tab") {
-		engines.splice(activeSheet, 1);
-		if (activeSheet == 0)
-			activeSheet = 1;
+		var tab = $("#removingThing").attr("recordID");
+		console.log("tab=" + tab);
 
-		var data = new Array(engines.length);
+		if (tab == 0)
+			newActiveSheet = 0;
+		else
+			newActiveSheet = tab - 1;
+
+		var commandData = new Array(engines.length - 1);
+		var c = 0;
 		engines.forEach(function(val, key, arr) {
-			data[key] = val.engineID + "," + val.gearID + "," + val.wheelID;
+			if (key != tab)
+				commandData[c++] = val.engineID + "," + val.gearID + "," + val.wheelID;
 		});
-		$.post("engine.php", "command=setLastParams&data=" + data.join(";") + "&active=" + activeSheet, function(data) {
+		console.log("commandData=" + commandData.join(";"));
+		$.post("engine.php", "command=setLastParams&data=" + commandData.join(";") + "&active=" + newActiveSheet, function(data) {
+			console.log(data);
+			if (data.result == "ok") {
+				console.log("engines befor:" + engines);
+				engines.splice(tab, 1);
+				console.log("engines after:" + engines);
+				activeSheet = newActiveSheet;
 
-			if (data.result == "ok")
+				clearTabs();
+
+				engines.forEach(function(val, key, arr) {
+					createTab(key);
+				});
+
 				showActiveSheet();
+
+				refreshResult();
+			}
 			else
 				alert(data.message);
 		});
@@ -765,14 +787,15 @@ function createTab(index) {
 	});
 
 	$("span.tabMinus[tab='" + index + "']").click(function() {
-		return;
-		console.log("delete sheet " + activeSheet);
+		var tab = parseInt($(this).attr("tab")) + 1;
+
+		console.log("delete sheet " + tab);
 		if (engines.length == 1)
 			return;
 		$("#removingThing")
-			.text("Страница " + (activeSheet + 1))
+			.text("Страница " + tab)
 			.attr("table", "tab")
-			.attr("recordID", activeSheet);
+			.attr("recordID", tab - 1);
 		$("#removingConfirm").modal();
 	});
 
@@ -1159,7 +1182,7 @@ function drawGears() {
 	engines.forEach(function(val, key, arr) {
 		color = LightenDarkenColor(colors[key], -20);
 		//console.log("draw engine " + key + " color = " + color + " ranks - " + val.rank + " - " + val.finishRank);
-		console.log(obGearsMin + " - " + obGearsMax + " - " + momGearsMin + " - " + momGearsMax);
+		//console.log(obGearsMin + " - " + obGearsMax + " - " + momGearsMin + " - " + momGearsMax);
 		val.drawGears(obGearsMin, obGearsMax, momGearsMin, momGearsMax, color);
 	});
 

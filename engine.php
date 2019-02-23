@@ -17,7 +17,7 @@ if ($res == "") {
       	$res = getDropDown($_POST["table"]);
 				break;
 			case "setLastParams":
-      	$res = setLastParams($_POST["data"], $_POST["id"]);
+      	$res = setLastParams($_POST["data"], $_POST["active"]);
 				break;
 			case "saveEngine":
 				$res = saveEngine($_POST["id"], $_POST["title"], $_POST["data"]);
@@ -320,8 +320,8 @@ function setLastParams($data, $id) {
 		$rows = explode(";", $data);
 		for ($c = 0; $c < count($rows); $c++) {
 			$ids = explode(",", $rows[$c]);
-			// $queryStr .= "INSERT INTO lastParams(id, engineID, gearID, wheelID, active)
-			// 	VALUES('".$c"', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', 0);";
+			 $queryStr .= "INSERT INTO lastParams(id, engineID, gearID, wheelID, active)
+			 	VALUES('".$c."', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', 0);";
 		}
 	}
 
@@ -349,11 +349,14 @@ function saveEngine($id, $title, $data) {
 
 	$result = [ "result" => "ok" ];
 
-  $recordsExists = false;
+  $existsMain = false;
+	$existsData = false;
+
 
   if ($id != "") {
   	$query = $db->query("SELECT
-				COUNT(enginesMomentum.oborots) AS Count
+				COUNT(engines.id) AS CountMain,
+				COUNT(enginesMomentum.oborots) AS CountData
 			FROM
 				engines
 				LEFT JOIN	enginesMomentum ON engines.id=enginesMomentum.engineID
@@ -364,8 +367,10 @@ function saveEngine($id, $title, $data) {
 			return $result;
 		}
 
-    if ($row = $query->fetch_array())
-      $recordsExists = $row["Count"] != 0;
+    if ($row = $query->fetch_array()) {
+      $existsMain = $row["CountMain"] != 0;
+			$existsData = $row["CountData"] != 0;
+		}
   }
   else
     $id = getFreeID("engines");
@@ -377,12 +382,14 @@ function saveEngine($id, $title, $data) {
 	}
 
 	$date = date("Y-m-d H:i:s");
-  if ($recordsExists)
-		$queryStr = "UPDATE engines SET title='".$title."', changeDate='".$date."' WHERE id='".$id."';
-			DELETE FROM enginesMomentum WHERE engineID='".$id."';";
+  if ($existsMain)
+		$queryStr = "UPDATE engines SET title='".$title."', changeDate='".$date."' WHERE id='".$id."';";
 	else
 		$queryStr = "INSERT INTO engines(id, title, changeDate)
 			VALUES('".$id."', '".$title."', '".$date."');";
+
+	if ($existsData)
+		$queryStr .= "DELETE FROM enginesMomentum WHERE engineID='".$id."';";
 
   $data = explode(";", $data);
   if (count($data) != 2) {
@@ -474,11 +481,13 @@ function saveGear($id, $title, $data) {
 
 	$result = [ "result" => "ok" ];
 
-  $recordsExists = false;
+  $existsMain = false;
+	$existsData = false;
 
   if ($id != "") {
   	$query = $db->query("SELECT
-				COUNT(gearsGears.gearValue) AS Count
+				COUNT(gears.id) AS CountMain,
+				COUNT(gearsGears.gearValue) AS CountData
 			FROM
 				gears
 				LEFT JOIN gearsGears ON gears.id=gearsGears.gearID
@@ -489,8 +498,10 @@ function saveGear($id, $title, $data) {
 			return $result;
 		}
 
-    if ($row = $query->fetch_array())
-      $recordsExists = $row["Count"] != 0;
+    if ($row = $query->fetch_array()) {
+      $existsMain = $row["CountMain"] != 0;
+			$existsData = $row["CountData"] != 0;
+		}
   }
   else
     $id = getFreeID("gears");
@@ -509,19 +520,21 @@ function saveGear($id, $title, $data) {
 	}
 
 	$date = date("Y-m-d H:i:s");
-  if ($recordsExists)
-		$queryStr = "UPDATE gears SET title='".$title."', mainGear='".$data[0]."', obFinish='".$data[1]."', changeDate='".$date."' WHERE id='".$id."';
-			DELETE FROM gearsGears WHERE gearID='".$id."';";
+  if ($existsMain)
+		$queryStr = "UPDATE gears SET title='".$title."', mainGear='".$data[0]."', obFinish='".$data[1]."', changeDate='".$date."' WHERE id='".$id."';";
 	else
 		$queryStr = "INSERT INTO gears(id, title, mainGear, obFinish, changeDate)
 			VALUES('".$id."', '".$title."', '".$data[0]."', '".$data[1]."', '".$date."');";
+
+	if ($existsData)
+		$queryStr .= "DELETE FROM gearsGears WHERE gearID='".$id."';";
 
   for ($c = 2; $c < count($data); $c++)
 		$queryStr .= "INSERT INTO gearsGears(gearID, gearNumber, gearValue)
 			VALUES('".$id."', '".($c - 1)."', '".$data[$c]."');";
 
 	$queryStr .= "UPDATE lastParams SET gearID='".$id."' WHERE active=1";
-	// $result["message"] = $queryStr;
+
 	$query = $db->multi_query($queryStr);
 	if (!$query) {
 		$result["result"] = "error";
