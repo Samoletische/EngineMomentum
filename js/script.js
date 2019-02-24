@@ -834,18 +834,23 @@ function createTab(index) {
 
 function createSVGPath() {
 
-	if (window.innerWidth < xMDSM)
-		$("#svgPath")
-			.css("width", "300px")
-			.css("height", "1470px");
-	else
-		$("#svgPath")
-			.css("width", "565px")
-			.css("height", "690px");
 	var Y = $("svg.in_above[tab='" + activeSheet + "']").offset().top - 40.5;
 	var x = $("#gearNew").offset().left - 100;
 	var y = $("#out_above").offset().top - 90.5;
 	var X = $("#out_above").offset().left - 20;
+
+	console.log("X=" + X);
+	if (window.innerWidth < xMDSM)
+		$("#svgPath")
+			.css("width", (X - $("#rightPanel").offset().left + 130) + "px")
+			.css("height", "1470px");
+	else {
+		$("#svgPath").css("height", "690px");
+		if (window.innerWidth < xLGMD)
+			$("#svgPath").css("width", (X + 90) + "px");
+		else
+			$("#svgPath").css("width", (X - 10) + "px");
+	}
 
 	var path = "M 0 " + Y + " L " + x + " " + Y + " A 50 50 0 0 1 " + (x + 50) + " " + (Y + 50) + " L " + (x + 50) + " " + y + " A 50 50 0 0 0 " + (x + 100) + " " + (y + 50) + " L " + X + " " + (y + 50);
 	//console.log(path);
