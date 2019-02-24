@@ -9,6 +9,8 @@ var svgExists = false;
 var drawWidth, drawHeight;
 var engineDraw, gearsDraw;
 var colors = ["#81c000", "#01a6ff", "#ff4001", "#a801ff", "#02ccc0", "#fff343"];
+var xLGMD = 1200;
+var xMDSM = 990;
 
 $(function() {
 
@@ -240,6 +242,10 @@ $(function() {
 				alert(data.message);
 		});
 	});
+
+	$(window).resize(resizeWindow);
+
+	resizeWindow();
 
 }); // start
 //------------------------------------------------------
@@ -785,7 +791,7 @@ function clearTabs() {
 
 function createTab(index) {
 
-	var distance = 130;
+	var distance = 145;
 	var start = 80;
 
 	html = "<svg class='in_under' tab='" + index + "'><path d='M 17 0 L 17 109 L 0 104 L 0 5 L 17 0'></path></svg>";
@@ -828,15 +834,85 @@ function createTab(index) {
 
 function createSVGPath() {
 
+	if (window.innerWidth < xMDSM)
+		$("#svgPath")
+			.css("width", "300px")
+			.css("height", "1470px");
+	else
+		$("#svgPath")
+			.css("width", "565px")
+			.css("height", "690px");
 	var Y = $("svg.in_above[tab='" + activeSheet + "']").offset().top - 40.5;
 	var x = $("#gearNew").offset().left - 100;
 	var y = $("#out_above").offset().top - 90.5;
 	var X = $("#out_above").offset().left - 20;
+
 	var path = "M 0 " + Y + " L " + x + " " + Y + " A 50 50 0 0 1 " + (x + 50) + " " + (Y + 50) + " L " + (x + 50) + " " + y + " A 50 50 0 0 0 " + (x + 100) + " " + (y + 50) + " L " + X + " " + (y + 50);
-	console.log(path);
+	//console.log(path);
+	console.log(window.innerWidth);
 	$("#svgPath").html("<path d='" + path + "'></path>");
 
 } // createSVGPath
+//------------------------------------------------------
+
+function resizeWindow() {
+
+	if (window.innerWidth < xMDSM) {
+		$("#leftPanel")
+			.css("border-radius", "8px 8px 0px 0px")
+			.css("width", "305px");
+		$("#rightPanel")
+			.css("margin-left", "18px")
+			.css("border-radius", "0px 0px 8px 8px");
+	}
+	else {
+		$("#leftPanel")
+			.css("border-radius", "8px 0px 0px 8px")
+			.css("width", "400px");
+		$("#rightPanel")
+			.css("margin-left", "0px")
+			.css("border-radius", "0px 8px 8px 0px");
+	}
+
+	var x = $("#gearNew").offset().left - $("#rightPanel").offset().left + parseInt($("#rightPanel").css("margin-left")) + 10;
+	console.log(window.innerWidth + " - " + xMDSM + " - " + x);
+	if (window.innerWidth < xLGMD) {
+		$("#out_under")
+			.css("left", (x - 77) + "px")
+			.css("top", "780px")
+			.css("width", "110px")
+			.css("height", "13px")
+			.html("<path d='M 0 0 L 109 0 L 104 12 L 5 12 L 0 0'></path>");
+		$("#out_above")
+			.css("left", (x - 72) + "px")
+			.css("top", "763px")
+			.css("width", "100px")
+			.css("height", "40px")
+			.html("<path d='M 0 0 L 99 0 L 99 29 L 49 39 L 0 29 L 0 0'></path>");
+		$("#tabTitleOut")
+			.css("left", (x - 30) + "px")
+			.css("top", "767px")
+	}
+	else {
+		$("#out_under")
+			.css("left", "305px")
+			.css("top", "660px")
+			.css("width", "13px")
+			.css("height", "110px")
+			.html("<path d='M 0 0 L 12 5 L 12 104 L 0 109 L 0 0'></path>");
+		$("#out_above")
+			.css("left", "288px")
+			.css("top", "665px")
+			.css("width", "40px")
+			.css("height", "100px")
+			.html("<path d='M 0 0 L 29 0 L 39 49 L 29 99 L 0 99 L 0 0'></path>");
+		$("#tabTitleOut")
+			.css("left", "298px")
+			.css("top", "698px")
+	}
+	createSVGPath();
+
+} //resizeWindow
 //------------------------------------------------------
 
 function refreshResultOnlyGear(all = false) {
