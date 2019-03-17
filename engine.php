@@ -4,9 +4,15 @@ $res = "";
 require("config.php");
 
 if ($res == "") {
-	mysqli_query($db, "SET NAMES utf8");
+	$db->query("SET NAMES utf8");
 	if (isset($_POST["command"])) {
 		switch ($_POST["command"]) {
+			case "authorize":
+				$res = authorize();
+				break;
+			case "authenticate":
+				$res = authenticate($_POST["user"], $_POST["pass"]);
+				break;
 			case "getEngines":
 				$res = getEngines();
 				break;
@@ -50,11 +56,97 @@ $db->close();
 //------------------------------------------------------
 
 // ------- Common interface start -------
+function authorize() {
+
+	global $db;
+
+	$result = array( "result" => "ok" );
+
+	if (!isset($_COOKIE["auth"])) {
+		$result["result"] = "error";
+		$result["message"] = "no auth cookie";
+		return $result;
+	}
+
+	$cookie = explode("-", $_COOKIE["auth"]);
+	if (count($cookie) != 2) {
+		$result["result"] = "error";
+		$result["message"] = "wrong auth cookie";
+		return $result;
+	}
+
+	$query = $db->query("SELECT login
+		FROM users
+		WHERE user='".$cookie[1]."' LIMIT 1");
+	if (!$query)
+		return dbError($result);
+
+	$row = $query->fetch_array();
+	if ($row["login"] != md5($_COOKIE["auth"])) {
+		$result["result"] = "error";
+		$result["error"] = "wrong auth in DB";
+		return $result;
+	}
+
+	return $result;
+
+} // authorize
+//------------------------------------------------------
+
+function authenticate($user, $pass) {
+
+	global $db;
+
+	$result = array( "result" => "ok" );
+
+	$query = $db->query("SELECT pass
+		FROM users
+		WHERE user='".$user."'");
+	if (!$query)
+		return dbError($result);
+
+	$row = $query->fetch_array();
+	if ($row["pass"] == md5($pass)) {
+		$login = uniqid()."-".$user;
+
+		// начало транзакции
+		if (!$db->autocommit(FALSE))
+			return dbError($result);
+
+		$db->begin_transaction();
+
+		$query = $db->query("UPDATE users
+			SET login='".md5($login)."'
+			WHERE user='".$user."'");
+		if (!$query) {
+			$db->rollback();
+			$db->autocommit(TRUE);
+			return dbError($result);
+		}
+
+		if (setcookie("auth", $login))
+			$db->commit();
+		else
+			$db->rollback();
+
+		$db->autocommit(TRUE);
+
+		return $result;
+	}
+
+	$result["result"] = "error";
+	$result["message"] = "Не правильно указаны имя пользователя или пароль";
+
+	return $result;
+
+} // authenticate
+//------------------------------------------------------
+
 function getEngines() {
 
 	global $db;
 
-	$result = [ "result" => "ok", "sheets" => Array() ];
+	$result = array( "result" => "ok", "sheets" => Array() );
 
 	try {
 		$queryString = "CREATE TEMPORARY TABLE lp
@@ -259,15 +351,12 @@ function getDropDown($table) {
 
 	global $db;
 
-	$result = [ "result" => "ok", "dropdown" => "" ];
+	$result = array( "result" => "ok", "dropdown" => "" );
 
 	$query = $db->query("SELECT id, title FROM ".$table);
 
-	if (!$query) {
-		$result["result"] = "error";
-		$result["message"] = "[saveEngine] error: ".$db->error();
-		return $result;
-	}
+	if (!$query)
+		return dbError($result);
 
 	while ($row = $query->fetch_array())
 		$result["dropdown"] .= "<li><a class='".$table."Load' ".$table."ID='".$row["id"]."' href='#'>".$row["title"]."</a></li>";
@@ -281,7 +370,7 @@ function removeRecord($table, $id) {
 
 	global $db;
 
-	$result = [ "result" => "ok" ];
+	$result = array( "result" => "ok" );
 
 	$queryStr = "DELETE FROM ".$table." WHERE id='".$id."';";
 	if ($table == "engines") {
@@ -296,11 +385,8 @@ function removeRecord($table, $id) {
 		$queryStr .= "UPDATE lastParams SET wheelID=0 WHERE active=1";
 
 	$query = $db->multi_query($queryStr);
-	if (!$query) {
-		$result["result"] = "error";
-		$result["message"] = "[removeRecord] error: ".$db->error();
-		return $result;
-	}
+	if (!$query)
+		return dbError($result);
 
 	return $result;
 
@@ -311,7 +397,7 @@ function setLastParams($data, $id, $insert) {
 
 	global $db;
 
-	$result = [ "result" => "ok" ];
+	$result = array( "result" => "ok" );
 
 	$queryStr = "";
 
@@ -340,11 +426,8 @@ function setLastParams($data, $id, $insert) {
 
 	$query = $db->multi_query($queryStr);
 
-	if(!$query) {
-		$result["result"] = "error";
-		$result["message"] = "[setLastParams] error: ".$db->error();
-		return $result;
-	}
+	if(!$query)
+		return dbError($result);
 
 	return $result;
 
@@ -357,7 +440,7 @@ function saveEngine($id, $title, $data) {
 
 	global $db;
 
-	$result = [ "result" => "ok" ];
+	$result = array( "result" => "ok" );
 
   $existsMain = false;
 	$existsData = false;
@@ -371,11 +454,8 @@ function saveEngine($id, $title, $data) {
 				engines
 				LEFT JOIN	enginesMomentum ON engines.id=enginesMomentum.engineID
 			WHERE engines.id='".$id."'");
-    if (!$query) {
-			$result["result"] = "error";
-			$result["message"] = "[saveEngine] error: ".$db->error();
-			return $result;
-		}
+    if (!$query)
+			return dbError($result);
 
     if ($row = $query->fetch_array()) {
       $existsMain = $row["CountMain"] != 0;
@@ -418,11 +498,8 @@ function saveEngine($id, $title, $data) {
 	$queryStr .= "UPDATE lastParams SET engineID='".$id."' WHERE active=1";
 	// $result["message"] = $queryStr;
 	$query = $db->multi_query($queryStr);
-	if (!$query) {
-		$result["result"] = "error";
-		$result["message"] = "[saveEngine] error: ".$db->error();
-		return $result;
-	}
+	if (!$query)
+		return dbError($result);
 
   $result["id"] = $id;
 
@@ -435,7 +512,7 @@ function getEngine($engineID) {
 
 	global $db;
 
-	$result = [ "result" => "ok", "title" => "", "obFrom" => 100000, "obTo" => 0, "obs" => "", "moms" => "" ];
+	$result = array( "result" => "ok", "title" => "", "obFrom" => 100000, "obTo" => 0, "obs" => "", "moms" => "" );
 
 	$query = $db->multi_query("SELECT
 			engines.title,
@@ -449,18 +526,12 @@ function getEngine($engineID) {
 		;
 
 		UPDATE lastParams SET engineID='".$engineID."' WHERE active=1");
-	if (!$query) {
-		$result["result"] = "error";
-		$result["message"] = "[loadEngine] error: ".$db->error();
-		return $result;
-	}
+	if (!$query)
+		return dbError($result);
 
 	$res = $db->store_result();
-	if (!$res) {
-		$result["result"] = "error";
-		$result["message"] = "[loadEngine] error: ".$db->error();
-		return $result;
-	}
+	if (!$res)
+		return dbError($result);
 
 	$first = true;
 	while ($row = $res->fetch_array()) {
@@ -489,7 +560,7 @@ function saveGear($id, $title, $data) {
 
   global $db;
 
-	$result = [ "result" => "ok" ];
+	$result = array( "result" => "ok" );
 
   $existsMain = false;
 	$existsData = false;
@@ -502,11 +573,8 @@ function saveGear($id, $title, $data) {
 				gears
 				LEFT JOIN gearsGears ON gears.id=gearsGears.gearID
 			WHERE gears.id='".$id."'");
-    if (!$query) {
-			$result["result"] = "error";
-			$result["message"] = "[saveGear] error: ".$db->error();
-			return $result;
-		}
+    if (!$query)
+			return dbError($result);
 
     if ($row = $query->fetch_array()) {
       $existsMain = $row["CountMain"] != 0;
@@ -546,11 +614,8 @@ function saveGear($id, $title, $data) {
 	$queryStr .= "UPDATE lastParams SET gearID='".$id."' WHERE active=1";
 
 	$query = $db->multi_query($queryStr);
-	if (!$query) {
-		$result["result"] = "error";
-		$result["message"] = "[saveGear] error: ".$db->error();
-		return $result;
-	}
+	if (!$query)
+		return dbError($result);
 
   $result["id"] = $id;
 
@@ -563,7 +628,7 @@ function getGear($gearID) {
 
 	global $db;
 
-	$result = [ "result" => "ok", "title" => "", "mainGear" => 0, "obFinish" => 0, "gears" => "" ];
+	$result = array( "result" => "ok", "title" => "", "mainGear" => 0, "obFinish" => 0, "gears" => "" );
 
 	$queryStr = "SELECT
 			gears.title,
@@ -581,18 +646,12 @@ function getGear($gearID) {
 
 		UPDATE lastParams SET gearID='".$gearID."' WHERE active=1";
 	$query = $db->multi_query($queryStr);
-	if (!$query) {
-		$result["result"] = "error";
-		$result["message"] = "[loadGear] error: ".$db->error();
-		return $result;
-	}
+	if (!$query)
+		return dbError($result);
 
 	$res = $db->store_result();
-	if (!$res) {
-		$result["result"] = "error";
-		$result["message"] = "[loadGear] error: ".$db->error();
-		return $result;
-	}
+	if (!$res)
+		return dbError($result);
 
 	$first = true;
 	while ($row = $res->fetch_array()) {
@@ -617,7 +676,7 @@ function saveWheel($id, $title, $width, $height, $disk) {
 
   global $db;
 
-	$result = [ "result" => "ok" ];
+	$result = array( "result" => "ok" );
 
 	$recordsExists = false;
 
@@ -627,11 +686,8 @@ function saveWheel($id, $title, $width, $height, $disk) {
 			FROM
 				wheels
 			WHERE id='".$id."'");
-    if (!$query) {
-			$result["result"] = "error";
-			$result["message"] = "[saveWheel] error: ".$db->error();
-			return $result;
-		}
+    if (!$query)
+			return dbError($result);
 
     if ($row = $query->fetch_array())
       $recordsExists = $row["Count"] != 0;
@@ -655,11 +711,8 @@ function saveWheel($id, $title, $width, $height, $disk) {
   $queryStr .= "UPDATE lastParams SET wheelID='".$id."' WHERE active=1";
 
 	$query = $db->multi_query($queryStr);
-	if (!$query) {
-		$result["result"] = "error";
-		$result["message"] = "[saveWheel] error: ".$db->error();
-		return $result;
-	}
+	if (!$query)
+		return dbError($result);
 
   $result["id"] = $id;
 
@@ -672,23 +725,17 @@ function getWheel($wheelID) {
 
 	global $db;
 
-	$result = [ "result" => "ok", "title" => "", "width" => 0, "height" => 0, "disk" => "" ];
+	$result = array( "result" => "ok", "title" => "", "width" => 0, "height" => 0, "disk" => "" );
 
 	$queryStr = "SELECT title, width, height, disk FROM wheels WHERE id='".$wheelID."';
 		UPDATE lastParams SET wheelID='".$wheelID."' WHERE active=1";
 	$query = $db->multi_query($queryStr);
-	if (!$query) {
-		$result["result"] = "error";
-		$result["message"] = "[loadWheel] error: ".$db->error();
-		return $result;
-	}
+	if (!$query)
+		return dbError($result);
 
 	$res = $db->store_result();
-	if (!$res) {
-		$result["result"] = "error";
-		$result["message"] = "[loadWheel] error: ".$db->error();
-		return $result;
-	}
+	if (!$res)
+		return dbError($result);
 
 	if ($row = $res->fetch_array()) {
 		$result["title"] = $row["title"];

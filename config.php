@@ -40,5 +40,17 @@ function insertLastParam($field, $param) {
 } // insertLastParam
 //------------------------------------------------------
 
+function dbError($result) {
+
+	global $db;
+
+	$result["result"] = "error";
+	$result["message"] = "DB error: ".$db->error();
+
+	return $result;
+
+} // dbError
+//------------------------------------------------------
+
 // ------- Common DB functions end -------
 ?>

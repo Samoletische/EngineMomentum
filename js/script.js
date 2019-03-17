@@ -14,7 +14,61 @@ var xMDSM = 990;
 
 $(function() {
 
-	initialize();
+	$("#authInfo").hide();
+	$("#authSubmit").click(authenticate);
+	$("#user, #pass")
+		.val("")
+		.keyup(function(key){
+			if (key.which == 13)
+				authenticate();
+		});
+		
+	authorize();
+	$(window).resize(resizeWindow);
+	resizeWindow();
+
+}); // start
+//------------------------------------------------------
+
+function authorize() {
+
+	$.post("engine.php", "command=authorize", function(data) {
+		console.log(data);
+		if (data.result == "ok")
+			initialize();
+		else
+			$("#loginForm").modal();
+			setTimeout(function(){
+				$("#user").focus();
+			}, 500);
+	});
+
+} // authorize
+//------------------------------------------------------
+
+function authenticate() {
+	$.post("engine.php", "command=authenticate&user=" + $("#user").val() + "&pass=" + $("#pass").val(), function(data) {
+		console.log(data);
+		if (data.result == "ok") {
+			initialize();
+			$("#loginForm").modal("hide");
+		}
+		else {
+			$("#authInfo")
+				.text(data.message)
+				.fadeIn("fast");
+			setTimeout(function(){
+				$("#user").focus();
+			}, 500);
+			setTimeout(function() {
+				$("#authInfo").fadeOut("fast");
+			}, 7000);
+		}
+	});
+} // authenticate
+//------------------------------------------------------
+
+function initialize() {
 
 	// ------- engine modal start -------
 	$("#engineNew").click(function() {
@@ -48,12 +102,12 @@ $(function() {
 		}
 	});
 	$("#engineLoadApply").click(function() {
-	    if (engineLoadApply($("#engineInput").val().split("\n"))) {
-	        $("#enginesLoad").modal("hide");
-	        $("#engineName").attr("modif", "true");
-	    }
-        else
-            alert("Введены некорректные данные зависимости момента двигателя от оборотов.");
+			if (engineLoadApply($("#engineInput").val().split("\n"))) {
+					$("#enginesLoad").modal("hide");
+					$("#engineName").attr("modif", "true");
+			}
+				else
+						alert("Введены некорректные данные зависимости момента двигателя от оборотов.");
 	});
 	// ------- engine modal end -------
 
@@ -242,15 +296,6 @@ $(function() {
 				alert(data.message);
 		});
 	});
-
-	$(window).resize(resizeWindow);
-
-	resizeWindow();
-
-}); // start
-//------------------------------------------------------
-
-function initialize() {
 
 	drawWidth = $("#engineDraw").width();
 	drawHeight = 388;
