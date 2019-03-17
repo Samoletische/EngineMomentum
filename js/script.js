@@ -22,7 +22,7 @@ $(function() {
 			if (key.which == 13)
 				authenticate();
 		});
-		
+
 	authorize();
 	$(window).resize(resizeWindow);
 	resizeWindow();
@@ -33,7 +33,7 @@ $(function() {
 function authorize() {
 
 	$.post("engine.php", "command=authorize", function(data) {
-		console.log(data);
+		//console.log(data);
 		if (data.result == "ok")
 			initialize();
 		else
@@ -675,7 +675,7 @@ function getEngines() {
 
 	$.post("engine.php", "command=getEngines", function(data) {
 		if (data.result == "ok") {
-			console.log(data);
+			//console.log(data);
 
 			clearTabs();
 
@@ -794,7 +794,7 @@ function saveActiveSheet() {
 // ------- Common elements start -------
 function showActiveSheet() {
 
-	console.log(activeSheet);
+	//console.log(activeSheet);
 	$("#engineName")
 		.attr("engineID", engines[activeSheet].engineID)
 		.attr("modif", "false")
@@ -879,12 +879,15 @@ function createTab(index) {
 
 function createSVGPath() {
 
+	if (!$("svg.in_above[tab='" + activeSheet + "']").attr("tab"))
+		return;
+
 	var Y = $("svg.in_above[tab='" + activeSheet + "']").offset().top - 40.5;
 	var x = $("#gearNew").offset().left - 100;
 	var y = $("#out_above").offset().top - 90.5;
 	var X = $("#out_above").offset().left - 20;
 
-	console.log("X=" + X);
+	//console.log("X=" + X);
 	if (window.innerWidth < xMDSM)
 		$("#svgPath")
 			.css("width", (X - $("#rightPanel").offset().left + 130) + "px")
@@ -899,7 +902,7 @@ function createSVGPath() {
 
 	var path = "M 0 " + Y + " L " + x + " " + Y + " A 50 50 0 0 1 " + (x + 50) + " " + (Y + 50) + " L " + (x + 50) + " " + y + " A 50 50 0 0 0 " + (x + 100) + " " + (y + 50) + " L " + X + " " + (y + 50);
 	//console.log(path);
-	console.log(window.innerWidth);
+	//console.log(window.innerWidth);
 	$("#svgPath").html("<path d='" + path + "'></path>");
 
 } // createSVGPath
@@ -925,7 +928,7 @@ function resizeWindow() {
 	}
 
 	var x = $("#gearNew").offset().left - $("#rightPanel").offset().left + parseInt($("#rightPanel").css("margin-left")) + 10;
-	console.log(window.innerWidth + " - " + xMDSM + " - " + x);
+	//console.log(window.innerWidth + " - " + xMDSM + " - " + x);
 	if (window.innerWidth < xLGMD) {
 		$("#out_under")
 			.css("left", (x - 77) + "px")
@@ -999,6 +1002,7 @@ function refreshResult(all = false) {
 			//console.log("ranks" + val.rank + " - " + val.finishRank);
 			val.interpol();
 			val.gearInitialize();
+			val.distanceCalc();
 		});
 	}
 	else {
@@ -1008,10 +1012,12 @@ function refreshResult(all = false) {
 		//console.log("ranks" + engines[activeSheet].rank + " - " + engines[activeSheet].finishRank);
 		engines[activeSheet].interpol();
 		engines[activeSheet].gearInitialize();
+		engines[activeSheet].distanceCalc();
 	}
 
 	drawResult(engines[activeSheet].findCross());
-	drawMomentum();
+	//drawMomentum();
+	drawDistance();
 	drawGears();
 
 } // refreshResult
@@ -1259,6 +1265,94 @@ function drawMomentum() {
 } // drawMomentum
 //------------------------------------------------------
 
+function drawDistance() {
+
+	if (!svgExists)
+		return;
+
+	 var x, y;
+	// var obCurr, momCurr;
+	// var first = true;
+	var colorAxe = "#333";
+	var colorOther = "#999";
+	var color = colorAxe;
+	// var obFromMin = engines[0].obFrom ? engines[0].obFrom : 100000;
+	var tMax = 0;
+	var sMax = 0;
+	// var obColsMax = engines[0].obCols;
+	// // var mayReturn = false;
+	//
+	engines.forEach(function(val, key, arr) {
+		tMax = Math.max(val.t[val.t.length - 1], tMax);
+		sMax = Math.max(val.s[val.s.length - 1], sMax);
+	});
+	// //console.log("obFromMin="+obFromMin+",obToMax="+obToMax+",momMax="+momMax+",obColsMax="+obColsMax);
+	// // if (mayReturn)
+	// // 	return;
+	// var obStep = parseFloat((obToMax - obFromMin) / (obColsMax - 1.0));
+	// var momStep = parseFloat(momMax / (obColsMax - 1.0));
+
+	clearEngineDraw();
+
+	// axes
+	// vertical
+	tCurr = 0;
+	first = true;
+	//console.log("obColsMax = " + obColsMax);
+	tStep = parseFloat(tMax / 15);
+	for (var c = 0; c < 15; c++) {
+
+		x = Math.round((drawWidth - 80) / tMax * tCurr + 50);
+		engineDraw.text(Math.round(tCurr).toString()).move(x, drawHeight - 40).font({fill: colorAxe, family: "Helvetica", anchor: "middle", stretch: "ultra-condensed"});
+		if (first) {
+			first = false;
+			color = colorAxe;
+		}
+		else
+			color = colorOther;
+		//console.log("x=" + x + ", drawHeight=" + drawHeight + ", color=" + color);
+		engineDraw.line(x, 40, x, drawHeight - 40).fill("none").stroke({color: color, width: 1});
+
+		//console.log(x);
+		tCurr += tStep;
+
+	}
+
+	// horizontal
+	sCurr = 0;
+	first = true;
+	sStep = parseFloat(sMax / 15);
+	for (var c = 0; c <= 15; c++) {
+
+		y = Math.round(drawHeight - 100 - (drawHeight - 100) / sMax * sCurr + 50);
+		if (y < 50)
+			break;
+		engineDraw.text(Math.round(sCurr).toString()).move(25, y - 8).font({fill: colorAxe, family: "Helvetica", anchor: "middle"});
+		if (first) {
+			first = false;
+			color = colorAxe;
+		}
+		else
+			color = colorOther;
+		engineDraw.line(40, y, drawWidth - 20, y).fill("none").stroke({color: color, width: 1});
+
+		sCurr += sStep;
+
+	}
+	engineDraw.text("Расст, м").move(20, 20).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
+	engineDraw.text("Время, сек.").move(drawWidth - 150, drawHeight - 20).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
+
+	// data
+	//console.log("drawMomentum engines.length=" + engines.length);
+	engines.forEach(function(val, key, arr) {
+		color = LightenDarkenColor(colors[key], -20);
+		//console.log("draw key=" + key);
+		val.drawDistance(tMax, sMax, color);
+	});
+
+} // drawDistance
+//------------------------------------------------------
+
 function drawGears() {
 
 	if (!svgExists)
@@ -1338,7 +1432,7 @@ function drawGears() {
 		momCurr += momStep;
 
 	}
-	gearsDraw.text("Момент, Н*м").move(20, 0).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
+	gearsDraw.text("Сила, Н").move(20, 0).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
 	gearsDraw.text("Скорость, км/ч").move(drawWidth - 130, drawHeight - 20).font({fill: colorAxe, family: "Helvetica", anchor: "left", weight: "bold"});
 
 	// data
@@ -1624,6 +1718,7 @@ function Engine(data) {
 	this.obFrom = parseInt(data.engine.obFrom);
 	this.obTo = parseInt(data.engine.obTo);
 	this.obCols = parseInt(data.engine.obCols);
+	this.mass = 1050;
 
 	// gear
 	this.gearID = data.gear.id;
@@ -1766,26 +1861,94 @@ function Engine(data) {
 
   } // gearInitialize
 
-	this.drawMomentum = function(obFromMin, obToMax, momMax, color) {
+	this.distanceCalc = function() {
+
+		if (this.gears.length == 0)
+			return;
+
+		this.t = new Array(this.rank + 1);
+		this.s = new Array(this.rank + 1);
+
+		var dv, dt, t, s, v, i;
+		var mayExit = false;
+		var currGear = 0;
+		var currIndex = 0;
+
+		t = 0;
+		v = 0;
+		s = 0;
+
+		this.t[0] = 0;
+		this.s[0] = 0;
+		i = 1;
+
+		while (!mayExit) {
+			if (currIndex == 0) {
+				dv = this.gears[currGear].ob[0];
+				dt = this.mass * dv * 1000 / 2 / 3600 / this.gears[currGear].mom[0];
+			}
+			else {
+				dv = this.gears[currGear].ob[currIndex] - this.gears[currGear].ob[currIndex - 1];
+				dt = this.mass * dv * 1000 / 2 / 3600 / this.gears[currGear].mom[currIndex];
+			}
+			v += dv;
+			t += dt;
+			s += v * dt * 1000 / 3600;
+
+			this.t[i] = t;
+			this.s[i] = s;
+			i++;
+
+			currIndex++;
+			if (currIndex == this.gears[currGear].ob.length)
+				mayExit = true;
+		}
+	} // distanceCalc
+
+	this.draw = function(drawArea, xArray, yArray, xMin, xMax, yMin, yMax, color) {
 
 		var coords = "";
 		var x, y;
 
 		// data
-		for (var c = 0; c <= this.rank; c++) {
-			if (!this.mom[c])
-				continue;
+		for (var c = 0; c <= xArray.length; c++) {
+			// if (!yArray[c])
+			// 	continue;
 			//console.log("engineDraw size - " + $("#engineDraw").width() + " : " + drawHeight);
 			//console.log("max of mom - " + this.momMax);
-			x = Math.round((drawWidth - 80) / (obToMax - obFromMin) * (this.ob[c] - obFromMin) + 50);
-			y = Math.round(drawHeight - 100 - (drawHeight - 100) / momMax * this.mom[c] + 50);
+			x = Math.round((drawWidth - 80) / (xMax - xMin) * (xArray[c] - xMin) + 50);
+			y = Math.round(drawHeight - 100 - (drawHeight - 100) / (yMax - yMin) * (yArray[c] - yMin) + 50);
 			if (x && y)
 				coords += " " + x + " " + y;
 			//console.log(coords);
 		}
 
 		if (coords != "")
-			engineDraw.polyline(coords).fill("none").stroke({color: color, width: 2});
+			drawArea.polyline(coords).fill("none").stroke({color: color, width: 2});
+
+	} // draw
+
+	this.drawMomentum = function(obFromMin, obToMax, momMax, color) {
+
+		var coords = "";
+		var x, y;
+
+		// data
+		this.draw(engineDraw, this.ob, this.mom, obFromMin, obToMax, 0, momMax, color);
+		// for (var c = 0; c <= this.rank; c++) {
+		// 	if (!this.mom[c])
+		// 		continue;
+		// 	//console.log("engineDraw size - " + $("#engineDraw").width() + " : " + drawHeight);
+		// 	//console.log("max of mom - " + this.momMax);
+		// 	x = Math.round((drawWidth - 80) / (obToMax - obFromMin) * (this.ob[c] - obFromMin) + 50);
+		// 	y = Math.round(drawHeight - 100 - (drawHeight - 100) / momMax * this.mom[c] + 50);
+		// 	if (x && y)
+		// 		coords += " " + x + " " + y;
+		// 	//console.log(coords);
+		// }
+		//
+		// if (coords != "")
+		// 	engineDraw.polyline(coords).fill("none").stroke({color: color, width: 2});
 
 		// finish
 		x = this.ob[this.finishRank];
@@ -1795,6 +1958,16 @@ function Engine(data) {
 		engineDraw.line(x, y - 10, x, y + 10).fill("none").stroke({color: color, width: 2});
 
 	} // drawMomentum
+
+	this.drawDistance = function(tMax, sMax, color) {
+
+		var coords = "";
+		var x, y;
+
+		// data
+		this.draw(engineDraw, this.t, this.s, 0, tMax, 0, sMax, color);
+
+	} // drawDistance
 
 	this.drawGears = function(obGearsMin, obGearsMax, momGearsMin, momGearsMax, color) {
 

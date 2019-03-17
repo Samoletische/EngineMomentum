@@ -339,6 +339,10 @@ path {
 	fill: #81c000;
 }
 
+#out_above:hover {
+	fill-opacity: 0.7;
+}
+
 #tabTitleOut {
 	position: absolute;
 	left: 295px;
