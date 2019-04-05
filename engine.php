@@ -113,7 +113,7 @@ function authenticate($user, $pass) {
 		if (!$db->autocommit(FALSE))
 			return dbError($result);
 
-		$db->begin_transaction();
+		//$db->begin_transaction();
 
 		$query = $db->query("UPDATE users
 			SET login='".md5($login)."'

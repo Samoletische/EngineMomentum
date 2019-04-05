@@ -364,7 +364,7 @@ function enginesNew() {
 function getengines(id) {
 
   $.post("engine.php", "command=getEngine&id=" + id, function(data) {
-
+		console.log(data);
 		if (data.result == "ok") {
 			//console.log(data);
       $("#engineName")
@@ -397,7 +397,7 @@ function engineSave() {
 
   var command = "command=saveEngine&id=" + $("#engineName").attr("engineID") + "&title=" + $("#engineName").val() + "&data=" + engines[activeSheet].obs.join(",") + ";" + engines[activeSheet].moms.join(",");
   $.post("engine.php", command, function(data) {
-
+		console.log(data);
 		if (data.result == "ok") {
 			//console.log(data);
 			engines[activeSheet].engineID = data.id;
@@ -519,9 +519,9 @@ function gearSave() {
 	var command = "command=saveGear&id=" + $("#gearName").attr("gearID") + "&title=" + $("#gearName").val() + "&data=" + $("#gearMain").val() + ";" + $("#obFinish").val() + ";" + engines[activeSheet].gearNumbers.join(";");
   console.log("save - " + command);
   $.post("engine.php", command, function(data) {
-
+		console.log(data);
 		if (data.result == "ok") {
-			console.log(data);
+			//console.log(data);
 			engines[activeSheet].gearID = data.id;
 			engines[activeSheet].gearTitle = $("#gearName").val();
 
@@ -595,9 +595,9 @@ function wheelsNew() {
 function getwheels(id) {
 
   $.post("engine.php", "command=getWheel&id=" + id, function(data) {
-
+		console.log(data);
 		if (data.result == "ok") {
-			console.log(data);
+			//console.log(data);
       $("#wheelName")
         .attr("wheelID", id)
         .text(data.title);
@@ -626,9 +626,9 @@ function wheelSave() {
 	var command = "command=saveWheel&id=" + $("#wheelName").attr("wheelID") + "&title=" + $("#wheelName").text() + "&width=" + $("#wheelWidth").val() + "&height=" + $("#wheelHeight").val() + "&disk=" + $("#wheelDisk").val();
   console.log("save - " + command);
   $.post("engine.php", command, function(data) {
-
+		console.log(data);
 		if (data.result == "ok") {
-			console.log(data);
+			//console.log(data);
 			engines[activeSheet].wheelID = data.id;
 
       $("#wheelName")
@@ -696,6 +696,7 @@ function makeWheelTitle() {
 function getEngines() {
 
 	$.post("engine.php", "command=getEngines", function(data) { // caller: getEngines
+		console.log(data);
 		if (data.result == "ok") {
 			//console.log(data);
 
@@ -726,7 +727,7 @@ function fillDropDown(table) {
 	var command = "command=getDropDown&table=" + table;
 	$.post("engine.php", command, function(data) {
 
-		//console.log(data);
+		console.log(data);
 		if (data.result == "ok") {
 			$("#" + table + "DropDown").html(data.dropdown);
 			$("." + table + "Load").click(function() {
@@ -787,7 +788,7 @@ function removeRecord() {
 	}
 	else {
 		$.post("engine.php", "command=removeRecord&table=" + $("#removingThing").attr("table") + "&id=" + $("#removingThing").attr("recordID"), function(data) {
-
+			console.log(data);
 			if (data.result == "ok") {
 				//console.log(data);
 				eval($("#removingThing").attr("table") + "New();");
@@ -804,7 +805,7 @@ function removeRecord() {
 function saveActiveSheet() {
 
 	$.post("engine.php", "command=setLastParams&insert=&data=&active=" + activeSheet, function(data) {
-		//console.log(data);
+		console.log(data);
 		if (data.result == "error")
 			alert(data.message);
 	});
@@ -1310,11 +1311,12 @@ function drawDistance() {
 	// var obColsMax = engines[0].obCols;
 	// // var mayReturn = false;
 	//
+	console.log("length="+engines.length);
 	engines.forEach(function(val, key, arr) {
 		tMax = distanceAll ? Math.max(val.t[val.t.length - 1], tMax) : Math.min(val.t[val.t.length - 1], tMax);
 		sMax = distanceAll ? Math.max(val.s[val.s.length - 1], sMax) : Math.min(val.s[val.s.length - 1], sMax);
 	});
-	// //console.log("obFromMin="+obFromMin+",obToMax="+obToMax+",momMax="+momMax+",obColsMax="+obColsMax);
+	console.log("tMax="+tMax+",sMax="+sMax);
 	// // if (mayReturn)
 	// // 	return;
 	// var obStep = parseFloat((obToMax - obFromMin) / (obColsMax - 1.0));
@@ -1905,43 +1907,27 @@ function Engine(data) {
 		this.tNext = new Array(this.gears.length - 1);
 		this.sNext = new Array(this.gears.length - 1);
 
-		var dv, dt, t, s, v, i, iNext;
+		//var dv;
+		var dt = 0.1;
+		var a, res, f, t, s, v, i, iNext;
 		var mayExit = false;
 		var currGear = 0;
 		var currIndex = 0;
 
 		iNext = 0;
 
-		t = 0;
-		v = 0;
-		s = 0;
+		t = 0; // с
+		v = this.gears[currGear].ob[currIndex] * 1000 / 3600; // м/с
+		s = 0; // м
 
 		this.t[0] = 0;
 		this.s[0] = 0;
+		a = this.gears[0].mom[0] / this.mass; // м/с^2
 		i = 1;
 
 		while (!mayExit) {
-			if (currIndex == 0) {
-				dv = this.gears[currGear].ob[0];
-				dt = this.mass * dv * 1000 / 2 / 3600 / this.gears[currGear].mom[0];
-			}
-			else {
-				dv = this.gears[currGear].ob[currIndex] - this.gears[currGear].ob[currIndex - 1];
-				dt = this.mass * dv * 1000 / 2 / 3600 / this.gears[currGear].mom[currIndex];
-			}
-			v += dv;
-			t += dt;
-			s += v * dt * 1000 / 3600;
 
-			console.log(i + ", mayExit=" + mayExit + ", currGear=" + currGear + ", currIndex=" + currIndex + ", this.ob[currIndex]=" + this.ob[currIndex]);
-
-			this.t[i] = t;
-			this.s[i] = s;
-			i++;
-
-			// if (i > 150)
-			// 	mayExit = true;
-
+			// gross currIndex
 			if ((this.ob[currIndex] > this.result[currGear]) && (this.result[currGear] != -1)) {
 				// переключаем передачу в рассчитанной точке
 				console.log("переключаем передачу в рассчитанной точке: " + this.ob[currIndex] + " - " + this.result[currGear]);
@@ -1959,8 +1945,8 @@ function Engine(data) {
 					mayExit = true;
 			}
 			else {
-				currIndex++;
-				if ((currIndex >= this.gears[currGear].ob.length) || (this.ob[currIndex] > this.obFinish)) { // переключаем передачу на максимальных оборотах или, если перешли отсечку
+				//currIndex++;
+				if ((currIndex >= this.gears[currGear].ob.length - 1) || (this.ob[currIndex] > this.obFinish)) { // переключаем передачу на максимальных оборотах или, если перешли отсечку
 					console.log("переключаем передачу на максимальных оборотах или, если перешли отсечку: " + this.ob[currIndex] + " - " + this.obFinish);
 
 					if (iNext < this.tNext.length) {
@@ -1976,6 +1962,27 @@ function Engine(data) {
 						mayExit = true;
 				}
 			}
+
+			if (!mayExit) {
+				t += dt; // с
+				v += a * dt; // м/с
+				res = this.gears[currGear].takeForceFromVelocity(v * 3600 / 1000); // Н
+				f = res.force;
+				currIndex = res.currIndex;
+				console.log(f);
+				a = f / this.mass; // м/с^2
+				s += v * dt + a * dt * dt / 2; // м
+				console.log(i + ", currGear=" + currGear + ", currIndex=" + currIndex + ", this.ob[currIndex]=" + this.ob[currIndex] + ", t=" + t + ", v=" + (v * 3600 / 1000) + ", f=" + f + ", a=" + a + ", s=" + s);
+
+				//console.log(i + ", mayExit=" + mayExit + ", currGear=" + currGear + ", currIndex=" + currIndex + ", this.ob[currIndex]=" + this.ob[currIndex]);
+
+				this.t[i] = t;
+				this.s[i] = s;
+				i++;
+			}
+
+			// if (i > 150)
+			// 	mayExit = true;
 		}
 
 	} // distanceCalc
@@ -2071,10 +2078,10 @@ function Engine(data) {
 
 		// draw nextGear
 		for (c = 0; c < this.tNext.length; c++) {
-			console.log("tNext=" + this.tNext[c] + ", sNext=" + this.sNext[c]);
+			//console.log("tNext=" + this.tNext[c] + ", sNext=" + this.sNext[c]);
 			x = Math.round((drawWidth - 80) / tMax * this.tNext[c] + 50);
 			y = Math.round(drawHeight - 100 - (drawHeight - 100) / sMax * this.sNext[c] + 50);
-			console.log("x=" + x + ", y=" + y);
+			//console.log("x=" + x + ", y=" + y);
 			engineDraw.circle(6).move(x - 3, y - 3).fill("none").stroke({color: color, width: 1});
 		}
 
@@ -2160,7 +2167,8 @@ function Gear(num, parent) {
 				continue;
 			}
 
-			this.mom[k] = this.parent.mom[k] * gN[this.gearNumber] * gM / 4.0 / wD; // y
+			//this.mom[k] = this.parent.mom[k] * gN[this.gearNumber] * gM / 4.0 / wD; // y
+			this.mom[k] = this.parent.mom[k] * gN[this.gearNumber] * gM / wD; // y
 
 			if (momGearsMin == -1)
 				momGearsMin = this.mom[k];
@@ -2216,6 +2224,29 @@ function Gear(num, parent) {
 		gearsDraw.polyline(coords).fill("none").stroke({color: color, width: 2});
 
 	} // drawGear
+
+	this.takeForceFromVelocity = function(v) {
+
+		var result = {force: 0, currIndex: this.parent.rank};
+		var c, a, b;
+
+		if (this.ob[0] <= v) {
+			for (c = 0; c < this.parent.rank; c++) {
+				//console.log("v=" + v + ", c=" + c + ", ob[c]=" + this.ob[c] + ", mom[c]=" + this.mom[c]);
+				if ((this.ob[c] > v) && (c != 0)) {
+					a = (this.mom[c - 1] - this.mom[c]) / (this.ob[c - 1] - this.ob[c]);
+					b = this.mom[c - 1] - a * this.ob[c - 1];
+					result.force = a * v + b;
+					result.currIndex = c;
+					//console.log("v=" + v + ", result=" + result);
+					break;
+				}
+			}
+		}
+
+		return result;
+
+	} // takeForceFromVelocity
 
 } // Gear
 //------------------------------------------------------
