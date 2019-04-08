@@ -163,7 +163,7 @@ function getEngines() {
 				IFNULL(engines.obFinish, 0) AS obFinish,
 				IFNULL(cars.id, 0) AS carID,
 				IFNULL(cars.title, '') AS carTitle,
-				IFNULL(cars.carWeight, 0) AS carWeight,
+				IFNULL(cars.carWeight, 1) AS carWeight,
 				IFNULL(gears.id, 0) AS gearID,
 				IFNULL(gears.title, '') AS gearTitle,
 				IFNULL(gears.mainGear, 1) AS mainGear,
@@ -393,11 +393,14 @@ function removeRecord($table, $id) {
 		$queryStr .= "DELETE FROM enginesMomentum WHERE engineID='".$id."';
 			UPDATE lastParams SET engineID=0 WHERE active=1";
 	}
-	if ($table == "gears") {
+	if ($table == "cars") {
+		$queryStr .= "UPDATE lastParams SET carID=0 WHERE active=1";
+	}
+	elseif ($table == "gears") {
 		$queryStr .= "DELETE FROM gearsGears WHERE gearID='".$id."';
 			UPDATE lastParams SET gearID=0 WHERE active=1";
 	}
-	else
+	elseif ($table == "wheels")
 		$queryStr .= "UPDATE lastParams SET wheelID=0 WHERE active=1";
 
 	$query = $db->multi_query($queryStr);
@@ -611,7 +614,10 @@ function saveCar($id, $title, $carWeight) {
 			VALUES('".$id."', '".$title."', '".$carWeight."', '".$date."');";
 
 	$queryStr .= "UPDATE lastParams SET carID='".$id."' WHERE active=1";
+
 	// $result["message"] = $queryStr;
+	// return $result;
+
 	$query = $db->multi_query($queryStr);
 	if (!$query)
 		return dbError($result);

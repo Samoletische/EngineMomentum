@@ -123,7 +123,7 @@ function initialize() {
 			$("#newConfirm").modal();
 		}
 		else
-			CarsNew();
+			carsNew();
 	});
 	$("#carOpen").click(function() {
 		if ($("#carName").attr("modif") == "true") {
@@ -561,8 +561,8 @@ function carsNew() {
 		.val("")
 		.attr("carID", "")
 		.attr("modif", "false");
-	engines[activeSheet].carWeight = 0;
-	$("#carWeight").val(0);
+	engines[activeSheet].carWeight = 1;
+	$("#carWeight").val(1);
 	engines[activeSheet].carID = 0;
 	engines[activeSheet].carTitle = "";
 
@@ -589,7 +589,7 @@ function getcars(id) {
       var d = new Array(1);
       d[0] = data.carWeight;
 
-			engineLoadApply(d);
+			carLoadApply(d);
     }
     else
 			alert(data.message);
@@ -1042,6 +1042,7 @@ function showActiveSheet() {
 	//console.log("engineLoadApply");
 	createSVGPath();
 	engineLoadApply();
+	carLoadApply();
 	gearLoadApply();
 	wheelLoadApply();
 	if (engines[activeSheet].result)
@@ -1360,7 +1361,7 @@ function createGearTable() {
 
 function clearDraw(draw) {
 
-	console.log("clearDraw");
+	//console.log("clearDraw");
 	//engineDraw.rect(drawWidth, drawHeight).fill("#ddddff");
 	draw.rect(drawWidth, drawHeight).fill("#b5b4c6");
 
@@ -1369,15 +1370,15 @@ function clearDraw(draw) {
 
 function getDraw(func) {
 
-	console.log("getDraw=" + func.name);
+	//console.log("getDraw=" + func.name);
 	//gearsDraw.rect(drawWidth, drawHeight).fill("#ddffdd");
 	var draw;
 
 	for (keyUD in graphics)
 		for (key in graphics[keyUD]) {
-			console.log("draw=" + draw + ", undefined=" + !draw + ", keyUD/key=" + keyUD + "/" + key);
+			//console.log("draw=" + draw + ", undefined=" + !draw + ", keyUD/key=" + keyUD + "/" + key);
 			if ((graphics[keyUD][key].func == func) && (!draw)) {
-				console.log("enter");
+				//console.log("enter");
 				draw = graphics[keyUD][key].draw;
 			}
 		}
@@ -1389,7 +1390,7 @@ function getDraw(func) {
 
 function drawMomentum() {
 
-	console.log("drawMomentum");
+	//console.log("drawMomentum");
 
 	if (!svgExists)
 		return;
@@ -1690,7 +1691,7 @@ function drawResult() {
 	var html = "";
 	var odd = true;
 
-	//console.log(engines[activeSheet].result);
+	console.log(engines[activeSheet].result);
 	engines[activeSheet].result.forEach(function(val, key, arr) {
 		val = (val == -1) ? "нет" : val;
 		if (odd) {
@@ -1858,7 +1859,7 @@ function findCrossingGears(gearCols, gears, wheelDiametr, gM, finishRank, gN) {
 							0);
 					//console.log(res.x + " -===- " + res.y);
 					if (res.x != 0.0) {
-						oborot = Math.round(res.x / 60.0 / 3.14 / wheelDiametr * gM * gN[k-1] * 1000.0);
+						oborot = Math.round(res.x / 60.0 / 3.14 / 2 / wheelDiametr * gM * gN[k-1] * 1000.0);
 						//console.log("break after crossing");
 						break;
 					}
@@ -1879,7 +1880,7 @@ function findCrossingGears(gearCols, gears, wheelDiametr, gM, finishRank, gN) {
 					continue;
 
 				if ((gears[k].ob[lastC] <= gears[k-1].ob[finishRank]) && (gears[k-1].ob[finishRank] <= gears[k].ob[c])) {
-					oborot = Math.round(gears[k-1].ob[finishRank] / 60.0 / 3.14 / wheelDiametr * gM * gN[k-1] * 1000.0);
+					oborot = Math.round(gears[k-1].ob[finishRank] / 60.0 / 3.14 / 2 / wheelDiametr * gM * gN[k-1] * 1000.0);
 					break;
 				}
 
@@ -2096,7 +2097,7 @@ function Engine(data) {
 	this.interpol = function() {
 
 		interpolSpline3(this.ob, this.mom, this.secondIndex, this.rank, this.obCols);
-		console.log("interpol");
+		//console.log("interpol");
 
 	} // interpol
 
@@ -2188,7 +2189,7 @@ function Engine(data) {
 				//console.log(f);
 				a = f / this.carWeight; // м/с^2
 				s += v * dt + a * dt * dt / 2; // м
-				console.log(i + ", currGear=" + currGear + ", currIndex=" + currIndex + ", this.ob[currIndex]=" + this.ob[currIndex] + ", t=" + t + ", v=" + (v * 3600 / 1000) + ", f=" + f + ", a=" + a + ", s=" + s);
+				//console.log(i + ", currGear=" + currGear + ", currIndex=" + currIndex + ", this.ob[currIndex]=" + this.ob[currIndex] + ", t=" + t + ", v=" + (v * 3600 / 1000) + ", f=" + f + ", a=" + a + ", s=" + s);
 
 				//console.log(i + ", mayExit=" + mayExit + ", currGear=" + currGear + ", currIndex=" + currIndex + ", this.ob[currIndex]=" + this.ob[currIndex]);
 
@@ -2201,6 +2202,9 @@ function Engine(data) {
 			if (i > 10000)
 			 	mayExit = true;
 		}
+
+		//console.log("carWeight=" + this.carWeight);
+		//console.log(this.s);
 
 	} // distanceCalc
 
@@ -2322,6 +2326,7 @@ function Engine(data) {
 		if (this.gears.length == 0)
 			return;
 
+		console.log("finishRank=" + this.finishRank + ", rank=" + this.rank + ", wheelDiametr=" + this.wheelDiametr);
 		this.result = findCrossingGears(this.gearCols, this.gears, this.wheelDiametr, this.gearMain, this.finishRank, this.gearNumbers);
 
 		//return findCrossingGears(this.gearCols, this.gears, this.wheelDiametr, this.gearMain, this.finishRank, this.gearNumbers);

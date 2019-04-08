@@ -2,6 +2,10 @@
 $db = new mysqli("localhost", "engine", "Eng1nE", "engine");
 if (!$db)
 	$res = ".-=-(001) Не могу подключиться к базе данных по причине: ".mysqli_connect_error();
+
+ini_set('error_reporting', E_ALL);
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
 //------------------------------------------------------
 
 // ------- Common DB functions start -------
@@ -16,7 +20,7 @@ function getFreeID($table) {
     	return 0;
 
     $id = 1;
-		if ($query->num_rows())
+		if ($query->num_rows)
 	    while ($row = $query->fetch_array()) {
 	        if ($id != $row["id"])
 	            break;
@@ -39,6 +43,18 @@ function insertLastParam($field, $param) {
     return true;
 
 } // insertLastParam
+//------------------------------------------------------
+
+function dbError($result) {
+
+	global $db;
+
+	$result["result"] = "error";
+	$result["message"] = "DB error: ".$db->error;
+
+	return $result;
+
+} // dbError
 //------------------------------------------------------
 
 // ------- Common DB functions end -------
