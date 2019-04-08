@@ -9,15 +9,21 @@
         "title": "",
         "obFrom": "2000",
         "obTo": "8500",
+        "obFinish": "8000",
         "obCols": 15,
         "obs": "2000  2500  3000  3500",
         "moms": "92 94  101 108"
+      },
+      "car": {
+        "id" : "1",
+        "title": "",
+        "weight": "1050"
       },
       "gear": {
         "id": "1",
         "title": "",
         "gearMain": "4.2",
-        "obFinish": "8500",
+        "gearTime": "0.5",
         "gearCols": 5,
         "gears": "3.2;2.5;1.3"
       },

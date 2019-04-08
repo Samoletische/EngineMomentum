@@ -16,11 +16,12 @@ function getFreeID($table) {
     	return 0;
 
     $id = 1;
-    while ($row = $query->fetch_array()) {
-        if ($id != $row["id"])
-            break;
-        $id++;
-    }
+		if ($query->num_rows())
+	    while ($row = $query->fetch_array()) {
+	        if ($id != $row["id"])
+	            break;
+	        $id++;
+	    }
 
     return $id;
 
@@ -38,18 +39,6 @@ function insertLastParam($field, $param) {
     return true;
 
 } // insertLastParam
-//------------------------------------------------------
-
-function dbError($result) {
-
-	global $db;
-
-	$result["result"] = "error";
-	$result["message"] = "DB error: ".$db->error();
-
-	return $result;
-
-} // dbError
 //------------------------------------------------------
 
 // ------- Common DB functions end -------

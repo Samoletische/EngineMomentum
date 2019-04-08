@@ -26,13 +26,19 @@ if ($res == "") {
       	$res = setLastParams($_POST["data"], $_POST["active"], $_POST["insert"]);
 				break;
 			case "saveEngine":
-				$res = saveEngine($_POST["id"], $_POST["title"], $_POST["data"]);
+				$res = saveEngine($_POST["id"], $_POST["title"], $_POST["obFinish"], $_POST["data"]);
 				break;
 			case "getEngine":
 				$res = getEngine($_POST["id"]);
         break;
+			case "saveCar":
+				$res = saveCar($_POST["id"], $_POST["title"], $_POST["carWeight"]);
+				break;
+			case "getCar":
+				$res = getCar($_POST["id"]);
+        break;
       case "saveGear":
-				$res = saveGear($_POST["id"], $_POST["title"], $_POST["data"]);
+				$res = saveGear($_POST["id"], $_POST["title"], $_POST["data"], $_POST["data"]);
 				break;
 			case "getGear":
 				$res = getGear($_POST["id"]);
@@ -154,16 +160,21 @@ function getEngines() {
 				lastParams.id AS id,
 				IFNULL(engines.id, 0) AS engineID,
 				IFNULL(engines.title, '') AS engineTitle,
+				IFNULL(engines.obFinish, 0) AS obFinish,
+				IFNULL(cars.id, 0) AS carID,
+				IFNULL(cars.title, '') AS carTitle,
+				IFNULL(cars.carWeight, 0) AS carWeight,
 				IFNULL(gears.id, 0) AS gearID,
 				IFNULL(gears.title, '') AS gearTitle,
 				IFNULL(gears.mainGear, 1) AS mainGear,
-				IFNULL(gears.obFinish, 0) AS obFinish,
+				IFNULL(gears.gearTime, 1) AS gearTime,
 				IFNULL(wheels.id, 0) AS wheelID,
 				IFNULL(wheels.title, '') AS wheelTitle,
 				lastParams.active AS active
 			FROM
 				lastParams
 				LEFT JOIN engines ON lastParams.engineID=engines.id
+				LEFT JOIN cars ON lastParams.carID=cars.id
 				LEFT JOIN gears ON lastParams.gearID=gears.id
 				LEFT JOIN wheels ON lastParams.wheelID=wheels.id
 			;
@@ -224,15 +235,20 @@ function getEngines() {
 			$result["sheets"][$sheet]["engine"] = Array();
 			$result["sheets"][$sheet]["engine"]["id"] = $row["engineID"];
 			$result["sheets"][$sheet]["engine"]["title"] = $row["engineTitle"];
+			$result["sheets"][$sheet]["engine"]["obFinish"] = $row["obFinish"];
 			$result["sheets"][$sheet]["engine"]["obCols"] = 0;
 			$result["sheets"][$sheet]["engine"]["obs"] = "";
 			$result["sheets"][$sheet]["engine"]["moms"] = "";
+
+			$result["sheets"][$sheet]["car"]["id"] = $row["carID"];
+			$result["sheets"][$sheet]["car"]["title"] = $row["carTitle"];
+			$result["sheets"][$sheet]["car"]["carWeight"] = $row["carWeight"];
 
 			$result["sheets"][$sheet]["gear"] = Array();
 			$result["sheets"][$sheet]["gear"]["id"] = $row["gearID"];
 			$result["sheets"][$sheet]["gear"]["title"] = $row["gearTitle"];
 			$result["sheets"][$sheet]["gear"]["gearMain"] = $row["mainGear"];
-			$result["sheets"][$sheet]["gear"]["obFinish"] = $row["obFinish"];
+			$result["sheets"][$sheet]["gear"]["gearTime"] = $row["gearTime"];
 			$result["sheets"][$sheet]["gear"]["gearCols"] = 0;
 			$result["sheets"][$sheet]["gear"]["gears"] = "";
 
@@ -408,16 +424,16 @@ function setLastParams($data, $id, $insert) {
 		if ($insert == "1") {
 			$ids = explode(",", $data);
 			$queryStr .= "UPDATE lastParams SET active=0 WHERE id<>'".$id."';
-				INSERT INTO lastParams(id, engineID, gearID, wheelID, active)
-					VALUES('".$id."', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', 1);";
+				INSERT INTO lastParams(id, engineID, carID, gearID, wheelID, active)
+					VALUES('".$id."', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', '".$ids[3]."', 1);";
 		}
 		else {
 			$queryStr .= "DELETE FROM lastParams;";
 			$rows = explode(";", $data);
 			for ($c = 0; $c < count($rows); $c++) {
 				$ids = explode(",", $rows[$c]);
-				 $queryStr .= "INSERT INTO lastParams(id, engineID, gearID, wheelID, active)
-				 	VALUES('".$c."', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', 0);";
+				 $queryStr .= "INSERT INTO lastParams(id, engineID, carID, gearID, wheelID, active)
+				 	VALUES('".$c."', '".$ids[0]."', '".$ids[1]."', '".$ids[2]."', '".$ids[3]."', 0);";
 			}
 			$queryStr .= "UPDATE lastParams SET active=0 WHERE id<>'".$id."';
 				UPDATE lastParams SET active=1 WHERE id='".$id."'";
@@ -436,7 +452,7 @@ function setLastParams($data, $id, $insert) {
 // ------- Common interface end -------
 
 // ------- Engine interface start -------
-function saveEngine($id, $title, $data) {
+function saveEngine($id, $title, $obFinish, $data) {
 
 	global $db;
 
@@ -473,10 +489,10 @@ function saveEngine($id, $title, $data) {
 
 	$date = date("Y-m-d H:i:s");
   if ($existsMain)
-		$queryStr = "UPDATE engines SET title='".$title."', changeDate='".$date."' WHERE id='".$id."';";
+		$queryStr = "UPDATE engines SET title='".$title."', obFinish='".$obFinish."', changeDate='".$date."' WHERE id='".$id."';";
 	else
-		$queryStr = "INSERT INTO engines(id, title, changeDate)
-			VALUES('".$id."', '".$title."', '".$date."');";
+		$queryStr = "INSERT INTO engines(id, title, obFinish, changeDate)
+			VALUES('".$id."', '".$title."', '".$obFinish."', '".$date."');";
 
 	if ($existsData)
 		$queryStr .= "DELETE FROM enginesMomentum WHERE engineID='".$id."';";
@@ -512,10 +528,11 @@ function getEngine($engineID) {
 
 	global $db;
 
-	$result = array( "result" => "ok", "title" => "", "obFrom" => 100000, "obTo" => 0, "obs" => "", "moms" => "" );
+	$result = array( "result" => "ok", "title" => "", "obFrom" => 100000, "obTo" => 0, "obFinish" => 0, "obs" => "", "moms" => "" );
 
 	$query = $db->multi_query("SELECT
 			engines.title,
+			engines.obFinish,
 			IFNULL(enginesMomentum.oborots, 0) AS oborots,
 			IFNULL(enginesMomentum.momentum, 0) AS momentum
 		FROM
@@ -538,6 +555,7 @@ function getEngine($engineID) {
 		if ($first) {
 			$first = false;
 			$result["title"] = $row["title"];
+			$result["obFinish"] = $row["obFinish"];
 		}
 		if ($row["oborots"] == 0)
 			continue;
@@ -552,6 +570,90 @@ function getEngine($engineID) {
 	return $result;
 
 } // getEngine
+//------------------------------------------------------
+// ------- Engine interface end -------
+
+// ------- Engine interface start -------
+function saveCar($id, $title, $carWeight) {
+
+	global $db;
+
+	$result = array( "result" => "ok" );
+
+  $existsMain = false;
+
+  if (($id != "") && ($id != "0")) {
+  	$query = $db->query("SELECT
+				COUNT(cars.id) AS CountMain
+			FROM
+				cars
+			WHERE cars.id='".$id."'");
+    if (!$query)
+			return dbError($result);
+
+    if ($row = $query->fetch_array())
+      $existsMain = $row["CountMain"] != 0;
+  }
+  else
+    $id = getFreeID("cars");
+
+  if ($id == 0) {
+		$result["result"] = "error";
+		$result["message"] = "[saveCar] error: no free id in table 'cars'";
+		return $result;
+	}
+
+	$date = date("Y-m-d H:i:s");
+  if ($existsMain)
+		$queryStr = "UPDATE cars SET title='".$title."', carWeight='".$carWeight."', changeDate='".$date."' WHERE id='".$id."';";
+	else
+		$queryStr = "INSERT INTO cars(id, title, carWeight, changeDate)
+			VALUES('".$id."', '".$title."', '".$carWeight."', '".$date."');";
+
+	$queryStr .= "UPDATE lastParams SET carID='".$id."' WHERE active=1";
+	// $result["message"] = $queryStr;
+	$query = $db->multi_query($queryStr);
+	if (!$query)
+		return dbError($result);
+
+  $result["id"] = $id;
+
+	return $result;
+
+} // saveCar
+//------------------------------------------------------
+
+function getCar($carID) {
+
+	global $db;
+
+	$result = array( "result" => "ok", "title" => "", "carWeight" => 0 );
+
+	$query = $db->multi_query("SELECT
+			cars.title,
+			cars.carWeight
+		FROM
+			cars
+		WHERE
+			cars.id='".$carID."'
+		;
+
+		UPDATE lastParams SET carID='".$carID."' WHERE active=1");
+	if (!$query)
+		return dbError($result);
+
+	$res = $db->store_result();
+	if (!$res)
+		return dbError($result);
+
+	while ($row = $res->fetch_array()) {
+		$result["title"] = $row["title"];
+		$result["carWeight"] = $row["carWeight"];
+	}
+
+	return $result;
+
+} // getCar
 //------------------------------------------------------
 // ------- Engine interface end -------
 
@@ -599,9 +701,9 @@ function saveGear($id, $title, $data) {
 
 	$date = date("Y-m-d H:i:s");
   if ($existsMain)
-		$queryStr = "UPDATE gears SET title='".$title."', mainGear='".$data[0]."', obFinish='".$data[1]."', changeDate='".$date."' WHERE id='".$id."';";
+		$queryStr = "UPDATE gears SET title='".$title."', mainGear='".$data[0]."', gearTime='".$data[1]."', changeDate='".$date."' WHERE id='".$id."';";
 	else
-		$queryStr = "INSERT INTO gears(id, title, mainGear, obFinish, changeDate)
+		$queryStr = "INSERT INTO gears(id, title, mainGear, gearTime, changeDate)
 			VALUES('".$id."', '".$title."', '".$data[0]."', '".$data[1]."', '".$date."');";
 
 	if ($existsData)
@@ -628,12 +730,11 @@ function getGear($gearID) {
 
 	global $db;
 
-	$result = array( "result" => "ok", "title" => "", "mainGear" => 0, "obFinish" => 0, "gears" => "" );
+	$result = array( "result" => "ok", "title" => "", "mainGear" => 0, "gears" => "" );
 
 	$queryStr = "SELECT
 			gears.title,
 			gears.mainGear,
-			gears.obFinish,
 			IFNULL(gearsGears.gearValue, 0) AS gearValue
 		FROM
 			gears
@@ -658,7 +759,6 @@ function getGear($gearID) {
 		if ($first) {
 			$result["title"] = $row["title"];
 			$result["mainGear"] = $row["mainGear"];
-			$result["obFinish"] = $row["obFinish"];
 		}
 		if ($row["gearValue"] == 0)
 			continue;

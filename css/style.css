@@ -101,8 +101,6 @@ body {
 }
 
 .valCaption, .valCaptionBold {
-	width: 160px;
-	height: 30px;
 	padding-left: 37px;
 	padding-top: 7px;
 	font-size: 9pt;
@@ -112,13 +110,23 @@ body {
 	/*border: 1px solid red;*/
 }
 
-.valCaptionRight {
+.valCaption {
+	width: 160px;
+	height: 30px;
+}
+
+.valCaptionBold {
 	width: 140px;
+	height: 30px;
+}
+
+.valCaptionRight {
+	width: 120px;
 	height: 30px;
 	padding-right: 30px;
 	padding-top: 7px;
 	font-size: 9pt;
-	text-align: center;
+	text-align: right;
 	color: #000;
 	float: right;
 	font-family: HelveticaNeueBlack;
@@ -291,8 +299,9 @@ path {
 
 #engineTable {
 	width: 290px;
-	height: 540px;
-	overflow: auto;
+	height: 420px;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 .tableEngine {
@@ -354,8 +363,9 @@ path {
 
 #gearTable {
 	width: 290px;
-	height: 230px;
-	overflow: auto;
+	height: 210px;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 .gear {
@@ -366,7 +376,38 @@ path {
     width: 80px;
 }
 
-#engineDraw {
+#resTable {
+	width: 290px;
+	height: 130px;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+#upDraw, #downDraw {
+	position: relative;
+	perspective: 1000px;
+	overflow: hidden;
+}
+
+#upDrawFront, #upDrawBack, #downDrawFront, #downDrawBack {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0px;
+	top: 0px;
+	transition: 1s;
+	backface-visibility: hidden;
+}
+
+#upDrawFront, #downDrawFront {
+	transform: rotateY(0deg);
+}
+
+#upDrawBack, #downDrawBack {
+	transform: rotateY(180deg);
+}
+
+#downDraw {
 	border-top: 1px solid #999;
 }
 
@@ -378,93 +419,3 @@ path {
     width: 100%;
     resize: vertical;
 }
-
-/*.header {
-	font-weight: bold;
-	font-size: 12pt;
-}*/
-
-/*.glyphicon {
-    margin: 2px;
-    padding: 4px;
-    border: solid 2px #999;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-.glyphicon:hover {
-    background-color: #0FF;
-}*/
-
-/*#engineName {
-    border: 1px solid #999;
-    padding: 1px 8px;
-    margin: 2px;
-    border-radius: 8px;
-    width: 300px;
-}*/
-
-/*#engineInput {
-    border: 1px solid #999;
-    border-radius: 8px;
-    width: 100%;
-    resize: vertical;
-}
-
-.gearName {
-    border: 1px solid #999;
-    padding: 1px 8px;
-    margin: 2px;
-    border-radius: 8px;
-    width: 300px;
-}
-
-#gearInput {
-    border: 1px solid #999;
-    border-radius: 8px;
-    width: 100%;
-    resize: vertical;
-}
-
-.paramCaption {
-	text-align: left;
-	font-weight: bold;
-	font-size: 9pt;
-}
-
-.paramValue {
-	text-align: left;
-	font-weight: normal;
-}
-
-.paramValue input {
-	width: 60px;
-	text-align: left;
-}
-
-/*input {
-	background-color: #f6fff6;
-}*/
-
-/*td input {
-	width: 100%;
-	text-align: left;
-	background-color: #f6fff6;
-}
-
-.table>tbody>tr>th {
-	padding: 3px;
-	text-align: center;
-}
-
-.gearTable>th {
-	color: #fff;
-}
-
-.table>tbody>tr>td {
-	padding: 3px;
-}
-
-.gearBox, .wheelParams {
-	border: 1px solid #ddd;
-}*/

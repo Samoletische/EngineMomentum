@@ -49,6 +49,10 @@
 						<input id="obTo" class="valValue" type="number" value="" />
 					</div>
 					<div class="val">
+						<div class="valCaption">Отсечка, об</div>
+						<input id="obFinish" class="valValue" type="number" value="" />
+					</div>
+					<div class="val">
 						<div class="valCaption">Количество значений</div>
 						<input id="obCols" class="valValue" type="number" value="" />
 					</div>
@@ -65,6 +69,19 @@
 								<td><input row="0" class="mom" type="number" value="92" /></td>
 							</tr>
 						</table-->
+					</div>
+					<div class="title">Другие параметры</div>
+					<div class="hr"></div>
+					<div class="controlPanel">
+						<input id="carName" class="caption" type="text" modif="false" value="" />
+						<span id="carNew" class="control glyphicon glyphicon-plus-sign"></span>
+						<span id="carSave" class="control glyphicon glyphicon-export"></span>
+						<span id="carOpen" class="control glyphicon glyphicon-import"></span>
+						<span id="carRemove" class="control glyphicon glyphicon-minus-sign"></span>
+					</div>
+					<div class="val">
+						<div class="valCaption">Масса авто, кг</div>
+						<input id="carWeight" class="valValue" type="number" value="" />
 					</div>
 				</div>
 			</div>
@@ -87,12 +104,12 @@
 						<span id="gearRemove" class="control glyphicon glyphicon-minus-sign"></span>
 					</div>
 					<div class="val">
-						<div class="valCaption">Отсечка, об</div>
-						<input id="obFinish" class="valValue" type="number" value="" />
-					</div>
-					<div class="val">
 						<div class="valCaption">Главная пара</div>
 						<input id="gearMain" class="valValue" type="number" value="" />
+					</div>
+					<div class="val">
+						<div class="valCaption">Переключение, сек.</div>
+						<input id="gearTime" class="valValue" type="number" value="" />
 					</div>
 					<div class="val">
 						<div class="valCaption">Количество передач</div>
@@ -158,8 +175,14 @@
 				</div>
 			</div>
 			<div class="col col-lg-6 col-md-12 rightCol">
-				<div id="gearsDraw"></div>
-				<div id="engineDraw"></div>
+				<div id="upDraw" face="front">
+					<div id="upDrawFront" class="front"></div>
+					<div id="upDrawBack" class="back"></div>
+				</div>
+				<div id="downDraw" face="front">
+					<div id="downDrawFront" class="front"></div>
+					<div id="downDrawBack" class="back"></div>
+				</div>
 			</div>
 		</div>
 		<svg id="svgPath"></svg>
@@ -219,7 +242,7 @@
 				</div>
 				<hr>
 				<h4>Загрузка из Excel</h4>
-				Вставьте сюда данные из Excel (две строки: верхняя - обороты; нижняя - момент):
+				Вставьте сюда данные из Excel (первая строка - отсечка; вторая строка - обороты; третья строка - момент):
 				<textarea id="engineInput" rows="6"></textarea>
 			</div>
 			<div class="modal-footer">
@@ -248,7 +271,7 @@
 				</div>
 				<hr>
 				<h4>Загрузка из Excel</h4>
-				Вставьте сюда данные из Excel (первая строка - отсечка; вторая строка - главная пара; остальные строки - передаточные числа передач по-порядку):
+				Вставьте сюда данные из Excel (первая строка - главная пара; остальные строки - передаточные числа передач по-порядку):
 				<textarea id="gearInput" rows="6"></textarea>
 			</div>
 			<div class="modal-footer">
@@ -283,6 +306,35 @@
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
 				<button id="wheelLoadApply" type="button" class="btn btn-primary">Загрузить</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="carsLoad" class="modal fade" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title">Загрузка данных автомобиля</h4>
+			</div>
+			<div class="modal-body">
+				<div class="dropdown">
+					<h4>Загрузка из базы</h4>
+					<button id="dropdownMenuCar" class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+						Сохранённые параметры автомобилей
+						<span class="caret"></span>
+					</button>
+					<ul id="carsDropDown" class="dropdown-menu" aria-labelledby="dropdownMenuCar"></ul>
+				</div>
+				<hr>
+				<h4>Загрузка из Excel</h4>
+				Вставьте сюда данные из Excel (первая строка - масса автомобиля):
+				<textarea id="carInput" rows="6"></textarea>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
+				<button id="carLoadApply" type="button" class="btn btn-primary">Загрузить</button>
 			</div>
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->
