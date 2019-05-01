@@ -279,6 +279,14 @@ path {
 	z-index: 60;
 }
 
+.tabCheck {
+	position: absolute;
+	left: 10px;
+	top: 135px;
+	cursor: pointer;
+	z-index: 65;
+}
+
 .tabMinus {
 	position: absolute;
 	left: 10px;

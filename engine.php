@@ -32,7 +32,7 @@ if ($res == "") {
 				$res = getEngine($_POST["id"]);
         break;
 			case "saveCar":
-				$res = saveCar($_POST["id"], $_POST["title"], $_POST["carWeight"]);
+				$res = saveCar($_POST["id"], $_POST["title"], $_POST["carWeight"], $_POST["engineID"], $_POST["gearID"], $_POST["wheelID"]);
 				break;
 			case "getCar":
 				$res = getCar($_POST["id"]);
@@ -531,7 +531,7 @@ function getEngine($engineID) {
 
 	global $db;
 
-	$result = array( "result" => "ok", "title" => "", "obFrom" => 100000, "obTo" => 0, "obFinish" => 0, "obs" => "", "moms" => "" );
+	$result = array( "result" => "ok", "id" => $engineID, "title" => "", "obFrom" => 100000, "obTo" => 0, "obFinish" => 0, "obs" => "", "moms" => "" );
 
 	$query = $db->multi_query("SELECT
 			engines.title,
@@ -554,6 +554,7 @@ function getEngine($engineID) {
 		return dbError($result);
 
 	$first = true;
+	$c = 0;
 	while ($row = $res->fetch_array()) {
 		if ($first) {
 			$first = false;
@@ -568,7 +569,11 @@ function getEngine($engineID) {
 
 		$result["obs"] == "" ? $result["obs"] = $row["oborots"] : $result["obs"] .= "\t".$row["oborots"];
 		$result["moms"] == "" ? $result["moms"] = $row["momentum"] : $result["moms"] .= "\t".$row["momentum"];
+
+		$c++;
 	}
+	$result["obCols"] = $c;
+	$db->next_result();
 
 	return $result;
 
@@ -577,7 +582,7 @@ function getEngine($engineID) {
 // ------- Engine interface end -------
 
 // ------- Engine interface start -------
-function saveCar($id, $title, $carWeight) {
+function saveCar($id, $title, $carWeight, $engineID, $gearID, $wheelID) {
 
 	global $db;
 
@@ -608,10 +613,21 @@ function saveCar($id, $title, $carWeight) {
 
 	$date = date("Y-m-d H:i:s");
   if ($existsMain)
-		$queryStr = "UPDATE cars SET title='".$title."', carWeight='".$carWeight."', changeDate='".$date."' WHERE id='".$id."';";
+		$queryStr = "UPDATE
+				cars
+			SET
+				title='".$title."',
+				carWeight='".$carWeight."',
+				engineID='".$engineID."',
+				gearID='".$gearID."',
+				wheelID='".$wheelID."',
+				changeDate='".$date."'
+			WHERE
+				id='".$id."';";
 	else
-		$queryStr = "INSERT INTO cars(id, title, carWeight, changeDate)
-			VALUES('".$id."', '".$title."', '".$carWeight."', '".$date."');";
+		$queryStr = "INSERT INTO
+				cars(id, title, carWeight, engineID, gearID, wheelID, changeDate)
+			VALUES('".$id."', '".$title."', '".$carWeight."', '".$engineID."', '".$gearID."', '".$wheelID."', '".$date."');";
 
 	$queryStr .= "UPDATE lastParams SET carID='".$id."' WHERE active=1";
 
@@ -633,11 +649,14 @@ function getCar($carID) {
 
 	global $db;
 
-	$result = array( "result" => "ok", "title" => "", "carWeight" => 0 );
+	$result = array( "result" => "ok", "title" => "", "carWeight" => 0, "engine" => array(), "gear" => array(), "wheel" => array() );
 
 	$query = $db->multi_query("SELECT
 			cars.title,
-			cars.carWeight
+			cars.carWeight,
+			cars.engineID,
+			cars.gearID,
+			cars.wheelID
 		FROM
 			cars
 		WHERE
@@ -652,9 +671,13 @@ function getCar($carID) {
 	if (!$res)
 		return dbError($result);
 
-	while ($row = $res->fetch_array()) {
+	if ($row = $res->fetch_array()) {
 		$result["title"] = $row["title"];
 		$result["carWeight"] = $row["carWeight"];
+		$db->next_result();
+		$result["engine"] = getEngine($row["engineID"]);
+		$result["gear"] = getGear($row["gearID"]);
+		$result["wheel"] = getWheel($row["wheelID"]);
 	}
 
 	return $result;
@@ -736,7 +759,7 @@ function getGear($gearID) {
 
 	global $db;
 
-	$result = array( "result" => "ok", "title" => "", "mainGear" => 0, "gears" => "" );
+	$result = array( "result" => "ok", "title" => "", "id" => $gearID, "mainGear" => 0, "gears" => "" );
 
 	$queryStr = "SELECT
 			gears.title,
@@ -770,6 +793,7 @@ function getGear($gearID) {
 			continue;
 		$result["gears"] == "" ? $result["gears"] = $row["gearValue"] : $result["gears"] .= ";".$row["gearValue"];
 	}
+	$db->next_result();
 
 	return $result;
 
@@ -831,7 +855,7 @@ function getWheel($wheelID) {
 
 	global $db;
 
-	$result = array( "result" => "ok", "title" => "", "width" => 0, "height" => 0, "disk" => "" );
+	$result = array( "result" => "ok", "id" => $wheelID, "title" => "", "width" => 0, "height" => 0, "disk" => "" );
 
 	$queryStr = "SELECT title, width, height, disk FROM wheels WHERE id='".$wheelID."';
 		UPDATE lastParams SET wheelID='".$wheelID."' WHERE active=1";
@@ -849,6 +873,7 @@ function getWheel($wheelID) {
 		$result["height"] = $row["height"];
 		$result["disk"] = $row["disk"];
 	}
+	$db->next_result();
 
 	return $result;
 
